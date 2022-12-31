@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+	x:Class="TimeClockApp.Pages.ChangeStartTime"
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:Converter="clr-namespace:TimeClockApp.Converters"
+	xmlns:models="clr-namespace:TimeClockApp.Models"
+	xmlns:viewModels="clr-namespace:TimeClockApp.ViewModels"
+	Title="Change Start Time"
+	x:DataType="viewModels:ChangeStartTimeViewModel">
+	<ContentPage.BindingContext>
+		<viewModels:ChangeStartTimeViewModel x:Name="viewModel" />
+	</ContentPage.BindingContext>
+	<ContentPage.ToolbarItems>
+		<ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
+	</ContentPage.ToolbarItems>
+	<ContentPage.Resources>
+		<ResourceDictionary>
+			<Converter:TimeOnlyToTimeSpanConverter x:Key="timeOnlyToTimeSpanConverter" />
+		</ResourceDictionary>
+	</ContentPage.Resources>
+	<ScrollView>
+		<StackLayout>
+			<Frame
+				x:Name="helpbox"
+				Padding="8"
+				CornerRadius="10"
+				HorizontalOptions="FillAndExpand"
+				IsVisible="{Binding HelpInfoBoxVisibile}"
+				VerticalOptions="Center">
+				<Label
+					LineBreakMode="WordWrap"
+					Style="{StaticResource LabelSmall}"
+					Text="Change TimeCard Start Time. &#10;&#10;Change the time cards date, start time, associated project and/or phase." />
+			</Frame>
+			<Grid Padding="12" ColumnDefinitions=".05*,.9*,.05*">
+				<StackLayout Grid.Column="1">
+					<Label FontSize="Small" Text="{Binding TimeCardID, StringFormat='Id={0}'}" />
+					<Label FontSize="Title" Text="{Binding TimeCard_EmployeeName}" />
+					<Label FontSize="Small" Text="{Binding TimeCard_Date, StringFormat='{0:MMM d ddd}'}" />
+					<Frame>
+						<Grid
+							ColumnDefinitions="*,*"
+							ColumnSpacing="10"
+							RowDefinitions="Auto,Auto,Auto"
+							RowSpacing="10">
+							<Label
+								Text="Clock In:"
+								VerticalOptions="Center"
+								VerticalTextAlignment="Center" />
+							<TimePicker
+								Grid.Column="1"
+								HorizontalOptions="FillAndExpand"
+								Time="{Binding StartTime, Converter={StaticResource timeOnlyToTimeSpanConverter}, Mode=TwoWay}"
+								VerticalOptions="Center" />
+							<Label
+								Grid.Row="1"
+								Text="Project:"
+								VerticalOptions="Center"
+								VerticalTextAlignment="Center" />
+							<Picker
+								Grid.Row="1"
+								Grid.Column="1"
+								HorizontalOptions="FillAndExpand"
+								ItemDisplayBinding="{Binding Name}"
+								ItemsSource="{Binding ProjectList}"
+								SelectedItem="{Binding SelectedProject, Mode=TwoWay}"
+								VerticalOptions="Center" />
+							<Label
+								Grid.Row="2"
+								Text="Phase:"
+								VerticalOptions="Center"
+								VerticalTextAlignment="Center" />
+							<Picker
+								Grid.Row="2"
+								Grid.Column="1"
+								HorizontalOptions="FillAndExpand"
+								ItemDisplayBinding="{Binding PhaseTitle}"
+								ItemsSource="{Binding PhaseList}"
+								SelectedItem="{Binding SelectedPhase, Mode=TwoWay}"
+								VerticalOptions="Center" />
+						</Grid>
+					</Frame>
+					<Button
+						Margin="20,0"
+						Command="{Binding SaveTimeCardCommand}"
+						Text="Save" />
+				</StackLayout>
+			</Grid>
+		</StackLayout>
+	</ScrollView>
+</ContentPage>

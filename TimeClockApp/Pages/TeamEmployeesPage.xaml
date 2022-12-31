@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+	x:Class="TimeClockApp.Pages.TeamEmployeesPage"
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:controls="clr-namespace:TimeClockApp.Controls"
+	xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
+	x:Name="PageTeamStatus"
+	Title="Team Employees"
+	x:DataType="vm:TeamEmployeesViewModel">
+	<ContentPage.BindingContext>
+		<vm:TeamEmployeesViewModel x:Name="viewModel" />
+	</ContentPage.BindingContext>
+	<ContentPage.ToolbarItems>
+		<ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
+	</ContentPage.ToolbarItems>
+	<ContentPage.Resources>
+		<DataTemplate x:Key="activeTeam">
+			<Frame
+				Padding="8"
+				CornerRadius="10"
+				HorizontalOptions="FillAndExpand"
+				VerticalOptions="Center">
+				<Grid ColumnDefinitions="*,30,150">
+					<Label Style="{StaticResource LabelTitleName}" Text="{Binding Employee_Name}" />
+					<Button
+						Grid.Column="2"
+						Command="{Binding Source={x:Reference PageTeamStatus}, Path=BindingContext.SetTeamNotActiveCommand}"
+						CommandParameter="{Binding}"
+						Style="{StaticResource GreenButton}"
+						Text="Active" />
+				</Grid>
+			</Frame>
+		</DataTemplate>
+
+		<DataTemplate x:Key="notActiveTeam">
+			<Frame
+				Padding="8"
+				CornerRadius="10"
+				HorizontalOptions="FillAndExpand"
+				VerticalOptions="Center">
+				<Grid ColumnDefinitions="*,30,150">
+					<Label Style="{StaticResource LabelTitleName}" Text="{Binding Employee_Name}" />
+					<Button
+						Grid.Column="2"
+						Command="{Binding Source={x:Reference PageTeamStatus}, Path=BindingContext.SetTeamActiveCommand}"
+						CommandParameter="{Binding}"
+						Style="{StaticResource RedButton}"
+						Text="Not Active" />
+				</Grid>
+			</Frame>
+		</DataTemplate>
+		<controls:TeamStatusDataTemplateSelector
+			x:Key="teamtemplate"
+			ActiveTeamTemplate="{StaticResource activeTeam}"
+			InactiveTeamTemplate="{StaticResource notActiveTeam}" />
+	</ContentPage.Resources>
+
+	<ContentPage.Content>
+		<ScrollView>
+			<StackLayout>
+				<Frame
+					x:Name="helpbox"
+					Padding="8"
+					CornerRadius="10"
+					HorizontalOptions="FillAndExpand"
+					IsVisible="{Binding HelpInfoBoxVisibile}"
+					VerticalOptions="Center">
+					<Label
+						LineBreakMode="WordWrap"
+						Style="{StaticResource LabelSmall}"
+						Text="Change Employee Active Status. &#10;&#10;Set employees status to Active to have that person displayed on the TimeCard Home Page. &#10;&#10;By setting employee's status to Inactive, removes that person from the TimeCards Home page (Note this does not change the Employment status for the employee. They will still be consitered to still be on the payroll.)" />
+				</Frame>
+				<CollectionView
+					x:Name="collectionTeamView"
+					EmptyView="No items to display"
+					ItemTemplate="{StaticResource teamtemplate}"
+					ItemsSource="{Binding Employee_List}" />
+			</StackLayout>
+		</ScrollView>
+	</ContentPage.Content>
+</ContentPage>

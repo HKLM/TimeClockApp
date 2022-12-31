@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+	x:Class="TimeClockApp.Pages.ExportPage"
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:models="clr-namespace:TimeClockApp.Models"
+	xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
+	Title="BackUp and Export"
+	x:DataType="vm:ExportPageViewModel">
+	<ContentPage.BindingContext>
+		<vm:ExportPageViewModel x:Name="viewModel" />
+	</ContentPage.BindingContext>
+	<ContentPage.ToolbarItems>
+		<ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
+	</ContentPage.ToolbarItems>
+	<StackLayout>
+		<Frame
+			x:Name="helpbox"
+			Padding="8"
+			CornerRadius="10"
+			HorizontalOptions="FillAndExpand"
+			IsVisible="{Binding HelpInfoBoxVisibile}"
+			VerticalOptions="Center">
+			<Label
+				LineBreakMode="WordWrap"
+				Style="{StaticResource LabelSmall}"
+				Text="Import/Export Database. &#10;&#10;. &#10;&#10;TODO info on how to import" />
+		</Frame>
+
+		<VerticalStackLayout Spacing="20">
+			<ActivityIndicator IsRunning="{Binding IsBusy, Mode=TwoWay}" Color="DarkRed" />
+
+			<Label
+				HorizontalOptions="Center"
+				Text="Backup Data"
+				VerticalOptions="Center" />
+			<Label Text="Output Log:" />
+			<ScrollView>
+				<Label
+					HorizontalOptions="StartAndExpand"
+					LineBreakMode="WordWrap"
+					MaxLines="200"
+					Text="{Binding ExportLog, Mode=TwoWay}" />
+			</ScrollView>
+			<Button
+				Padding="20"
+				Command="{Binding ExportDataCommand}"
+				Text="Export Data" />
+			<Button
+				Padding="20"
+				Command="{Binding ImportDataCommand}"
+				Text="Import Data" />
+			<Button
+				Padding="20"
+				Command="{Binding BackupDBRequestCommand}"
+				Text="Backup Database" />
+		</VerticalStackLayout>
+	</StackLayout>
+</ContentPage>

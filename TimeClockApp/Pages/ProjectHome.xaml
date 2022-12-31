@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+	x:Class="TimeClockApp.Pages.ProjectHome"
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:Converter="clr-namespace:TimeClockApp.Converters"
+	xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
+	Title="Project Overview"
+	x:DataType="vm:ProjectHomeViewModel">
+	<ContentPage.BindingContext>
+		<vm:ProjectHomeViewModel x:Name="viewModel" />
+	</ContentPage.BindingContext>
+	<ContentPage.ToolbarItems>
+		<ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
+	</ContentPage.ToolbarItems>
+	<ContentPage.Resources>
+		<ResourceDictionary>
+			<Converter:DateOnlyToDateTimeConverter x:Key="dateOnlyToDateTimeConverter" />
+		</ResourceDictionary>
+	</ContentPage.Resources>
+	<ScrollView>
+		<RefreshView Command="{Binding RefreshDataCommand}" IsRefreshing="{Binding IsRefreshing}">
+			<VerticalStackLayout>
+				<Frame
+					x:Name="helpbox"
+					Padding="8"
+					CornerRadius="10"
+					HorizontalOptions="FillAndExpand"
+					IsVisible="{Binding HelpInfoBoxVisibile}"
+					VerticalOptions="Center">
+					<Label
+						LineBreakMode="WordWrap"
+						Style="{StaticResource LabelSmall}"
+						Text="Project Overview. &#10;&#10;Report of total expenses, income, hours worked, etc per Project. &#10;&#10;Can filter by Project, Phase and or Date range" />
+				</Frame>
+				<Frame>
+					<Grid
+						ColumnDefinitions="Auto,*"
+						ColumnSpacing="3"
+						RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
+						RowSpacing="3">
+						<Label
+							HorizontalOptions="Start"
+							Text="Project: "
+							VerticalTextAlignment="Center" />
+						<Picker
+							Grid.Column="1"
+							HorizontalOptions="Fill"
+							ItemDisplayBinding="{Binding Name}"
+							ItemsSource="{Binding ProjectList}"
+							SelectedItem="{Binding SelectedProject, Mode=TwoWay}" />
+						<Label
+							Grid.Row="1"
+							HorizontalOptions="Start"
+							Text="Phase: "
+							VerticalTextAlignment="Center" />
+						<Picker
+							Grid.Row="1"
+							Grid.Column="1"
+							HorizontalOptions="Fill"
+							ItemDisplayBinding="{Binding PhaseTitle}"
+							ItemsSource="{Binding PhaseList}"
+							SelectedItem="{Binding SelectedPhase, Mode=TwoWay}" />
+						<Label
+							Grid.Row="2"
+							Style="{StaticResource LabelSmallCenter}"
+							Text="Begin Date: "
+							VerticalTextAlignment="Center" />
+						<DatePicker
+							Grid.Row="2"
+							Grid.Column="1"
+							Date="{Binding FilterDateStart, Converter={StaticResource dateOnlyToDateTimeConverter}, Mode=TwoWay}"
+							IsEnabled="{Binding UseFilterDate}"
+							MaximumDate="{Binding PickerMaxDate}"
+							MinimumDate="{Binding PickerMinDate}" />
+						<Label
+							Grid.Row="3"
+							Style="{StaticResource LabelSmallCenter}"
+							Text="End Date: "
+							VerticalTextAlignment="Center" />
+						<DatePicker
+							Grid.Row="3"
+							Grid.Column="1"
+							Date="{Binding FilterDateEnd, Converter={StaticResource dateOnlyToDateTimeConverter}, Mode=TwoWay}"
+							IsEnabled="{Binding UseFilterDate}"
+							MaximumDate="{Binding PickerMaxDate}"
+							MinimumDate="{Binding PickerMinDate}" />
+						<Button
+							Grid.Row="4"
+							Command="{Binding ToggleFilterDateCommand}"
+							Text="Filter By Dates" />
+						<Button
+							Grid.Row="4"
+							Grid.Column="1"
+							Command="{Binding RefreshDataCommand}"
+							Text="Apply Filter" />
+					</Grid>
+				</Frame>
+				<Frame Margin="20">
+					<Grid
+						ColumnDefinitions="Auto, *"
+						ColumnSpacing="35"
+						RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,2,Auto">
+						<Label
+							Grid.ColumnSpan="2"
+							FontAttributes="Bold"
+							FontSize="Medium"
+							HorizontalTextAlignment="Center"
+							Text="Project Totals" />
+						<Label Grid.Row="1" Text="Total Expenses" />
+						<Label
+							Grid.Row="1"
+							Grid.Column="1"
+							Text="{Binding TotalExpenses, StringFormat='{0:C}'}" />
+						<Label Grid.Row="2" Text="Total Wages" />
+						<Label
+							Grid.Row="2"
+							Grid.Column="1"
+							Text="{Binding TotalWages, StringFormat='{0:C}'}" />
+						<Label Grid.Row="3" Text="Labor Burden" />
+						<Label
+							Grid.Row="3"
+							Grid.Column="1"
+							Text="{Binding EmployerTaxes, StringFormat='{0:C}'}" />
+						<Label Grid.Row="4" Text="Estimated WorkComp" />
+						<Label
+							Grid.Row="4"
+							Grid.Column="1"
+							Text="{Binding TotalEstimatedWComp, StringFormat='{0:C}'}" />
+						<Label
+							Grid.Row="5"
+							FontAttributes="Bold"
+							FontSize="Subtitle"
+							Text="Project Total " />
+						<Label
+							Grid.Row="5"
+							Grid.Column="1"
+							FontAttributes="Bold"
+							FontSize="Subtitle"
+							Text="{Binding TotalProject, StringFormat='{0:C}'}" />
+						<Label Grid.Row="6" Text="Income" />
+						<Label
+							Grid.Row="6"
+							Grid.Column="1"
+							Text="{Binding TotalIncome, StringFormat='{0:C}'}" />
+						<Label
+							Grid.Row="7"
+							FontAttributes="Bold"
+							FontSize="Subtitle"
+							Text="Profit/Loss " />
+						<Label
+							Grid.Row="7"
+							Grid.Column="1"
+							FontAttributes="Bold"
+							FontSize="Subtitle"
+							Text="{Binding TotalProfitLoss, StringFormat='{0:C}'}" />
+						<BoxView
+							Grid.Row="8"
+							Grid.ColumnSpan="2"
+							HeightRequest="2"
+							HorizontalOptions="Fill" />
+						<Label Grid.Row="9" Text="Total Man Hours:" />
+						<Label
+							Grid.Row="9"
+							Grid.Column="1"
+							Text="{Binding TotalHours}" />
+					</Grid>
+				</Frame>
+			</VerticalStackLayout>
+		</RefreshView>
+	</ScrollView>
+</ContentPage>

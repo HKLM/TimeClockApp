@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+	x:Class="TimeClockApp.Pages.UserManagerPage"
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:converter="clr-namespace:TimeClockApp.Converters"
+	xmlns:models="clr-namespace:TimeClockApp.Models"
+	xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+	xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
+	Title="HR Dept"
+	x:DataType="vm:UserManagerViewModel">
+	<ContentPage.BindingContext>
+		<vm:UserManagerViewModel x:Name="viewModel" />
+	</ContentPage.BindingContext>
+	<ContentPage.ToolbarItems>
+		<ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
+	</ContentPage.ToolbarItems>
+	<ContentPage.Resources>
+		<ResourceDictionary>
+			<converter:StringToDoubleConverter x:Key="stringToDoubleConverter" />
+			<converter:EmploymentEnumToIntConverter x:Key="employmentEnumToIntConverter" />
+		</ResourceDictionary>
+		<Style x:Key="InvalidEntryStyle" TargetType="Entry">
+			<Setter Property="TextColor" Value="Red" />
+		</Style>
+	</ContentPage.Resources>
+	<ScrollView>
+		<VerticalStackLayout>
+			<Frame
+				x:Name="helpbox"
+				Padding="8"
+				CornerRadius="10"
+				HorizontalOptions="FillAndExpand"
+				IsVisible="{Binding HelpInfoBoxVisibile}"
+				VerticalOptions="Center">
+				<Label
+					LineBreakMode="WordWrap"
+					Style="{StaticResource LabelSmall}"
+					Text="Manage Employees. &#10;&#10;Add, edit, Fire, or place on leave. &#10;TODO" />
+			</Frame>
+			<StackLayout Padding="12">
+				<Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,4,Auto,4,Auto,4,Auto" RowSpacing="11">
+					<Label
+						Text="Employee: "
+						VerticalOptions="Center"
+						VerticalTextAlignment="Center" />
+					<Picker
+						x:Name="EmployeePicker"
+						Grid.Row="1"
+						HorizontalOptions="FillAndExpand"
+						ItemDisplayBinding="{Binding Employee_Name}"
+						ItemsSource="{Binding EmployeeList}"
+						SelectedIndexChanged="EmployeePicker_SelectedIndexChanged"
+						SelectedItem="{Binding SelectedEmployee, Mode=TwoWay}"
+						VerticalOptions="Center" />
+					<Label
+						Grid.Row="2"
+						HorizontalOptions="Start"
+						Text="EmployeeId:"
+						VerticalTextAlignment="Center" />
+					<Label
+						Grid.Row="2"
+						HorizontalOptions="Center"
+						Text="{Binding EmployeeId}"
+						VerticalTextAlignment="Center" />
+					<Label
+						Grid.Row="3"
+						HorizontalOptions="Start"
+						Text="Name:"
+						VerticalTextAlignment="Center" />
+					<Entry
+						x:Name="NameBox"
+						Grid.Row="3"
+						ClearButtonVisibility="WhileEditing"
+						HorizontalOptions="Center"
+						Keyboard="Text"
+						Placeholder="Employee Name"
+						Text="{Binding EmployeeName, Mode=TwoWay}"
+						TextChanged="NameBox_TextChanged" />
+					<Label
+						Grid.Row="4"
+						HorizontalOptions="Start"
+						Text="Job Title: "
+						VerticalTextAlignment="Center" />
+					<Entry
+						x:Name="JobTitleBox"
+						Grid.Row="4"
+						ClearButtonVisibility="WhileEditing"
+						HorizontalOptions="Center"
+						Keyboard="Text"
+						Placeholder="Job Title"
+						Text="{Binding JobTitle, Mode=TwoWay}" />
+					<Label
+						Grid.Row="5"
+						HorizontalOptions="Start"
+						Text="Pay Rate: "
+						VerticalTextAlignment="Center" />
+					<Entry
+						x:Name="PayRateBox"
+						Grid.Row="5"
+						HorizontalOptions="Center"
+						Keyboard="Numeric"
+						Text="{Binding PayRate, Converter={StaticResource stringToDoubleConverter}, Mode=TwoWay}">
+						<Entry.Behaviors>
+							<toolkit:NumericValidationBehavior
+								Flags="ValidateOnValueChanged"
+								InvalidStyle="{StaticResource InvalidEntryStyle}"
+								MaximumDecimalPlaces="2"
+								MinimumValue="0.0" />
+						</Entry.Behaviors>
+					</Entry>
+					<Label
+						Grid.Row="6"
+						Text="Is Employeed?: "
+						VerticalOptions="Start"
+						VerticalTextAlignment="Center" />
+					<Picker
+						Grid.Row="6"
+						HorizontalOptions="Fill"
+						ItemsSource="{Binding AllCatagory}"
+						SelectedIndex="{Binding IsEmployeed, Converter={StaticResource employmentEnumToIntConverter}, Mode=TwoWay}"
+						VerticalTextAlignment="Center" />
+					<BoxView
+						Grid.Row="7"
+						HeightRequest="2"
+						HorizontalOptions="Fill" />
+					<Button
+						x:Name="EditButton"
+						Grid.Row="8"
+						Command="{Binding SaveEditEmployeeCommand}"
+						IsEnabled="{Binding EnableSaveDelButton, Mode=TwoWay}"
+						Text="Save Change" />
+					<BoxView
+						Grid.Row="9"
+						HeightRequest="2"
+						HorizontalOptions="Fill" />
+					<Button
+						x:Name="NewEmpButton"
+						Grid.Row="10"
+						Command="{Binding SaveNewEmployeeCommand}"
+						IsEnabled="{Binding EnableAddButton, Mode=TwoWay}"
+						Text="Add New" />
+					<BoxView
+						Grid.Row="11"
+						HeightRequest="2"
+						HorizontalOptions="Fill" />
+					<Button
+						x:Name="DelButton"
+						Grid.Row="12"
+						Command="{Binding FireEmployeeCommand}"
+						IsEnabled="{Binding EnableSaveDelButton, Mode=TwoWay}"
+						Text="Delete" />
+				</Grid>
+			</StackLayout>
+		</VerticalStackLayout>
+	</ScrollView>
+</ContentPage>

@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+	x:Class="TimeClockApp.Pages.EditExpencePage"
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:Converter="clr-namespace:TimeClockApp.Converters"
+	xmlns:models="clr-namespace:TimeClockApp.Models"
+	xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+	xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
+	Title="Edit Expence"
+	x:DataType="vm:EditExpensePageViewModel">
+	<ContentPage.BindingContext>
+		<vm:EditExpensePageViewModel x:Name="viewModel" />
+	</ContentPage.BindingContext>
+	<ContentPage.ToolbarItems>
+		<ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
+	</ContentPage.ToolbarItems>
+	<ContentPage.Resources>
+		<ResourceDictionary>
+			<Converter:DateOnlyToDateTimeConverter x:Key="dateOnlyToDateTimeConverter" />
+			<Converter:ExpenseEnumToIntConverter x:Key="expenseEnumToIntConverter" />
+		</ResourceDictionary>
+		<Style x:Key="InvalidEntryStyle" TargetType="Entry">
+			<Setter Property="TextColor" Value="Red" />
+		</Style>
+	</ContentPage.Resources>
+	<ScrollView>
+		<!--<StackLayout Margin="5" Spacing="4">-->
+		<StackLayout>
+			<Frame
+				x:Name="helpbox"
+				Padding="8"
+				CornerRadius="10"
+				HorizontalOptions="FillAndExpand"
+				IsVisible="{Binding HelpInfoBoxVisibile}"
+				VerticalOptions="Center">
+				<Label
+					LineBreakMode="WordWrap"
+					Style="{StaticResource LabelSmall}"
+					Text="Edit Expence Page. &#10;&#10;Make changes or delete the expense item. &#10;&#10;Note: This is the only page you will see the contents of the Memo displayed." />
+			</Frame>
+
+			<Frame>
+				<Grid ColumnDefinitions="Auto,10,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,8,Auto">
+					<Label
+						HorizontalOptions="Start"
+						Text="Project: "
+						VerticalTextAlignment="Center" />
+					<Picker
+						Grid.Column="2"
+						HorizontalOptions="Fill"
+						ItemDisplayBinding="{Binding Name}"
+						ItemsSource="{Binding ProjectList}"
+						SelectedItem="{Binding SelectedProject, Mode=TwoWay}" />
+					<Label
+						Grid.Row="1"
+						HorizontalOptions="Start"
+						Text="Phase: "
+						VerticalTextAlignment="Center" />
+					<Picker
+						Grid.Row="1"
+						Grid.Column="2"
+						HorizontalOptions="Fill"
+						ItemDisplayBinding="{Binding PhaseTitle}"
+						ItemsSource="{Binding PhaseList}"
+						SelectedItem="{Binding SelectedPhase, Mode=TwoWay}" />
+					<Label
+						Grid.Row="2"
+						Style="{StaticResource LabelSmall}"
+						Text="Catagory: "
+						VerticalTextAlignment="Center" />
+					<Picker
+						Grid.Row="2"
+						Grid.Column="2"
+						HorizontalOptions="Fill"
+						ItemsSource="{Binding AllCatagory}"
+						SelectedIndex="{Binding Catagory, Converter={StaticResource expenseEnumToIntConverter}, Mode=TwoWay}"
+						VerticalTextAlignment="Center" />
+					<Label
+						Grid.Row="3"
+						Style="{StaticResource LabelSmallCenter}"
+						Text="Date: "
+						VerticalTextAlignment="Center" />
+					<DatePicker
+						Grid.Row="3"
+						Grid.Column="2"
+						Date="{Binding ExpenseDate, Converter={StaticResource dateOnlyToDateTimeConverter}, Mode=TwoWay}"
+						MaximumDate="{Binding PickerMaxDate}"
+						MinimumDate="{Binding PickerMinDate}" />
+					<Label
+						Grid.Row="4"
+						Style="{StaticResource LabelSmall}"
+						Text="Amount: "
+						VerticalTextAlignment="Center" />
+					<Entry
+						Grid.Row="4"
+						Grid.Column="2"
+						FontSize="Small"
+						HorizontalOptions="Fill"
+						Keyboard="Numeric"
+						Placeholder="Amount"
+						Text="{Binding Amount, Mode=TwoWay}"
+						VerticalTextAlignment="Center">
+						<Entry.Behaviors>
+							<toolkit:NumericValidationBehavior
+								Flags="ValidateOnValueChanged"
+								InvalidStyle="{StaticResource InvalidEntryStyle}"
+								MaximumDecimalPlaces="2"
+								MinimumValue="0.0" />
+						</Entry.Behaviors>
+					</Entry>
+					<Label
+						Grid.Row="5"
+						Style="{StaticResource LabelSmall}"
+						Text="Memo: "
+						VerticalTextAlignment="Center" />
+					<Entry
+						Grid.Row="5"
+						Grid.Column="2"
+						FontSize="Small"
+						HorizontalOptions="Fill"
+						Placeholder="Memo"
+						Text="{Binding Memo, Mode=TwoWay}"
+						VerticalTextAlignment="Center" />
+					<Button
+						Grid.Row="6"
+						Grid.ColumnSpan="3"
+						Margin="20,10"
+						Command="{Binding EditExpenseCommand}"
+						CornerRadius="10"
+						HorizontalOptions="Fill"
+						Text="Save" />
+					<BoxView
+						Grid.Row="7"
+						Grid.ColumnSpan="3"
+						HeightRequest="2"
+						HorizontalOptions="Fill" />
+					<Button
+						Grid.Row="8"
+						Grid.ColumnSpan="3"
+						Margin="20,10"
+						Command="{Binding DelExpenseCommand}"
+						CornerRadius="10"
+						HorizontalOptions="Fill"
+						Text="Delete" />
+				</Grid>
+			</Frame>
+		</StackLayout>
+	</ScrollView>
+</ContentPage>

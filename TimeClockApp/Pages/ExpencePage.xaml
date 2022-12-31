@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+	x:Class="TimeClockApp.Pages.ExpencePage"
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:Converter="clr-namespace:TimeClockApp.Converters"
+	xmlns:controls="clr-namespace:TimeClockApp.Controls"
+	xmlns:models="clr-namespace:TimeClockApp.Models"
+	xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+	xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
+	Title="Expences"
+	x:DataType="vm:ExpenseViewModel">
+	<ContentPage.BindingContext>
+		<vm:ExpenseViewModel x:Name="viewModel" />
+	</ContentPage.BindingContext>
+	<ContentPage.ToolbarItems>
+		<ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
+		<ToolbarItem
+			x:Name="ArchiveButton"
+			Clicked="ArchiveButton_ClickedAsync"
+			IconImageSource="archive.png"
+			Text="Archive" />
+		<ToolbarItem Command="{Binding AddNewExpenseCommand}" IconImageSource="post_add.png" />
+	</ContentPage.ToolbarItems>
+	<ContentPage.Resources>
+		<ResourceDictionary>
+			<Converter:DateOnlyToDateTimeConverter x:Key="dateOnlyToDateTimeConverter" />
+			<Converter:DateOnlyConverter x:Key="dateOnlyConverter" />
+			<Converter:ExpenseEnumToIntConverter x:Key="expenseEnumToIntConverter" />
+		</ResourceDictionary>
+		<Style x:Key="InvalidEntryStyle" TargetType="Entry">
+			<Setter Property="TextColor" Value="Red" />
+		</Style>
+
+		<DataTemplate x:Key="expenseTemplate">
+			<SwipeView>
+				<SwipeView.LeftItems>
+					<SwipeItems Mode="Execute">
+						<SwipeItem
+							x:Name="ExpenseEditAction"
+							x:DataType="models:Expense"
+							Clicked="ExpenseEditAction_Clicked"
+							CommandParameter="{Binding ExpenseId}"
+							StyleClass="SwpieGold"
+							Text="Edit Expense" />
+					</SwipeItems>
+				</SwipeView.LeftItems>
+				<Frame>
+					<VerticalStackLayout>
+						<Grid
+							ColumnDefinitions="*,*,*"
+							ColumnSpacing="10"
+							RowDefinitions="Auto">
+							<Label
+								Style="{StaticResource LabelSmall}"
+								Text="{Binding ExpenseDate, Converter={StaticResource dateOnlyConverter}, StringFormat='{0:MMM d ddd}'}"
+								VerticalTextAlignment="Center" />
+							<Label
+								Grid.Column="1"
+								Style="{StaticResource LabelSmall}"
+								Text="{Binding Catagory, StringFormat='{0}'}"
+								VerticalTextAlignment="Center" />
+							<Label
+								Grid.Column="2"
+								Style="{StaticResource LabelSmall}"
+								Text="{Binding Amount, StringFormat='{0:C}'}"
+								VerticalTextAlignment="Center" />
+						</Grid>
+					</VerticalStackLayout>
+				</Frame>
+			</SwipeView>
+		</DataTemplate>
+
+		<controls:SingleDataTemplateSelector x:Key="singletemplatesel" TheTemplate="{StaticResource expenseTemplate}" />
+	</ContentPage.Resources>
+
+	<ScrollView>
+		<StackLayout Spacing="4">
+			<Frame
+				x:Name="helpbox"
+				Padding="8"
+				CornerRadius="10"
+				HorizontalOptions="FillAndExpand"
+				IsVisible="{Binding HelpInfoBoxVisibile}"
+				VerticalOptions="Center">
+				<Label
+					LineBreakMode="WordWrap"
+					Style="{StaticResource LabelSmall}"
+					Text="Expenses. &#10;&#10;Ledger page to record project expenses and income. &#10;&#10;TODO" />
+			</Frame>
+			<Grid ColumnDefinitions="Auto,10,*" RowDefinitions="Auto,Auto">
+				<Label
+					HorizontalOptions="Start"
+					Text="Project: "
+					VerticalTextAlignment="Center" />
+				<Picker
+					Grid.Column="2"
+					HorizontalOptions="Fill"
+					ItemDisplayBinding="{Binding Name}"
+					ItemsSource="{Binding ProjectList}"
+					SelectedItem="{Binding SelectedProject, Mode=TwoWay}" />
+				<Label
+					Grid.Row="1"
+					HorizontalOptions="Start"
+					Text="Phase: "
+					VerticalTextAlignment="Center" />
+				<Picker
+					Grid.Row="1"
+					Grid.Column="2"
+					HorizontalOptions="Fill"
+					ItemDisplayBinding="{Binding PhaseTitle}"
+					ItemsSource="{Binding PhaseList}"
+					SelectedItem="{Binding SelectedPhase, Mode=TwoWay}" />
+			</Grid>
+			<Frame>
+				<Grid
+					ColumnDefinitions="Auto,20,*"
+					ColumnSpacing="3"
+					RowDefinitions="Auto,Auto,Auto,Auto">
+					<Label
+						Style="{StaticResource LabelSmall}"
+						Text="Catagory: "
+						VerticalTextAlignment="Center" />
+					<Picker
+						Grid.Column="2"
+						HorizontalOptions="Fill"
+						ItemsSource="{Binding AllCatagory}"
+						SelectedIndex="{Binding Catagory, Converter={StaticResource expenseEnumToIntConverter}, Mode=TwoWay}"
+						VerticalTextAlignment="Center" />
+					<Label
+						Grid.Row="1"
+						Style="{StaticResource LabelSmallCenter}"
+						Text="Date: "
+						VerticalTextAlignment="Center" />
+					<DatePicker
+						Grid.Row="1"
+						Grid.Column="2"
+						Date="{Binding ExpenseDate, Converter={StaticResource dateOnlyToDateTimeConverter}, Mode=TwoWay}"
+						MaximumDate="{Binding PickerMaxDate}"
+						MinimumDate="{Binding PickerMinDate}" />
+					<Label
+						Grid.Row="2"
+						Style="{StaticResource LabelSmall}"
+						Text="Amount: "
+						VerticalTextAlignment="Center" />
+					<Entry
+						Grid.Row="2"
+						Grid.Column="2"
+						FontSize="Small"
+						Keyboard="Numeric"
+						Placeholder="Amount"
+						Text="{Binding Amount, Mode=TwoWay}"
+						VerticalTextAlignment="Center">
+						<Entry.Behaviors>
+							<toolkit:NumericValidationBehavior
+								Flags="ValidateOnValueChanged"
+								InvalidStyle="{StaticResource InvalidEntryStyle}"
+								MaximumDecimalPlaces="2"
+								MinimumValue="0.0" />
+						</Entry.Behaviors>
+					</Entry>
+					<Label
+						Grid.Row="3"
+						Grid.Column="0"
+						Style="{StaticResource LabelSmall}"
+						Text="Show Archived"
+						VerticalTextAlignment="Center" />
+					<CheckBox
+						x:Name="ShowArchivedChkBox"
+						Grid.Row="3"
+						Grid.Column="1"
+						CheckedChanged="ShowArchivedChkBox_CheckedChanged"
+						IsChecked="{Binding ShowArchived}" />
+					<Button
+						Grid.Row="3"
+						Grid.Column="2"
+						Margin="20,10"
+						Command="{Binding AddNewExpenseCommand}"
+						CornerRadius="10"
+						HorizontalOptions="Fill"
+						Text="Save New" />
+				</Grid>
+			</Frame>
+			<CollectionView
+				Margin="0,2"
+				EmptyView="No items to display"
+				ItemTemplate="{StaticResource singletemplatesel}"
+				ItemsSource="{Binding ExpenseList}" />
+		</StackLayout>
+	</ScrollView>
+</ContentPage>

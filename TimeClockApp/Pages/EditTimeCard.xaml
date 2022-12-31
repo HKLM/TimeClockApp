@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+	x:Class="TimeClockApp.Pages.EditTimeCard"
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:Converter="clr-namespace:TimeClockApp.Converters"
+	xmlns:models="clr-namespace:TimeClockApp.Models"
+	xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
+	x:Name="PageEditTimeCard"
+	Title="Edit TimeCard"
+	x:DataType="vm:EditTimeCardViewModel">
+	<ContentPage.BindingContext>
+		<vm:EditTimeCardViewModel x:Name="viewModel" />
+	</ContentPage.BindingContext>
+	<ContentPage.ToolbarItems>
+		<ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
+	</ContentPage.ToolbarItems>
+	<ContentPage.Resources>
+		<ResourceDictionary>
+			<Converter:TimeOnlyToTimeSpanConverter x:Key="timeOnlyToTimeSpanConverter" />
+			<Converter:DateOnlyConverter x:Key="dateOnlyConverter" />
+			<Converter:DateOnlyToDateTimeConverter x:Key="dateOnlyToDateTimeConverter" />
+			<Converter:EnumToIntConverter x:Key="enumToIntConverter" />
+		</ResourceDictionary>
+	</ContentPage.Resources>
+	<ScrollView>
+		<StackLayout Margin="10">
+			<Frame
+				x:Name="helpbox"
+				Padding="8"
+				CornerRadius="10"
+				HorizontalOptions="FillAndExpand"
+				IsVisible="{Binding HelpInfoBoxVisibile}"
+				VerticalOptions="Center">
+				<Label
+					LineBreakMode="WordWrap"
+					Style="{StaticResource LabelSmall}"
+					Text="TimeCard Editor &#10;&#10;Change the time cards date, start time, end time, associated project and/or phase. &#10;&#10;Note: Once a time card has been marked as paid, it is ReadOnly, and can not be changed." />
+			</Frame>
+
+			<Label
+				Style="{StaticResource LabelSmallCenter}"
+				Text="{Binding TimeCardID, StringFormat='Id={0}'}"
+				VerticalTextAlignment="Center" />
+			<Label
+				FontSize="Title"
+				Text="{Binding TimeCard_EmployeeName}"
+				VerticalTextAlignment="Center" />
+			<StackLayout Padding="10" Orientation="Horizontal">
+				<Label
+					Margin="0,0,3,0"
+					Style="{StaticResource LabelSmallCenter}"
+					Text="Project: "
+					VerticalTextAlignment="Center" />
+				<Picker
+					HorizontalOptions="FillAndExpand"
+					ItemDisplayBinding="{Binding Name}"
+					ItemsSource="{Binding ProjectList}"
+					SelectedItem="{Binding SelectedProject, Mode=TwoWay}"
+					VerticalOptions="Center" />
+				<Label
+					Margin="8,0,3,0"
+					Style="{StaticResource LabelSmallCenter}"
+					Text="Phase: "
+					VerticalTextAlignment="Center" />
+				<Picker
+					HorizontalOptions="FillAndExpand"
+					ItemDisplayBinding="{Binding PhaseTitle}"
+					ItemsSource="{Binding PhaseList}"
+					SelectedItem="{Binding SelectedPhase, Mode=TwoWay}"
+					VerticalOptions="Center" />
+			</StackLayout>
+
+			<Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
+				<Label
+					Style="{StaticResource LabelSmallCenter}"
+					Text="Date:"
+					VerticalTextAlignment="Center" />
+				<DatePicker
+					Grid.Column="1"
+					Date="{Binding TimeCard_Date, Converter={StaticResource dateOnlyToDateTimeConverter}, Mode=TwoWay}"
+					MaximumDate="{Binding PickerMaxDate}"
+					MinimumDate="{Binding PickerMinDate}" />
+				<Label
+					Grid.Row="1"
+					Style="{StaticResource LabelSmallCenter}"
+					Text="Clock In:"
+					VerticalTextAlignment="Center" />
+				<TimePicker
+					Grid.Row="1"
+					Grid.Column="1"
+					Time="{Binding StartTime, Converter={StaticResource timeOnlyToTimeSpanConverter}, Mode=TwoWay}" />
+				<Label
+					Grid.Row="2"
+					Style="{StaticResource LabelSmallCenter}"
+					Text="Clock Out:"
+					VerticalTextAlignment="Center" />
+				<TimePicker
+					Grid.Row="2"
+					Grid.Column="1"
+					Time="{Binding EndTime, Converter={StaticResource timeOnlyToTimeSpanConverter}, Mode=TwoWay}" />
+				<Label
+					Grid.Row="3"
+					Style="{StaticResource LabelSmallCenter}"
+					Text="Status:"
+					VerticalTextAlignment="Center" />
+				<Picker
+					Grid.Row="3"
+					Grid.Column="1"
+					IsEnabled="{Binding IsAdmin}"
+					ItemsSource="{Binding AllShiftStatus}"
+					SelectedIndex="{Binding TimeCard_Status, Converter={StaticResource enumToIntConverter}}" />
+				<Label
+					Grid.Row="4"
+					Style="{StaticResource LabelSmallCenter}"
+					Text="Read Only:"
+					VerticalTextAlignment="Center" />
+				<CheckBox
+					Grid.Row="4"
+					Grid.Column="1"
+					Margin="0,5"
+					IsChecked="{Binding TimeCard_bReadOnly}"
+					IsEnabled="{Binding IsAdmin}"
+					VerticalOptions="Center" />
+			</Grid>
+
+			<Button
+				Margin="20,0"
+				Command="{Binding SaveTimeCardCommand}"
+				Text="Save" />
+		</StackLayout>
+	</ScrollView>
+</ContentPage>

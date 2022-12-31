@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+	x:Class="TimeClockApp.Pages.SettingsPage"
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:controls="clr-namespace:TimeClockApp.Controls"
+	xmlns:models="clr-namespace:TimeClockApp.Models"
+	xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
+	x:Name="AppSettingsPage"
+	Title="Settings"
+	x:DataType="vm:SettingsPageViewModel">
+	<ContentPage.BindingContext>
+		<vm:SettingsPageViewModel x:Name="viewModel" />
+	</ContentPage.BindingContext>
+	<ContentPage.Resources>
+
+		<DataTemplate x:Key="intTemplate">
+			<Grid ColumnDefinitions="200,40,*,40" RowDefinitions="Auto">
+				<Label
+					StyleClass="LabelSmallCenter"
+					Text="{Binding Name}"
+					VerticalTextAlignment="Center" />
+				<ImageButton
+					Grid.Column="1"
+					Command="{Binding Source={x:Reference AppSettingsPage}, Path=BindingContext.DisplayHintCommand}"
+					CommandParameter="{Binding}"
+					HorizontalOptions="Center"
+					Source="help_icon_blue.png" />
+				<Entry
+					Grid.Column="2"
+					Keyboard="Numeric"
+					Text="{Binding IntValue, Mode=TwoWay}" />
+				<ImageButton
+					Grid.Column="3"
+					Command="{Binding Source={x:Reference AppSettingsPage}, Path=BindingContext.SaveSettingCommand}"
+					CommandParameter="{Binding}"
+					HorizontalOptions="Center"
+					Source="save.png" />
+			</Grid>
+		</DataTemplate>
+
+		<DataTemplate x:Key="stringTemplate">
+			<Grid ColumnDefinitions="200,40,*,40" RowDefinitions="Auto">
+				<Label Text="{Binding Name}" />
+				<ImageButton
+					Grid.Column="1"
+					Command="{Binding Source={x:Reference AppSettingsPage}, Path=BindingContext.DisplayHintCommand}"
+					CommandParameter="{Binding}"
+					HorizontalOptions="Center"
+					Source="help_icon_blue.png" />
+				<Entry
+					Grid.Column="2"
+					Keyboard="Text"
+					Text="{Binding StringValue, Mode=TwoWay}" />
+				<ImageButton
+					Grid.Column="3"
+					Command="{Binding Source={x:Reference AppSettingsPage}, Path=BindingContext.SaveSettingCommand}"
+					CommandParameter="{Binding}"
+					HorizontalOptions="Center"
+					Source="save.png" />
+			</Grid>
+		</DataTemplate>
+
+		<controls:SettingsDataTemplateSelector
+			x:Key="configtemplatesel"
+			IntTemplate="{StaticResource intTemplate}"
+			StringTemplate="{StaticResource stringTemplate}" />
+	</ContentPage.Resources>
+
+	<ScrollView>
+		<VerticalStackLayout>
+			<Frame
+				x:Name="helpbox"
+				Padding="8"
+				CornerRadius="10"
+				HorizontalOptions="FillAndExpand"
+				IsVisible="{Binding HelpInfoBoxVisibile}"
+				VerticalOptions="Center">
+				<Label
+					LineBreakMode="WordWrap"
+					Style="{StaticResource LabelSmall}"
+					Text="{Binding HelpInfo}" />
+			</Frame>
+
+			<CollectionView
+				x:Name="collectionView"
+				EmptyView="No items to display"
+				ItemTemplate="{StaticResource configtemplatesel}"
+				ItemsSource="{Binding SettingsList}" />
+		</VerticalStackLayout>
+	</ScrollView>
+</ContentPage>
