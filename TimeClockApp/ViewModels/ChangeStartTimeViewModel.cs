@@ -1,18 +1,11 @@
-﻿using System.Collections.ObjectModel;
-
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-
-using TimeClockApp.Helpers;
-using TimeClockApp.Models;
-using TimeClockApp.Services;
+﻿using TimeClockApp.Helpers;
 
 namespace TimeClockApp.ViewModels
 {
     [QueryProperty("IdTimeCard", "id")]
-    public partial class ChangeStartTimeViewModel : TimeStampViewModel
+    public partial class ChangeStartTimeViewModel : TimeStampViewModel, IDisposable
     {
-        protected EditTimeCardService cardService;
+        protected readonly EditTimeCardService cardService;
         public string IdTimeCard
         {
             set
@@ -62,21 +55,15 @@ namespace TimeClockApp.ViewModels
         [ObservableProperty]
         private Phase selectedPhase;
 
-        public ChangeStartTimeViewModel()
+        public ChangeStartTimeViewModel(EditTimeCardService service)
         {
-            cardService = new();
+            cardService = service;
         }
 
         public void OnAppearing()
         {
             PickerMinDate = cardService.GetAppFirstRunDate();
             RefreshProjectPhases();
-            RefreshCard();
-        }
-
-        [RelayCommand]
-        private void LoadTimeCard()
-        {
             RefreshCard();
         }
 
@@ -140,7 +127,20 @@ namespace TimeClockApp.ViewModels
         [RelayCommand]
         private void OnToggleHelpInfoBox()
         {
-            HelpInfoBoxVisibile = !HelpInfoBoxVisibile;
+            HelpInfoBoxVisible = !HelpInfoBoxVisible;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // TODO: dispose managed state (managed objects)
+                cardService.Dispose();
+            }
+
+            // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+            // TODO: set large fields to null
+            base.Dispose();
         }
     }
 }

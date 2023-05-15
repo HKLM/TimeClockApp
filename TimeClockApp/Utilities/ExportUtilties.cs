@@ -1,8 +1,4 @@
-﻿using System.Diagnostics;
-using System.IO.Compression;
-
-using TimeClockApp.Models;
-using TimeClockApp.Services;
+﻿using System.IO.Compression;
 
 namespace TimeClockApp.Utilities
 {

@@ -1,12 +1,10 @@
-﻿using System.Collections.ObjectModel;
-using System.Data;
+﻿using System.Data;
 
 using CommunityToolkit.Maui.Core.Extensions;
 
 using Microsoft.EntityFrameworkCore;
 
 using TimeClockApp.Helpers;
-using TimeClockApp.Models;
 
 namespace TimeClockApp.Services
 {
@@ -23,11 +21,12 @@ namespace TimeClockApp.Services
                         && (item.TimeCard_Date >= start
                         && item.TimeCard_Date <= end
                         && item.TimeCard_Status < shift))
+                    .OrderBy(item => item.TimeCard_Date)
                     .ToObservableCollection();
 
             ObservableCollection<Wages> w = new();
             ObservableCollection<Wages> o = new();
-            if (t.Any())
+            if (t.Count != 0)
                 for (int i = 0; i < t.Count; i++)
                 {
                     if (t[i].WagesId.HasValue && t[i].WagesId.Value > 0)
@@ -53,11 +52,12 @@ namespace TimeClockApp.Services
                         && (item.TimeCard_Date >= start
                         && item.TimeCard_Date <= end
                         && item.TimeCard_Status < shift))
+                    .OrderBy(item => item.TimeCard_Date)
                     .ToObservableCollection();
 
             ObservableCollection<Wages> w = new();
             ObservableCollection<Wages> o = new();
-            if (t.Any())
+            if (t.Count != 0)
                 for (int i = 0; i < t.Count; i++)
                 {
                     if (t[i].WagesId.HasValue && t[i].WagesId.Value > 0)
@@ -81,11 +81,12 @@ namespace TimeClockApp.Services
                     && (item.TimeCard_Date >= start
                     && item.TimeCard_Date <= end
                     && item.TimeCard_Status < shift))
+                .OrderBy(item => item.TimeCard_Date)
                 .ToListAsync();
 
             ObservableCollection<Wages> w = new();
             ObservableCollection<Wages> o = new();
-            if (t.Any())
+            if (t.Count != 0)
                 for (int i = 0; i < t.Count; i++)
                 {
                     if (t[i].WagesId.HasValue && t[i].WagesId.Value > 0)
@@ -110,11 +111,12 @@ namespace TimeClockApp.Services
                     && (item.TimeCard_Date >= start
                     && item.TimeCard_Date <= end
                     && item.TimeCard_Status < shift))
+                .OrderBy(item => item.TimeCard_Date)
                 .ToListAsync();
 
             ObservableCollection<Wages> w = new();
             ObservableCollection<Wages> o = new();
-            if (t.Any())
+            if (t.Count != 0)
                 for (int i = 0; i < t.Count; i++)
                 {
                     if (t[i].WagesId.HasValue && t[i].WagesId.Value > 0)
@@ -129,33 +131,36 @@ namespace TimeClockApp.Services
         }
 
         /// <summary>
-        /// Finds all unpaid timeCards for employee
+        /// Gets All of the timeCards for the employee that has not yet been marked as paid.
         /// </summary>
         /// <param name="employeeId"></param>
         /// <returns></returns>
-        public async Task<(ObservableCollection<TimeCard>, double)> GetAllUnpaidTimeCardsForEmployeeAsync(int employeeId)
+        public async Task<(ObservableCollection<TimeCard> cards, ObservableCollection<Wages> allwages, ObservableCollection<Wages> owedwages)> GetAllUnpaidTimeCardsForEmployeeAsync(int employeeId)
         {
-            IQueryable<TimeCard> L = Context.TimeCard
-                .Where(item => item.EmployeeId == employeeId
-                    && item.TimeCard_Status == ShiftStatus.ClockedOut
-                    && !item.TimeCard_bReadOnly);
-            double d = await L.AnyAsync() ? await L.SumAsync(o => o.TimeCard_WorkHours) : 0;
-
-            return (new ObservableCollection<TimeCard>((IEnumerable<TimeCard>)await L.ToListAsync()), d);
-        }
-
-        public async Task<(ObservableCollection<TimeCard>, double)> GetAllUnpaidTimeCardsForEmployee(int employeeId)
-        {
-            ObservableCollection<TimeCard> t = new ObservableCollection<TimeCard>(await Context.TimeCard
+            List<TimeCard> t = await Context.TimeCard
+                .AsNoTracking()
+                .Include(item => item.Wages)
                 .Where(item => item.EmployeeId == employeeId
                     && item.TimeCard_Status == ShiftStatus.ClockedOut
                     && !item.TimeCard_bReadOnly)
-                .ToListAsync());
+                .ToListAsync();
 
-            double d = t.Any() ? t.Sum(o => o.TimeCard_WorkHours) : 0;
+            ObservableCollection<Wages> w = new();
+            ObservableCollection<Wages> o = new();
+            if (t.Count != 0)
+                for (int i = 0; i < t.Count; i++)
+                {
+                    if (t[i].WagesId.HasValue && t[i].WagesId.Value > 0)
+                    {
+                        w.Add(t[i].Wages);
+                        if (t[i].TimeCard_Status == ShiftStatus.ClockedOut)
+                            o.Add(t[i].Wages);
+                    }
+                }
 
-            return (t, d);
+            return (new ObservableCollection<TimeCard>(t), w, o);
         }
+
 
         public async Task<bool> MarkTimeCardAsPaidAsync(TimeCard timeCard)
         {
@@ -164,16 +169,19 @@ namespace TimeClockApp.Services
                 if (timeCard.TimeCard_Status == ShiftStatus.ClockedIn || timeCard.TimeCard_Status == ShiftStatus.ClockedOut)
                 {
                     TimeCard t = Context.TimeCard.Find(timeCard.TimeCardId);
-                    if (t.TimeCard_Status == ShiftStatus.ClockedIn && await ValidateClockOutAsync(t))
+                    Task<bool> b = ValidateClockOutAsync(t);
+                    if (t.TimeCard_Status == ShiftStatus.ClockedIn && await b)
                     {
                         t.TimeCard_EndTime = TimeHelper.RoundTimeOnly(new TimeOnly(DateTime.Now.Hour, DateTime.Now.Minute));
                         t.TimeCard_Status = ShiftStatus.ClockedOut;
-                        _ = await CalculatePayAsync(t);
+                        Task<bool> c = CalculatePayAsync(t);
+                        _ = await c;
                     }
                     t.TimeCard_Status = ShiftStatus.Paid;
                     t.TimeCard_bReadOnly = true;
                     Context.Update<TimeCard>(t);
-                    if (await Context.SaveChangesAsync() != 0)
+                    Task<int> i = Context.SaveChangesAsync();
+                    if (await i != 0)
                         return true;
                 }
             }
@@ -189,9 +197,10 @@ namespace TimeClockApp.Services
         {
             if (w == null || w.Count == 0) return (0, 0, 0, 0);
             double regHR, otHR, ot2HR, totalHR = 0;
-            regHR = w.Any() ? w.Sum(o => o.RegularHours) : 0;
-            otHR = w.Any() ? w.Sum(o => o.OTHours) : 0;
-            ot2HR = w.Any() ? w.Sum(o => o.OT2Hours) : 0;
+            regHR = w.Sum(o => (double?)o.RegularHours) ?? 0;
+            otHR = w.Sum(o => (double?)o.OTHours) ?? 0;
+            ot2HR = w.Sum(o => (double?)o.OT2Hours) ?? 0;
+
             totalHR = regHR + otHR + ot2HR;
             return (regHR, otHR, ot2HR, totalHR);
         }
@@ -200,9 +209,10 @@ namespace TimeClockApp.Services
         {
             if (w == null || w.Count == 0) return (0, 0, 0, 0);
             double regPay, otPay, ot2Pay, totalPay = 0;
-            regPay = w.Any() ? w.Sum(o => o.RegPay) : 0;
-            otPay = w.Any() ? w.Sum(o => o.OT_Pay) : 0;
-            ot2Pay = w.Any() ? w.Sum(o => o.OT2_Pay) : 0;
+            regPay = w.Sum(o => (double?)o.RegPay) ?? 0;
+            otPay = w.Sum(o => (double?)o.OT_Pay) ?? 0;
+            ot2Pay = w.Sum(o => (double?)o.OT2_Pay) ?? 0;
+
             totalPay = regPay + otPay + ot2Pay;
             return (regPay, otPay, ot2Pay, totalPay);
         }

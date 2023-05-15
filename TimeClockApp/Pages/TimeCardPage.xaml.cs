@@ -3,9 +3,12 @@ namespace TimeClockApp.Pages;
 [XamlCompilation(XamlCompilationOptions.Compile)]
 public partial class TimeCardPage : ContentPage
 {
-    public TimeCardPage()
+    protected readonly TimeCardPageViewModel viewModel;
+
+    public TimeCardPage(TimeCardPageViewModel ViewModel)
     {
         InitializeComponent();
+        BindingContext = viewModel = ViewModel;
     }
 
     protected override void OnAppearing()

@@ -3,20 +3,21 @@ namespace TimeClockApp.Pages;
 [XamlCompilation(XamlCompilationOptions.Compile)]
 public partial class ReportWeekPage : ContentPage
 {
+    protected readonly ReportWeekViewModel viewModel;
     private double _width = 0;
     private double _height = 0;
 
-    public ReportWeekPage()
+    public ReportWeekPage(ReportWeekViewModel ViewModel)
     {
         InitializeComponent();
+        BindingContext = viewModel = ViewModel;
     }
 
-#pragma warning disable AsyncFixer03 // Fire-and-forget async-void methods or delegates
     protected override async void OnAppearing()
-#pragma warning restore AsyncFixer03 // Fire-and-forget async-void methods or delegates
     {
         base.OnAppearing();
-        await viewModel.OnAppearingAsync();
+        Task viewmod = viewModel.OnAppearingAsync();
+        await viewmod;
         _width = this.Width;
         _height = this.Height;
         if (_width != 0)

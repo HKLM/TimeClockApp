@@ -20,7 +20,7 @@
 				Padding="8"
 				CornerRadius="10"
 				HorizontalOptions="FillAndExpand"
-				IsVisible="{Binding HelpInfoBoxVisibile}"
+				IsVisible="{Binding HelpInfoBoxVisible}"
 				VerticalOptions="Center">
 				<!--  TODO  -->
 				<Label
@@ -29,7 +29,7 @@
 					Text="Phase Editor Page. &#10;&#10;Phases are a way to seperate parts of the Project in to smaller groups. &#10;&#10;TODO" />
 			</Frame>
 
-			<ActivityIndicator IsRunning="{Binding IsBusy, Mode=TwoWay}" />
+			<!--<ActivityIndicator IsRunning="{Binding IsBusy, Mode=TwoWay}" />-->
 			<Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,4,Auto,6,Auto" RowSpacing="15">
 				<Label
 					Text="Select Phase To Edit: "

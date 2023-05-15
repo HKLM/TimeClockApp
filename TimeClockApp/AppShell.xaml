@@ -45,7 +45,7 @@
 	</FlyoutItem>
 	<FlyoutItem Title="Financial" FlyoutDisplayOptions="AsSingleItem" Icon="work_twotone.png">
 		<Tab Title="Expences" Icon="receipt_outline.png">
-			<ShellContent ContentTemplate="{DataTemplate local:ExpencePage}" Route="ExpencePage" />
+			<ShellContent ContentTemplate="{DataTemplate local:ExpensePage}" Route="ExpensePage" />
 		</Tab>
 		<Tab Title="Reports" Icon="work_twotone.png">
 			<ShellContent ContentTemplate="{DataTemplate local:ProjectHome}" Route="ProjectHome"  />

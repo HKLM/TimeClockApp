@@ -1,16 +1,8 @@
-﻿using System.Collections.ObjectModel;
-
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-
-using TimeClockApp.Models;
-using TimeClockApp.Services;
-
-namespace TimeClockApp.ViewModels
+﻿namespace TimeClockApp.ViewModels
 {
-    public partial class TimeCardPageViewModel : TimeStampViewModel
+    public partial class TimeCardPageViewModel : TimeStampViewModel, IDisposable
     {
-        protected TimeCardService cardService;
+        protected readonly TimeCardService cardService;
         [ObservableProperty]
         private ObservableCollection<TimeCard> timeCards = new();
 
@@ -37,50 +29,53 @@ namespace TimeClockApp.ViewModels
                 cardService.SaveCurrentPhase(value.PhaseId);
         }
 
-        public TimeCardPageViewModel()
+        public TimeCardPageViewModel(TimeCardService service)
         {
-            cardService = new();
+            cardService = service;
         }
 
         public Task OnAppearing()
         {
-            IsBusy = false;
             RefreshProjectPhases();
-            return RefreshCards();
+            Task r = RefreshCards();
+            return r;
         }
 
 #nullable enable
         [RelayCommand]
         private async Task ClockIn(TimeCard? card)
         {
-            if (IsBusy || card == null) return;
-            IsBusy = true;
-
-            if (await cardService.EmployeeClockInAsync(card, SelectedProject.ProjectId, SelectedPhase.PhaseId))
-                await RefreshCards();
-            IsBusy = false;
+            if (card == null) return;
+            Task<bool> clockIn = cardService.EmployeeClockInAsync(card, SelectedProject.ProjectId, SelectedPhase.PhaseId);
+            if (await clockIn)
+            {
+                Task r = RefreshCards();
+                await r;
+            }
         }
 
         [RelayCommand]
         private async Task ClockOutAsync(TimeCard? card)
         {
-            if (IsBusy || card == null) return;
-            IsBusy = true;
-
-            if (await cardService.EmployeeClockOutAsync(card))
-                await RefreshCards();
-
-            IsBusy = false;
+            if (card == null) return;
+            Task<bool> clockOut = cardService.EmployeeClockOutAsync(card);
+            if (await clockOut)
+            {
+                Task r = RefreshCards();
+                await r;
+            }
         }
 #nullable restore
 
         [RelayCommand]
         private async Task RefreshCards()
         {
-            if (TimeCards == null) return;
-            if (TimeCards.Any())
+            if (TimeCards != null && TimeCards.Any())
                 TimeCards.Clear();
-            TimeCards = await cardService.GetLastTimeCardForAllEmployeesAsync();
+            Task<ObservableCollection<TimeCard>> cards = cardService.GetLastTimeCardForAllEmployeesAsync();
+            TimeCards = await cards;
+            if (TimeCards == null || TimeCards.Count == 0)
+                await App.AlertSvc.ShowAlertAsync("ERROR", "You must have at least 1 employed, active, employee.\n\nGo to Tools / HR Dept to add new employees. Or to activate a deactivate employee, press the icon of a person with a gear on the toolbar.");
         }
 
         private void RefreshProjectPhases()
@@ -138,7 +133,23 @@ namespace TimeClockApp.ViewModels
         [RelayCommand]
         private void OnToggleHelpInfoBox()
         {
-            HelpInfoBoxVisibile = !HelpInfoBoxVisibile;
+            HelpInfoBoxVisible = !HelpInfoBoxVisible;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // TODO: dispose managed state (managed objects)
+                cardService.Dispose();
+            }
+
+            // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+            // TODO: set large fields to null
+            //TimeCards = null;
+            //SelectedPhase = null;
+            //ProjectList = null;
+            base.Dispose();
         }
     }
 }

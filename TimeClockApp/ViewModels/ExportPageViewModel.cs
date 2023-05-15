@@ -1,13 +1,4 @@
-﻿using System.Diagnostics;
-using System.Globalization;
-
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-
-using CsvHelper;
-
-using TimeClockApp.Models;
-using TimeClockApp.Services;
+﻿using CsvHelper;
 
 namespace TimeClockApp.ViewModels
 {
@@ -19,6 +10,8 @@ namespace TimeClockApp.ViewModels
 
         [ObservableProperty]
         private string exportLog = string.Empty;
+        [ObservableProperty]
+        private bool isBusy = false;
 
         private enum SQLTables
         {
@@ -49,9 +42,9 @@ namespace TimeClockApp.ViewModels
             try
             {
 
-                ExportLog = "Prepairing for Import ... \n";
+                ExportLog = "Preparing for Import ... \n";
 
-                FilePickerFileType customFileType = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+                FilePickerFileType customFileType = new(new Dictionary<DevicePlatform, IEnumerable<string>>
                             {
                                 { DevicePlatform.Android, new[] { "application/zip" } },
                             });
@@ -72,6 +65,8 @@ namespace TimeClockApp.ViewModels
                 if (fileCopyName == String.Empty)
                     fileCopyName = Path.Combine(fhs.GetDownloadPath(), "TimeCardApp.zip");
 
+                //TODO - popup question box. Do you want to import this data? Existing data will be overwritten and can not be undone.
+
                 //  Create a location for our data
                 string UnZipPath = fhs.GetLocalFilePath("TimeClockAppUNZIP");
 
@@ -82,7 +77,9 @@ namespace TimeClockApp.ViewModels
 
                 Directory.CreateDirectory(UnZipPath);
                 ExportLog += "Start Unzip file...\n";
-                ImportDataModel dataModel = new ImportDataModel();
+                ImportDataModel dataModel = new();
+
+                //TODO - add some sort of version check to ensure the files we are importing are even compatible with the current version
 
                 dataModel = Utilities.ExportUtilties.UnzipArchive(fileCopyName, UnZipPath);
                 if (dataModel.IsAnyTrue())
@@ -105,7 +102,7 @@ namespace TimeClockApp.ViewModels
             catch (Exception ex)
             {
                 Debug.WriteLine("\nEXCEPTION ERROR\n" + ex.Message + "\n" + ex.InnerException);
-                dataService.ShowPopupError("EXCEPTION ERROR\n" + ex.Message + "\n" + ex.InnerException, "ABORTING DUE TO ERROR");
+                await dataService.ShowPopupErrorAsync("EXCEPTION ERROR\n" + ex.Message + "\n" + ex.InnerException, "ABORTING DUE TO ERROR");
             }
             finally
             {
@@ -120,7 +117,7 @@ namespace TimeClockApp.ViewModels
             try
             {
 
-                ExportLog = "Prepairing for export ... \n";
+                ExportLog = "Preparing for export ... \n";
 
                 //  Create a location for our data
                 CSVFilePath = Path.Combine(Microsoft.Maui.Storage.FileSystem.CacheDirectory, "TimeClockApp", DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss"));
@@ -144,14 +141,14 @@ namespace TimeClockApp.ViewModels
 
                 //  Zip everything and present a share dialog to the user
                 ExportLog += "Zipping ... \n";
-                await taskA.ContinueWith(antecedent => Utilities.ExportUtilties.CompressAndExportFolder(antecedent.Result));
+                await taskA.ContinueWith(async antecedent => await Utilities.ExportUtilties.CompressAndExportFolder(antecedent.Result)).Unwrap();
 
                 ExportLog += "Done!\n";
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(ex);
-                dataService.ShowPopupError("EXCEPTION ERROR\n" + ex.Message + "\n" + ex.InnerException, "ABORTING DUE TO ERROR");
+                await dataService.ShowPopupErrorAsync("EXCEPTION ERROR\n" + ex.Message + "\n" + ex.InnerException, "ABORTING DUE TO ERROR");
             }
             finally
             {
@@ -161,7 +158,7 @@ namespace TimeClockApp.ViewModels
 
         private async Task<string> MakeCSVFilesAsync()
         {
-            IList<Task> tableTaskList = new List<Task>();
+            List<Task> tableTaskList = new();
             for (int i = 0; i < 7; i++)
             {
                 SQLTables sQL = (SQLTables)i;
@@ -181,8 +178,8 @@ namespace TimeClockApp.ViewModels
             {
                 case SQLTables.TimeCard:
                     List<TimeCard> w = dataService.BackupGetTimeCard();
-                    using (StreamWriter writer = new StreamWriter(file))
-                    using (CsvWriter csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+                    await using (StreamWriter writer = new(file))
+                    await using (CsvWriter csv = new(writer, CultureInfo.InvariantCulture))
                     {
                         csv.Context.RegisterClassMap<TimeCardMap>();
                         await csv.WriteRecordsAsync(w);
@@ -191,8 +188,8 @@ namespace TimeClockApp.ViewModels
                     return;
                 case SQLTables.Employee:
                     List<Employee> emp = dataService.BackupGetEmployee();
-                    using (StreamWriter writer = new StreamWriter(file))
-                    using (CsvWriter csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+                    await using (StreamWriter writer = new(file))
+                    await using (CsvWriter csv = new(writer, CultureInfo.InvariantCulture))
                     {
                         csv.Context.RegisterClassMap<EmployeeMap>();
                         await csv.WriteRecordsAsync(emp);
@@ -201,8 +198,8 @@ namespace TimeClockApp.ViewModels
                     return;
                 case SQLTables.Wages:
                     List<Wages> wg = dataService.BackupGetWages();
-                    using (StreamWriter writer = new StreamWriter(file))
-                    using (CsvWriter csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+                    await using (StreamWriter writer = new(file))
+                    await using (CsvWriter csv = new(writer, CultureInfo.InvariantCulture))
                     {
                         csv.Context.RegisterClassMap<WagesMap>();
                         await csv.WriteRecordsAsync(wg);
@@ -211,8 +208,8 @@ namespace TimeClockApp.ViewModels
                     return;
                 case SQLTables.Project:
                     List<Project> pr = dataService.BackupGetProject();
-                    using (StreamWriter writer = new StreamWriter(file))
-                    using (CsvWriter csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+                    await using (StreamWriter writer = new(file))
+                    await using (CsvWriter csv = new(writer, CultureInfo.InvariantCulture))
                     {
                         csv.Context.RegisterClassMap<ProjectMap>();
                         await csv.WriteRecordsAsync(pr);
@@ -221,8 +218,8 @@ namespace TimeClockApp.ViewModels
                     return;
                 case SQLTables.Phase:
                     List<Phase> ph = dataService.BackupGetPhase();
-                    using (StreamWriter writer = new StreamWriter(file))
-                    using (CsvWriter csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+                    await using (StreamWriter writer = new(file))
+                    await using (CsvWriter csv = new(writer, CultureInfo.InvariantCulture))
                     {
                         csv.Context.RegisterClassMap<PhaseMap>();
                         await csv.WriteRecordsAsync(ph);
@@ -231,8 +228,8 @@ namespace TimeClockApp.ViewModels
                     return;
                 case SQLTables.Config:
                     List<Config> c = dataService.BackupGetConfig();
-                    using (StreamWriter writer = new StreamWriter(file))
-                    using (CsvWriter csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+                    await using (StreamWriter writer = new(file))
+                    await using (CsvWriter csv = new(writer, CultureInfo.InvariantCulture))
                     {
                         csv.Context.RegisterClassMap<ConfigMap>();
                         await csv.WriteRecordsAsync(c);
@@ -241,8 +238,8 @@ namespace TimeClockApp.ViewModels
                     return;
                 case SQLTables.Expense:
                     List<Expense> e = dataService.BackupGetExpense();
-                    using (StreamWriter writer = new StreamWriter(file))
-                    using (CsvWriter csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+                    await using (StreamWriter writer = new(file))
+                    await using (CsvWriter csv = new(writer, CultureInfo.InvariantCulture))
                     {
                         csv.Context.RegisterClassMap<ExpenseMap>();
                         await csv.WriteRecordsAsync(e);
@@ -299,7 +296,20 @@ namespace TimeClockApp.ViewModels
         [RelayCommand]
         private void OnToggleHelpInfoBox()
         {
-            HelpInfoBoxVisibile = !HelpInfoBoxVisibile;
+            HelpInfoBoxVisible = !HelpInfoBoxVisible;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // TODO: dispose managed state (managed objects)
+                dataService.Dispose();
+            }
+
+            // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+            // TODO: set large fields to null
+            base.Dispose();
         }
     }
 }

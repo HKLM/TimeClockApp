@@ -3,9 +3,12 @@
 [XamlCompilation(XamlCompilationOptions.Compile)]
 public partial class TeamEmployeesPage : ContentPage
 {
-    public TeamEmployeesPage()
+    protected readonly TeamEmployeesViewModel viewModel;
+
+    public TeamEmployeesPage(TeamEmployeesViewModel ViewModel)
     {
         InitializeComponent();
+        BindingContext = this.viewModel = ViewModel;
     }
 
     protected override void OnAppearing()

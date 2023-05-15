@@ -18,7 +18,7 @@
         /// <returns>TimeOnly</returns>
         public static TimeOnly RoundTimeOnly(TimeOnly time)
         {
-            DateTime dt = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, time.Hour, time.Minute, time.Second);
+            DateTime dt = new(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, time.Hour, time.Minute, time.Second);
             DateTime roundTime = RoundDateTime(dt, TimeSpan.FromMinutes(15));
             return TimeOnly.FromDateTime(roundTime);
         }
@@ -30,7 +30,7 @@
         public static TimeOnly? RoundTimeOnly(TimeOnly? time)
         {
             if (time == null) return null;
-            DateTime dt = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, time.Value.Hour, time.Value.Minute, time.Value.Second);
+            DateTime dt = new(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, time.Value.Hour, time.Value.Minute, time.Value.Second);
             DateTime? roundTime = RoundDateTime(dt, TimeSpan.FromMinutes(15));
             return TimeOnly.FromDateTime(roundTime.Value);
         }

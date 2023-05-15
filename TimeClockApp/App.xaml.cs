@@ -1,6 +1,4 @@
-﻿using TimeClockApp.Services;
-
-namespace TimeClockApp;
+﻿namespace TimeClockApp;
 
 [XamlCompilation(XamlCompilationOptions.Compile)]
 public partial class App : Microsoft.Maui.Controls.Application
@@ -9,9 +7,9 @@ public partial class App : Microsoft.Maui.Controls.Application
     /// File name (only) of the SQLite Database.
     /// </summary>
     /// <remarks>Does not include path.</remarks>
-    public const string SQLiteFileName = "TimeClockAppDB-01.db3";
+    public const string SQLiteFileName = "TimeClockAppDB-02.db3";
 
-    //For the Alart Popup from ViewModel support
+    //For the Alert Popup from ViewModel support
     public static IServiceProvider Services;
     public static IAlertService AlertSvc;
 
@@ -31,27 +29,23 @@ public partial class App : Microsoft.Maui.Controls.Application
     /// <summary>
     /// Get the full file path to SQLite Database
     /// </summary>
-    private static void GetSQLiteDBPath()
+    private static string GetSQLiteDBPath()
     {
         FileHelperService fhs = new();
-        SQLiteDBPath = fhs.GetDBPath(SQLiteFileName);
+        string s = fhs.GetDBPath(SQLiteFileName);
+        sQLite_DBPath = s;
+        return s;
     }
 
     private static string sQLite_DBPath;
     public static string SQLiteDBPath
     {
-        get
-        {
-            if (sQLite_DBPath == null || sQLite_DBPath == "" || sQLite_DBPath == string.Empty)
-                GetSQLiteDBPath();
-
-            return sQLite_DBPath;
-        }
+        get => sQLite_DBPath ?? GetSQLiteDBPath();
         private set => sQLite_DBPath = value;
     }
 
     /// <summary>
-    /// Determin if this is the apps 1st time running
+    /// Determine if this is the apps 1st time running
     /// </summary>
     public static bool FirstRun { get; set; } = true;
     public static void SetFirstRun(bool IsFirstRun) => FirstRun = IsFirstRun;

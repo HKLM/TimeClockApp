@@ -9,9 +9,6 @@
 	x:Name="PageEditTimeCard"
 	Title="Edit TimeCard"
 	x:DataType="vm:EditTimeCardViewModel">
-	<ContentPage.BindingContext>
-		<vm:EditTimeCardViewModel x:Name="viewModel" />
-	</ContentPage.BindingContext>
 	<ContentPage.ToolbarItems>
 		<ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
 	</ContentPage.ToolbarItems>
@@ -30,7 +27,7 @@
 				Padding="8"
 				CornerRadius="10"
 				HorizontalOptions="FillAndExpand"
-				IsVisible="{Binding HelpInfoBoxVisibile}"
+				IsVisible="{Binding HelpInfoBoxVisible}"
 				VerticalOptions="Center">
 				<Label
 					LineBreakMode="WordWrap"
@@ -46,77 +43,80 @@
 				FontSize="Title"
 				Text="{Binding TimeCard_EmployeeName}"
 				VerticalTextAlignment="Center" />
-			<StackLayout Padding="10" Orientation="Horizontal">
+
+			<Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
 				<Label
-					Margin="0,0,3,0"
 					Style="{StaticResource LabelSmallCenter}"
 					Text="Project: "
 					VerticalTextAlignment="Center" />
 				<Picker
+					Grid.Column="1"
 					HorizontalOptions="FillAndExpand"
 					ItemDisplayBinding="{Binding Name}"
 					ItemsSource="{Binding ProjectList}"
 					SelectedItem="{Binding SelectedProject, Mode=TwoWay}"
 					VerticalOptions="Center" />
 				<Label
-					Margin="8,0,3,0"
+					Grid.Row="1"
 					Style="{StaticResource LabelSmallCenter}"
 					Text="Phase: "
 					VerticalTextAlignment="Center" />
 				<Picker
+					Grid.Row="1"
+					Grid.Column="1"
 					HorizontalOptions="FillAndExpand"
 					ItemDisplayBinding="{Binding PhaseTitle}"
 					ItemsSource="{Binding PhaseList}"
 					SelectedItem="{Binding SelectedPhase, Mode=TwoWay}"
 					VerticalOptions="Center" />
-			</StackLayout>
 
-			<Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
 				<Label
+					Grid.Row="2"
 					Style="{StaticResource LabelSmallCenter}"
 					Text="Date:"
 					VerticalTextAlignment="Center" />
 				<DatePicker
+					Grid.Row="2"
 					Grid.Column="1"
 					Date="{Binding TimeCard_Date, Converter={StaticResource dateOnlyToDateTimeConverter}, Mode=TwoWay}"
 					MaximumDate="{Binding PickerMaxDate}"
 					MinimumDate="{Binding PickerMinDate}" />
 				<Label
-					Grid.Row="1"
+					Grid.Row="3"
 					Style="{StaticResource LabelSmallCenter}"
 					Text="Clock In:"
 					VerticalTextAlignment="Center" />
 				<TimePicker
-					Grid.Row="1"
+					Grid.Row="3"
 					Grid.Column="1"
 					Time="{Binding StartTime, Converter={StaticResource timeOnlyToTimeSpanConverter}, Mode=TwoWay}" />
 				<Label
-					Grid.Row="2"
+					Grid.Row="4"
 					Style="{StaticResource LabelSmallCenter}"
 					Text="Clock Out:"
 					VerticalTextAlignment="Center" />
 				<TimePicker
-					Grid.Row="2"
+					Grid.Row="4"
 					Grid.Column="1"
 					Time="{Binding EndTime, Converter={StaticResource timeOnlyToTimeSpanConverter}, Mode=TwoWay}" />
 				<Label
-					Grid.Row="3"
+					Grid.Row="5"
 					Style="{StaticResource LabelSmallCenter}"
 					Text="Status:"
 					VerticalTextAlignment="Center" />
 				<Picker
-					Grid.Row="3"
+					Grid.Row="5"
 					Grid.Column="1"
 					IsEnabled="{Binding IsAdmin}"
 					ItemsSource="{Binding AllShiftStatus}"
 					SelectedIndex="{Binding TimeCard_Status, Converter={StaticResource enumToIntConverter}}" />
 				<Label
-					Grid.Row="4"
+					Grid.Row="6"
 					Style="{StaticResource LabelSmallCenter}"
 					Text="Read Only:"
 					VerticalTextAlignment="Center" />
 				<CheckBox
-					Grid.Row="4"
+					Grid.Row="6"
 					Grid.Column="1"
 					Margin="0,5"
 					IsChecked="{Binding TimeCard_bReadOnly}"

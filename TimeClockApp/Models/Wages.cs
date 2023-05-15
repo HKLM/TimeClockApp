@@ -47,13 +47,13 @@ namespace TimeClockApp.Models
         public double RegularHours { get; set; }
 
         /// <summary>
-        /// Overtime. After 8 hours of work, the next 2 hours in a single day, are consited overtime.
+        /// Overtime. After 8 hours of work, the next 2 hours in a single day, are consisted overtime.
         /// </summary>
         [System.ComponentModel.DataAnnotations.Schema.Column(TypeName = "double")]
         public double OTHours { get; set; }
 
         /// <summary>
-        /// Double Overtime. Any work done after 10 hours in a single day, is consited double overtime.
+        /// Double Overtime. Any work done after 10 hours in a single day, is consisted double overtime.
         /// </summary>
         [System.ComponentModel.DataAnnotations.Schema.Column(TypeName = "double")]
         public double OT2Hours { get; set; }
@@ -84,6 +84,9 @@ namespace TimeClockApp.Models
         [System.ComponentModel.DataAnnotations.Schema.Column(TypeName = "double")]
         public double TotalWages { get; set; }
 
+        //[System.ComponentModel.DataAnnotations.Schema.Column(TypeName = "double")]
+        //public double? BonusPay { get; set; }
+
         public virtual TimeCard TimeCard { get; set; }
 
         /// <summary>
@@ -113,6 +116,9 @@ namespace TimeClockApp.Models
             rv += "OT_Pay:       " + OT_Pay + Environment.NewLine;
             rv += "OT2_Pay:      " + OT2_Pay + Environment.NewLine;
             rv += "TotalWages:   " + TotalWages + Environment.NewLine;
+            //if (BonusPay.HasValue) {
+            //rv += "BonusPay:     " + BonusPay.Value + Environment.NewLine;
+            //}
             rv += "------------------------------------------------------" + Environment.NewLine;
             return rv;
         }
@@ -133,6 +139,7 @@ namespace TimeClockApp.Models
             Map(m => m.OT_Pay);
             Map(m => m.OT2_Pay);
             Map(m => m.TotalWages);
+            //Map(m => m.BonusPay).Optional();
         }
     }
 }

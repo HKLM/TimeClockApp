@@ -1,6 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿//using Meziantou.Framework;
+using Microsoft.EntityFrameworkCore;
 
-using TimeClockApp.Models;
+using TimeClockApp.Utilities;
 
 namespace TimeClockApp.Services
 {
@@ -37,83 +38,86 @@ namespace TimeClockApp.Services
 
             return App.OverHeadRate;
         }
-        //public int GetProfitRate()
-        //{
-        //    if (App.ProfitRate == 0)
-        //        App.ProfitRate = GetConfigInt(7, 0);
-
-        //    return App.ProfitRate;
-        //}
-
 
 
         #region GETPROJECTDETAILS
-        public (double TotalExpenses, double TotalIncome, double TotalWages, double TotalHours) GetProjectDetails(int projectId, int phaseId, DateOnly filterDateFrom, DateOnly filterDateTo)
+        public (double TotalExpenses, double TotalIncome, double TotalWages, double TotalHours) GetProjectDetails(int projectId, int? phaseId = null, DateOnly? filterDateFrom = null, DateOnly? filterDateTo = null)
         {
-            double TotalExpenses = GetTotalExpensesPerProject(projectId, phaseId, filterDateFrom, filterDateTo);
-            double TotalIncome = GetTotalIncomePerProject(projectId, phaseId, filterDateFrom, filterDateTo);
-            double TotalWages = GetTotalWagesPerProject(projectId, phaseId, filterDateFrom, filterDateTo);
-            double TotalHours = GetTotalManHoursPerProject(projectId, phaseId, filterDateFrom, filterDateTo);
-            return (TotalExpenses, TotalIncome, TotalWages, TotalHours);
-        }
-        public (double TotalExpenses, double TotalIncome, double TotalWages, double TotalHours) GetProjectDetails(int projectId, DateOnly filterDateFrom, DateOnly filterDateTo)
-        {
-            double TotalExpenses = GetTotalExpensesPerProject(projectId, filterDateFrom, filterDateTo);
-            double TotalIncome = GetTotalIncomePerProject(projectId, filterDateFrom, filterDateTo);
-            double TotalWages = GetTotalWagesPerProject(projectId, filterDateFrom, filterDateTo);
-            double TotalHours = GetTotalManHoursPerProject(projectId, filterDateFrom, filterDateTo);
-            return (TotalExpenses, TotalIncome, TotalWages, TotalHours);
-        }
-        public (double TotalExpenses, double TotalIncome, double TotalWages, double TotalHours) GetProjectDetails(int projectId, int phaseId)
-        {
-            double TotalExpenses = GetTotalExpensesPerProject(projectId, phaseId);
-            double TotalIncome = GetTotalIncomePerProject(projectId, phaseId);
-            double TotalWages = GetTotalWagesPerProject(projectId, phaseId);
-            double TotalHours = GetTotalManHoursPerProject(projectId, phaseId);
-            return (TotalExpenses, TotalIncome, TotalWages, TotalHours);
-        }
-        public (double TotalExpenses, double TotalIncome, double TotalWages, double TotalHours) GetProjectDetails(int projectId)
-        {
-            double TotalExpenses = GetTotalExpensesPerProject(projectId);
-            double TotalIncome = GetTotalIncomePerProject(projectId);
-            double TotalWages = GetTotalWagesPerProject(projectId);
-            double TotalHours = GetTotalManHoursPerProject(projectId);
+            double TotalExpenses;
+            double TotalIncome;
+            double TotalWages;
+            double TotalHours;
+
+            if (filterDateFrom.HasValue && filterDateTo.HasValue && phaseId.HasValue)
+            {
+                TotalExpenses = GetTotalExpensesPerProject(projectId, phaseId.Value, filterDateFrom.Value, filterDateTo.Value);
+                TotalIncome = GetTotalIncomePerProject(projectId, phaseId.Value, filterDateFrom.Value, filterDateTo.Value);
+                TotalWages = GetTotalWagesPerProject(projectId, phaseId.Value, filterDateFrom.Value, filterDateTo.Value);
+                TotalHours = GetTotalManHoursPerProject(projectId, phaseId.Value, filterDateFrom.Value, filterDateTo.Value);
+            }
+            else if (filterDateFrom.HasValue && filterDateTo.HasValue)
+            {
+                TotalExpenses = GetTotalExpensesPerProject(projectId, filterDateFrom.Value, filterDateTo.Value);
+                TotalIncome = GetTotalIncomePerProject(projectId, filterDateFrom.Value, filterDateTo.Value);
+                TotalWages = GetTotalWagesPerProject(projectId, filterDateFrom.Value, filterDateTo.Value);
+                TotalHours = GetTotalManHoursPerProject(projectId, filterDateFrom.Value, filterDateTo.Value);
+            }
+            else if (phaseId.HasValue)
+            {
+                TotalExpenses = GetTotalExpensesPerProject(projectId, phaseId.Value);
+                TotalIncome = GetTotalIncomePerProject(projectId, phaseId.Value);
+                TotalWages = GetTotalWagesPerProject(projectId, phaseId.Value);
+                TotalHours = GetTotalManHoursPerProject(projectId, phaseId.Value);
+            }
+            else
+            {
+                TotalExpenses = GetTotalExpensesPerProject(projectId);
+                TotalIncome = GetTotalIncomePerProject(projectId);
+                TotalWages = GetTotalWagesPerProject(projectId);
+                TotalHours = GetTotalManHoursPerProject(projectId);
+            }
             return (TotalExpenses, TotalIncome, TotalWages, TotalHours);
         }
         #endregion
 
         #region GETPROJECTDETAILS ASYNC
-        public async Task<(double TotalExpenses, double TotalIncome, double TotalWages, double TotalHours)> GetProjectDetailsAsync(int projectId, int phaseId, DateOnly filterDateFrom, DateOnly filterDateTo)
+        public async Task<(double TotalExpenses, double TotalIncome, double TotalWages, double TotalHours)> GetProjectDetailsAsync(int projectId, int? phaseId = null, DateOnly? filterDateFrom = null, DateOnly? filterDateTo = null)
         {
-            Task<double> TotalExpenses = GetTotalExpensesPerProjectAsync(projectId, phaseId, filterDateFrom, filterDateTo);
-            Task<double> TotalIncome = GetTotalIncomePerProjectAsync(projectId, phaseId, filterDateFrom, filterDateTo);
-            Task<double> TotalWages = GetTotalWagesPerProjectAsync(projectId, phaseId, filterDateFrom, filterDateTo);
-            Task<double> TotalHours = GetTotalManHoursPerProjectAsync(projectId, phaseId, filterDateFrom, filterDateTo);
-            return (await TotalExpenses, await TotalIncome, await TotalWages, await TotalHours);
-        }
-        public async Task<(double TotalExpenses, double TotalIncome, double TotalWages, double TotalHours)> GetProjectDetailsAsync(int projectId, DateOnly filterDateFrom, DateOnly filterDateTo)
-        {
-            Task<double> TotalExpenses = GetTotalExpensesPerProjectAsync(projectId, filterDateFrom, filterDateTo);
-            Task<double> TotalIncome = GetTotalIncomePerProjectAsync(projectId, filterDateFrom, filterDateTo);
-            Task<double> TotalWages = GetTotalWagesPerProjectAsync(projectId, filterDateFrom, filterDateTo);
-            Task<double> TotalHours = GetTotalManHoursPerProjectAsync(projectId, filterDateFrom, filterDateTo);
-            return (await TotalExpenses, await TotalIncome, await TotalWages, await TotalHours);
-        }
-        public async Task<(double TotalExpenses, double TotalIncome, double TotalWages, double TotalHours)> GetProjectDetailsAsync(int projectId, int phaseId)
-        {
-            Task<double> TotalExpenses = GetTotalExpensesPerProjectAsync(projectId, phaseId);
-            Task<double> TotalIncome = GetTotalIncomePerProjectAsync(projectId, phaseId);
-            Task<double> TotalWages = GetTotalWagesPerProjectAsync(projectId, phaseId);
-            Task<double> TotalHours = GetTotalManHoursPerProjectAsync(projectId, phaseId);
-            return (await TotalExpenses, await TotalIncome, await TotalWages, await TotalHours);
-        }
-        public async Task<(double TotalExpenses, double TotalIncome, double TotalWages, double TotalHours)> GetProjectDetailsAsync(int projectId)
-        {
-            Task<double> TotalExpenses = GetTotalExpensesPerProjectAsync(projectId);
-            Task<double> TotalIncome = GetTotalIncomePerProjectAsync(projectId);
-            Task<double> TotalWages = GetTotalWagesPerProjectAsync(projectId);
-            Task<double> TotalHours = GetTotalManHoursPerProjectAsync(projectId);
-            return (await TotalExpenses, await TotalIncome, await TotalWages, await TotalHours);
+            Task<double> TotalExpenses;
+            Task<double> TotalIncome;
+            Task<double> TotalWages;
+            Task<double> TotalHours;
+
+            if (filterDateFrom.HasValue && filterDateTo.HasValue && phaseId.HasValue)
+            {
+                TotalExpenses = GetTotalExpensesPerProjectAsync(projectId, phaseId.Value, filterDateFrom.Value, filterDateTo.Value);
+                TotalIncome = GetTotalIncomePerProjectAsync(projectId, phaseId.Value, filterDateFrom.Value, filterDateTo.Value);
+                TotalWages = GetTotalWagesPerProjectAsync(projectId, phaseId.Value, filterDateFrom.Value, filterDateTo.Value);
+                TotalHours = GetTotalManHoursPerProjectAsync(projectId, phaseId.Value, filterDateFrom.Value, filterDateTo.Value);
+            }
+            else if (filterDateFrom.HasValue && filterDateTo.HasValue)
+            {
+                TotalExpenses = GetTotalExpensesPerProjectAsync(projectId, filterDateFrom.Value, filterDateTo.Value);
+                TotalIncome = GetTotalIncomePerProjectAsync(projectId, filterDateFrom.Value, filterDateTo.Value);
+                TotalWages = GetTotalWagesPerProjectAsync(projectId, filterDateFrom.Value, filterDateTo.Value);
+                TotalHours = GetTotalManHoursPerProjectAsync(projectId, filterDateFrom.Value, filterDateTo.Value);
+            }
+            else if (phaseId.HasValue)
+            {
+                TotalExpenses = GetTotalExpensesPerProjectAsync(projectId, phaseId.Value);
+                TotalIncome = GetTotalIncomePerProjectAsync(projectId, phaseId.Value);
+                TotalWages = GetTotalWagesPerProjectAsync(projectId, phaseId.Value);
+                TotalHours = GetTotalManHoursPerProjectAsync(projectId, phaseId.Value);
+            }
+            else
+            {
+                TotalExpenses = GetTotalExpensesPerProjectAsync(projectId);
+                TotalIncome = GetTotalIncomePerProjectAsync(projectId);
+                TotalWages = GetTotalWagesPerProjectAsync(projectId);
+                TotalHours = GetTotalManHoursPerProjectAsync(projectId);
+            }
+            var (t1Result, t2Result, t3Result, t4Result) = await (TotalExpenses, TotalIncome, TotalWages, TotalHours);
+            return (t1Result, t2Result, t3Result, t4Result);
         }
         #endregion
 
@@ -121,114 +125,102 @@ namespace TimeClockApp.Services
         #region TOTAL EXPENSES
         public double GetTotalExpensesPerProject(int projectId)
         {
-            IQueryable<Expense> t = Context.Expense
+            return Context.Expense
                 .AsNoTracking()
                 .Include(item => item.Project)
                 .Where(item => item.ProjectId == projectId
                     && item.IsRecent
-                    && item.Catagory != ExpenseType.Deleted
-                    && item.Catagory > ExpenseType.Income
-                    && (item.ExpenseDate >= item.Project.ProjectDate));
-
-            return t.Any() ? t.Sum(o => o.Amount) : 0;
+                    && item.Category != ExpenseType.Deleted
+                    && item.Category > ExpenseType.Income
+                    && (item.ExpenseDate >= item.Project.ProjectDate))
+                .Sum(item => (double?)item.Amount) ?? 0;
         }
-
         public double GetTotalExpensesPerProject(int projectId, DateOnly filterDateFrom, DateOnly filterDateTo)
         {
-            IQueryable<Expense> t = Context.Expense
+            return Context.Expense
                 .AsNoTracking()
                 .Where(item => item.ProjectId == projectId
                     && item.IsRecent
-                    && item.Catagory != ExpenseType.Deleted
-                    && item.Catagory > ExpenseType.Income
+                    && item.Category != ExpenseType.Deleted
+                    && item.Category > ExpenseType.Income
                     && (item.ExpenseDate >= filterDateFrom
-                    && item.ExpenseDate <= filterDateTo));
-
-            return t.Any() ? t.Sum(o => o.Amount) : 0;
+                    && item.ExpenseDate <= filterDateTo))
+                .Sum(item => (double?)item.Amount) ?? 0;
         }
-
         public double GetTotalExpensesPerProject(int projectId, int phaseId)
         {
-            IQueryable<Expense> t = Context.Expense
+            return Context.Expense
                 .AsNoTracking()
                 .Include(item => item.Project)
                 .Where(item => item.ProjectId == projectId
                     && item.PhaseId == phaseId
                     && item.IsRecent
-                    && item.Catagory != ExpenseType.Deleted
-                    && item.Catagory > ExpenseType.Income
-                    && (item.ExpenseDate >= item.Project.ProjectDate));
-
-            return t.Any() ? t.Sum(o => o.Amount) : 0;
+                    && item.Category != ExpenseType.Deleted
+                    && item.Category > ExpenseType.Income
+                    && (item.ExpenseDate >= item.Project.ProjectDate))
+                .Sum(item => (double?)item.Amount) ?? 0;
         }
         public double GetTotalExpensesPerProject(int projectId, int phaseId, DateOnly filterDateFrom, DateOnly filterDateTo)
         {
-            IQueryable<Expense> t = Context.Expense
+            return Context.Expense
                 .AsNoTracking()
                 .Where(item => item.ProjectId == projectId
                     && item.PhaseId == phaseId
                     && item.IsRecent
-                    && item.Catagory != ExpenseType.Deleted
-                    && item.Catagory > ExpenseType.Income
+                    && item.Category != ExpenseType.Deleted
+                    && item.Category > ExpenseType.Income
                     && (item.ExpenseDate >= filterDateFrom
-                    && item.ExpenseDate <= filterDateTo));
-
-            return t.Any() ? t.Sum(o => o.Amount) : 0;
+                    && item.ExpenseDate <= filterDateTo))
+                .Sum(item => (double?)item.Amount) ?? 0;
         }
         #endregion
 
         #region TOTAL INCOME
         public double GetTotalIncomePerProject(int projectId)
         {
-            IQueryable<Expense> t = Context.Expense
+            return Context.Expense.TagWithCallSite().TagWith("TotalIncomePerProject-1")
                 .AsNoTracking()
                 .Include(item => item.Project)
                 .Where(item => item.ProjectId == projectId
                     && item.IsRecent
-                    && item.Catagory == ExpenseType.Income
-                    && (item.ExpenseDate >= item.Project.ProjectDate));
-
-            return t.Any() ? t.Sum(o => o.Amount) : 0;
+                    && item.Category == ExpenseType.Income
+                    && (item.ExpenseDate >= item.Project.ProjectDate))
+                .Sum(item => (double?)item.Amount) ?? 0;
         }
-
         public double GetTotalIncomePerProject(int projectId, DateOnly filterDateFrom, DateOnly filterDateTo)
         {
-            IQueryable<Expense> t = Context.Expense
+            return Context.Expense.TagWithCallSite().TagWith("TotalIncomePerProject-2")
                 .AsNoTracking()
                 .Where(item => item.ProjectId == projectId
                     && item.IsRecent
-                    && item.Catagory == ExpenseType.Income
+                    && item.Category == ExpenseType.Income
                     && (item.ExpenseDate >= filterDateFrom
-                    && item.ExpenseDate <= filterDateTo));
-
-            return t.Any() ? t.Sum(o => o.Amount) : 0;
+                    && item.ExpenseDate <= filterDateTo))
+                .Sum(item => (double?)item.Amount) ?? 0;
         }
-
         public double GetTotalIncomePerProject(int projectId, int phaseId)
         {
-            IQueryable<Expense> t = Context.Expense
+            return Context.Expense.TagWithCallSite().TagWith("TotalIncomePerProject-2")
                 .AsNoTracking()
                 .Include(item => item.Project)
                 .Where(item => item.ProjectId == projectId
                     && item.PhaseId == phaseId
                     && item.IsRecent
-                    && item.Catagory == ExpenseType.Income
-                    && (item.ExpenseDate >= item.Project.ProjectDate));
-
-            return t.Any() ? t.Sum(o => o.Amount) : 0;
+                    && item.Category == ExpenseType.Income
+                    && (item.ExpenseDate >= item.Project.ProjectDate))
+                .Sum(item => (double?)item.Amount) ?? 0;
         }
         public double GetTotalIncomePerProject(int projectId, int phaseId, DateOnly filterDateFrom, DateOnly filterDateTo)
         {
-            IQueryable<Expense> t = Context.Expense
+            return Context.Expense.TagWithCallSite().TagWith("TotalIncomePerProject-4")
                 .AsNoTracking()
                 .Where(item => item.ProjectId == projectId
                     && item.PhaseId == phaseId
                     && item.IsRecent
-                    && item.Catagory == ExpenseType.Income
+                    && item.Category == ExpenseType.Income
                     && (item.ExpenseDate >= filterDateFrom
-                    && item.ExpenseDate <= filterDateTo));
-
-            return t.Any() ? t.Sum(o => o.Amount) : 0;
+                    && item.ExpenseDate <= filterDateTo))
+                .Sum(item => (double?)item.Amount) ?? 0;
         }
         #endregion
 
@@ -243,24 +235,20 @@ namespace TimeClockApp.Services
         {
             ShiftStatus s = ShiftStatus.ClockedOut;
             ShiftStatus p = ShiftStatus.Paid;
-            IQueryable<double> t = Context.TimeCard
+            return Context.TimeCard
                 .AsNoTracking()
                 .Include(item => item.Wages)
                 .Where(item => item.ProjectId == projectId
                     && (item.TimeCard_Status == s
                     || item.TimeCard_Status == p)
                     && item.WagesId.HasValue)
-                .Select(item => item.Wages.TotalWages);
-
-            return t.Any() ? t.Sum(o => o) : 0;
+                .Sum(item => (double?)item.Wages.TotalWages) ?? 0;
         }
-
-        /// <inheritdoc cref="GetTotalWagesPerProject(int)"/>
         public double GetTotalWagesPerProject(int projectId, int phaseId)
         {
             ShiftStatus s = ShiftStatus.ClockedOut;
             ShiftStatus p = ShiftStatus.Paid;
-            IQueryable<double> t = Context.TimeCard
+            return Context.TimeCard
                 .AsNoTracking()
                 .Include(item => item.Wages)
                 .Where(item => item.ProjectId == projectId
@@ -268,17 +256,13 @@ namespace TimeClockApp.Services
                     && (item.TimeCard_Status == s
                     || item.TimeCard_Status == p)
                     && item.WagesId.HasValue)
-                .Select(item => item.Wages.TotalWages);
-
-            return t.Any() ? t.Sum(o => o) : 0;
+                .Sum(item => (double?)item.Wages.TotalWages) ?? 0;
         }
-
-        /// <inheritdoc cref="GetTotalWagesPerProject(int)"/>
         public double GetTotalWagesPerProject(int projectId, DateOnly filterDateFrom, DateOnly filterDateTo)
         {
             ShiftStatus s = ShiftStatus.ClockedOut;
             ShiftStatus p = ShiftStatus.Paid;
-            IQueryable<double> t = Context.TimeCard
+            return Context.TimeCard
                 .AsNoTracking()
                 .Include(item => item.Wages)
                 .Where(item => item.ProjectId == projectId
@@ -287,17 +271,13 @@ namespace TimeClockApp.Services
                     && (item.TimeCard_Status == s
                     || item.TimeCard_Status == p)
                     && item.WagesId.HasValue)
-                .Select(item => item.Wages.TotalWages);
-
-            return t.Any() ? t.Sum(o => o) : 0;
+                .Sum(item => (double?)item.Wages.TotalWages) ?? 0;
         }
-
-        /// <inheritdoc cref="GetTotalWagesPerProject(int)"/>
         public double GetTotalWagesPerProject(int projectId, int phaseId, DateOnly filterDateFrom, DateOnly filterDateTo)
         {
             ShiftStatus s = ShiftStatus.ClockedOut;
             ShiftStatus p = ShiftStatus.Paid;
-            IQueryable<double> t = Context.TimeCard
+            return Context.TimeCard
                 .AsNoTracking()
                 .Include(item => item.Wages)
                 .Where(item => item.ProjectId == projectId
@@ -307,9 +287,7 @@ namespace TimeClockApp.Services
                     && (item.TimeCard_Status == s
                     || item.TimeCard_Status == p)
                     && item.WagesId.HasValue)
-                .Select(item => item.Wages.TotalWages);
-
-            return t.Any() ? t.Sum(o => o) : 0;
+                .Sum(item => (double?)item.Wages.TotalWages) ?? 0;
         }
         #endregion
 
@@ -323,22 +301,20 @@ namespace TimeClockApp.Services
         {
             ShiftStatus s = ShiftStatus.ClockedOut;
             ShiftStatus p = ShiftStatus.Paid;
-            IQueryable<double> t = Context.TimeCard
+            return Context.TimeCard
                 .AsNoTracking()
                 .Include(item => item.Wages)
                 .Where(item => item.ProjectId == projectId
                     && (item.TimeCard_Status == s
                     || item.TimeCard_Status == p)
                     && item.WagesId.HasValue)
-                .Select(item => item.Wages.TotalHours);
-
-            return t.Any() ? t.Sum(o => o) : 0;
+                .Sum(item => (double?)item.Wages.TotalHours) ?? 0;
         }
         public double GetTotalManHoursPerProject(int projectId, int phaseId)
         {
             ShiftStatus s = ShiftStatus.ClockedOut;
             ShiftStatus p = ShiftStatus.Paid;
-            IQueryable<double> t = Context.TimeCard
+            return Context.TimeCard
                 .AsNoTracking()
                 .Include(item => item.Wages)
                 .Where(item => item.ProjectId == projectId
@@ -346,15 +322,13 @@ namespace TimeClockApp.Services
                     && (item.TimeCard_Status == s
                     || item.TimeCard_Status == p)
                     && item.WagesId.HasValue)
-                .Select(item => item.Wages.TotalHours);
-
-            return t.Any() ? t.Sum(o => o) : 0;
+                .Sum(item => (double?)item.Wages.TotalHours) ?? 0;
         }
         public double GetTotalManHoursPerProject(int projectId, DateOnly filterDateFrom, DateOnly filterDateTo)
         {
             ShiftStatus s = ShiftStatus.ClockedOut;
             ShiftStatus p = ShiftStatus.Paid;
-            IQueryable<double> t = Context.TimeCard
+            return Context.TimeCard
                 .AsNoTracking()
                 .Include(item => item.Wages)
                 .Where(item => item.ProjectId == projectId
@@ -363,15 +337,13 @@ namespace TimeClockApp.Services
                     && (item.TimeCard_Status == s
                     || item.TimeCard_Status == p)
                     && item.WagesId.HasValue)
-                .Select(item => item.Wages.TotalHours);
-
-            return t.Any() ? t.Sum(o => o) : 0;
+                .Sum(item => (double?)item.Wages.TotalHours) ?? 0;
         }
         public double GetTotalManHoursPerProject(int projectId, int phaseId, DateOnly filterDateFrom, DateOnly filterDateTo)
         {
             ShiftStatus s = ShiftStatus.ClockedOut;
             ShiftStatus p = ShiftStatus.Paid;
-            IQueryable<double> t = Context.TimeCard
+            return Context.TimeCard
                 .AsNoTracking()
                 .Include(item => item.Wages)
                 .Where(item => item.ProjectId == projectId
@@ -381,119 +353,105 @@ namespace TimeClockApp.Services
                     && (item.TimeCard_Status == s
                     || item.TimeCard_Status == p)
                     && item.WagesId.HasValue)
-                .Select(item => item.Wages.TotalHours);
-
-            return t.Any() ? t.Sum(o => o) : 0;
+                .Sum(item => (double?)item.Wages.TotalHours) ?? 0;
         }
         #endregion
 
         #region ASYNC TOTAL EXPENSES
         public async Task<double> GetTotalExpensesPerProjectAsync(int projectId)
         {
-            IQueryable<Expense> t = Context.Expense
+            return await Context.Expense
                 .AsNoTracking()
                 .Where(item => item.ProjectId == projectId
                     && item.IsRecent
-                    && item.Catagory != ExpenseType.Deleted
-                    && item.Catagory > ExpenseType.Income
-                    && (item.ExpenseDate >= item.Project.ProjectDate));
-
-            return await t.AnyAsync() ? await t.SumAsync(o => o.Amount) : 0;
+                    && item.Category != ExpenseType.Deleted
+                    && item.Category > ExpenseType.Income
+                    && (item.ExpenseDate >= item.Project.ProjectDate))
+                 .SumAsync(item => (double?)item.Amount) ?? 0;
         }
-
         public async Task<double> GetTotalExpensesPerProjectAsync(int projectId, DateOnly filterDateFrom, DateOnly filterDateTo)
         {
-            IQueryable<Expense> t = Context.Expense
+            return await Context.Expense
                 .AsNoTracking()
                 .Where(item => item.ProjectId == projectId
                     && item.IsRecent
-                    && item.Catagory != ExpenseType.Deleted
-                    && item.Catagory > ExpenseType.Income
+                    && item.Category != ExpenseType.Deleted
+                    && item.Category > ExpenseType.Income
                     && (item.ExpenseDate >= filterDateFrom
-                    && item.ExpenseDate <= filterDateTo));
-
-            return await t.AnyAsync() ? await t.SumAsync(o => o.Amount) : 0;
+                    && item.ExpenseDate <= filterDateTo))
+                  .SumAsync(item => (double?)item.Amount) ?? 0;
         }
-
         public async Task<double> GetTotalExpensesPerProjectAsync(int projectId, int phaseId)
         {
-            IQueryable<Expense> t = Context.Expense
+            return await Context.Expense
                 .AsNoTracking()
                 .Where(item => item.ProjectId == projectId
                     && item.PhaseId == phaseId
                     && item.IsRecent
-                    && item.Catagory != ExpenseType.Deleted
-                    && item.Catagory > ExpenseType.Income
-                    && (item.ExpenseDate >= item.Project.ProjectDate));
-
-            return await t.AnyAsync() ? await t.SumAsync(o => o.Amount) : 0;
+                    && item.Category != ExpenseType.Deleted
+                    && item.Category > ExpenseType.Income
+                    && (item.ExpenseDate >= item.Project.ProjectDate))
+               .SumAsync(item => (double?)item.Amount) ?? 0;
         }
         public async Task<double> GetTotalExpensesPerProjectAsync(int projectId, int phaseId, DateOnly filterDateFrom, DateOnly filterDateTo)
         {
-            IQueryable<Expense> t = Context.Expense
+            return await Context.Expense
                 .AsNoTracking()
                 .Where(item => item.ProjectId == projectId
                     && item.PhaseId == phaseId
                     && item.IsRecent
-                    && item.Catagory != ExpenseType.Deleted
-                    && item.Catagory > ExpenseType.Income
+                    && item.Category != ExpenseType.Deleted
+                    && item.Category > ExpenseType.Income
                     && (item.ExpenseDate >= filterDateFrom
-                    && item.ExpenseDate <= filterDateTo));
-
-            return await t.AnyAsync() ? await t.SumAsync(o => o.Amount) : 0;
+                    && item.ExpenseDate <= filterDateTo))
+                .SumAsync(item => (double?)item.Amount) ?? 0;
         }
         #endregion
 
         #region ASYNC TOTAL INCOME
         public async Task<double> GetTotalIncomePerProjectAsync(int projectId)
         {
-            IQueryable<Expense> t = Context.Expense
+            return await Context.Expense.TagWithCallSite().TagWith("async_TotalIncomePerProject-1")
                 .AsNoTracking()
                 .Where(item => item.ProjectId == projectId
                     && item.IsRecent
-                    && item.Catagory == ExpenseType.Income
-                    && (item.ExpenseDate >= item.Project.ProjectDate));
-
-            return await t.AnyAsync() ? await t.SumAsync(o => o.Amount) : 0;
+                    && item.Category == ExpenseType.Income
+                    && (item.ExpenseDate >= item.Project.ProjectDate))
+                .SumAsync(item => (double?)item.Amount) ?? 0;
         }
-
         public async Task<double> GetTotalIncomePerProjectAsync(int projectId, DateOnly filterDateFrom, DateOnly filterDateTo)
         {
-            IQueryable<Expense> t = Context.Expense
+            return await Context.Expense.TagWithCallSite().TagWith("async_TotalIncomePerProject-2")
                 .AsNoTracking()
                 .Where(item => item.ProjectId == projectId
                     && item.IsRecent
-                    && item.Catagory == ExpenseType.Income
+                    && item.Category == ExpenseType.Income
                     && (item.ExpenseDate >= filterDateFrom
-                    && item.ExpenseDate <= filterDateTo));
-
-            return await t.AnyAsync() ? await t.SumAsync(o => o.Amount) : 0;
+                    && item.ExpenseDate <= filterDateTo))
+                .SumAsync(item => (double?)item.Amount) ?? 0;
         }
-
         public async Task<double> GetTotalIncomePerProjectAsync(int projectId, int phaseId)
         {
-            IQueryable<Expense> t = Context.Expense
+            return await Context.Expense.TagWithCallSite().TagWith("async_TotalIncomePerProject-3")
                 .AsNoTracking()
                 .Where(item => item.ProjectId == projectId
                     && item.PhaseId == phaseId
                     && item.IsRecent
-                    && item.Catagory == ExpenseType.Income
-                    && (item.ExpenseDate >= item.Project.ProjectDate));
-
-            return await t.AnyAsync() ? await t.SumAsync(o => o.Amount) : 0;
+                    && item.Category == ExpenseType.Income
+                    && (item.ExpenseDate >= item.Project.ProjectDate))
+                .SumAsync(item => (double?)item.Amount) ?? 0;
         }
         public async Task<double> GetTotalIncomePerProjectAsync(int projectId, int phaseId, DateOnly filterDateFrom, DateOnly filterDateTo)
         {
-            IQueryable<Expense> t = Context.Expense
+            return await Context.Expense.TagWithCallSite().TagWith("async_TotalIncomePerProject-4")
                 .AsNoTracking()
                 .Where(item => item.ProjectId == projectId
                     && item.PhaseId == phaseId
                     && item.IsRecent
-                    && item.Catagory == ExpenseType.Income
+                    && item.Category == ExpenseType.Income
                     && (item.ExpenseDate >= filterDateFrom
-                    && item.ExpenseDate <= filterDateTo));
-
-            return await t.AnyAsync() ? await t.SumAsync(o => o.Amount) : 0;
+                    && item.ExpenseDate <= filterDateTo))
+                .SumAsync(item => (double?)item.Amount) ?? 0;
         }
         #endregion
 
@@ -508,16 +466,14 @@ namespace TimeClockApp.Services
         {
             ShiftStatus s = ShiftStatus.ClockedOut;
             ShiftStatus p = ShiftStatus.Paid;
-            IQueryable<double> t = Context.TimeCard
+            return await Context.TimeCard
                 .AsNoTracking()
                 .Include(item => item.Wages)
                 .Where(item => item.ProjectId == projectId
                     && (item.TimeCard_Status == s
                     || item.TimeCard_Status == p)
                     && item.WagesId.HasValue)
-                .Select(item => item.Wages.TotalWages);
-
-            return await t.AnyAsync() ? await t.SumAsync(o => o) : 0;
+                .SumAsync(item => (double?)item.Wages.TotalWages) ?? 0;
         }
 
         /// <inheritdoc cref="GetTotalWagesPerProject(int)"/>
@@ -525,7 +481,7 @@ namespace TimeClockApp.Services
         {
             ShiftStatus s = ShiftStatus.ClockedOut;
             ShiftStatus p = ShiftStatus.Paid;
-            IQueryable<double> t = Context.TimeCard
+            return await Context.TimeCard
                 .AsNoTracking()
                 .Include(item => item.Wages)
                 .Where(item => item.ProjectId == projectId
@@ -533,9 +489,7 @@ namespace TimeClockApp.Services
                     && (item.TimeCard_Status == s
                     || item.TimeCard_Status == p)
                     && item.WagesId.HasValue)
-                .Select(item => item.Wages.TotalWages);
-
-            return await t.AnyAsync() ? await t.SumAsync(o => o) : 0;
+                .SumAsync(item => (double?)item.Wages.TotalWages) ?? 0;
         }
 
         /// <inheritdoc cref="GetTotalWagesPerProject(int)"/>
@@ -543,7 +497,7 @@ namespace TimeClockApp.Services
         {
             ShiftStatus s = ShiftStatus.ClockedOut;
             ShiftStatus p = ShiftStatus.Paid;
-            IQueryable<double> t = Context.TimeCard
+            return await Context.TimeCard
                 .AsNoTracking()
                 .Include(item => item.Wages)
                 .Where(item => item.ProjectId == projectId
@@ -552,9 +506,7 @@ namespace TimeClockApp.Services
                     && (item.TimeCard_Status == s
                     || item.TimeCard_Status == p)
                     && item.WagesId.HasValue)
-                .Select(item => item.Wages.TotalWages);
-
-            return await t.AnyAsync() ? await t.SumAsync(o => o) : 0;
+                .SumAsync(item => (double?)item.Wages.TotalWages) ?? 0;
         }
 
         /// <inheritdoc cref="GetTotalWagesPerProject(int)"/>
@@ -562,7 +514,7 @@ namespace TimeClockApp.Services
         {
             ShiftStatus s = ShiftStatus.ClockedOut;
             ShiftStatus p = ShiftStatus.Paid;
-            IQueryable<double> t = Context.TimeCard
+            return await Context.TimeCard
                 .AsNoTracking()
                 .Include(item => item.Wages)
                 .Where(item => item.ProjectId == projectId
@@ -572,9 +524,7 @@ namespace TimeClockApp.Services
                     && (item.TimeCard_Status == s
                     || item.TimeCard_Status == p)
                     && item.WagesId.HasValue)
-                .Select(item => item.Wages.TotalWages);
-
-            return await t.AnyAsync() ? await t.SumAsync(o => o) : 0;
+                .SumAsync(item => (double?)item.Wages.TotalWages) ?? 0;
         }
         #endregion
 
@@ -583,22 +533,20 @@ namespace TimeClockApp.Services
         {
             ShiftStatus s = ShiftStatus.ClockedOut;
             ShiftStatus p = ShiftStatus.Paid;
-            IQueryable<double> t = Context.TimeCard
+            return await Context.TimeCard
                 .AsNoTracking()
                 .Include(item => item.Wages)
                 .Where(item => item.ProjectId == projectId
                     && (item.TimeCard_Status == s
                     || item.TimeCard_Status == p)
                     && item.WagesId.HasValue)
-                .Select(item => item.Wages.TotalHours);
-
-            return await t.AnyAsync() ? await t.SumAsync(o => o) : 0;
+                .SumAsync(item => (double?)item.Wages.TotalHours) ?? 0;
         }
         public async Task<double> GetTotalManHoursPerProjectAsync(int projectId, int phaseId)
         {
             ShiftStatus s = ShiftStatus.ClockedOut;
             ShiftStatus p = ShiftStatus.Paid;
-            IQueryable<double> t = Context.TimeCard
+            return await Context.TimeCard
                 .AsNoTracking()
                 .Include(item => item.Wages)
                 .Where(item => item.ProjectId == projectId
@@ -606,15 +554,13 @@ namespace TimeClockApp.Services
                     && (item.TimeCard_Status == s
                     || item.TimeCard_Status == p)
                     && item.WagesId.HasValue)
-                .Select(item => item.Wages.TotalHours);
-
-            return await t.AnyAsync() ? await t.SumAsync(o => o) : 0;
+                .SumAsync(item => (double?)item.Wages.TotalHours) ?? 0;
         }
         public async Task<double> GetTotalManHoursPerProjectAsync(int projectId, DateOnly filterDateFrom, DateOnly filterDateTo)
         {
             ShiftStatus s = ShiftStatus.ClockedOut;
             ShiftStatus p = ShiftStatus.Paid;
-            IQueryable<double> t = Context.TimeCard
+            return await Context.TimeCard
                 .AsNoTracking()
                 .Include(item => item.Wages)
                 .Where(item => item.ProjectId == projectId
@@ -623,16 +569,13 @@ namespace TimeClockApp.Services
                     && (item.TimeCard_Status == s
                     || item.TimeCard_Status == p)
                     && item.WagesId.HasValue)
-                //.Include(item => item.Project)
-                .Select(item => item.Wages.TotalHours);
-
-            return await t.AnyAsync() ? await t.SumAsync(o => o) : 0;
+                .SumAsync(item => (double?)item.Wages.TotalHours) ?? 0;
         }
         public async Task<double> GetTotalManHoursPerProjectAsync(int projectId, int phaseId, DateOnly filterDateFrom, DateOnly filterDateTo)
         {
             ShiftStatus s = ShiftStatus.ClockedOut;
             ShiftStatus p = ShiftStatus.Paid;
-            IQueryable<double> t = Context.TimeCard
+            return await Context.TimeCard
                 .AsNoTracking()
                 .Include(item => item.Wages)
                 .Where(item => item.ProjectId == projectId
@@ -642,9 +585,7 @@ namespace TimeClockApp.Services
                     && (item.TimeCard_Status == s
                     || item.TimeCard_Status == p)
                     && item.WagesId.HasValue)
-                .Select(item => item.Wages.TotalHours);
-
-            return await t.AnyAsync() ? await t.SumAsync(o => o) : 0;
+                .SumAsync(item => (double?)item.Wages.TotalHours) ?? 0;
         }
         #endregion
     }

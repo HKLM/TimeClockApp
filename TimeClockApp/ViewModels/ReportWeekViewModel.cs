@@ -1,14 +1,6 @@
-﻿using System.Collections.ObjectModel;
-
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-
-using TimeClockApp.Models;
-using TimeClockApp.Services;
-
-namespace TimeClockApp.ViewModels
+﻿namespace TimeClockApp.ViewModels
 {
-    public partial class ReportWeekViewModel : TimeStampViewModel
+    public partial class ReportWeekViewModel : TimeStampViewModel, IDisposable
     {
         protected readonly ReportDataService reportData;
         [ObservableProperty]
@@ -81,9 +73,9 @@ namespace TimeClockApp.ViewModels
         [ObservableProperty]
         private bool showFilterOptions = false;
 
-        public ReportWeekViewModel()
+        public ReportWeekViewModel(ReportDataService service)
         {
-            reportData = new();
+            reportData = service;
             ShowFilterOptions = false;
             EndDate = DateTime.Now;
             StartDate = reportData.GetStartOfPayPeriod(DateTime.Now);
@@ -93,15 +85,20 @@ namespace TimeClockApp.ViewModels
         public async Task OnAppearingAsync()
         {
             LoadProjects();
-            await RefreshEmployeesAsync();
-            await RefreshCardsAsync();
+            Task A = RefreshEmployeesAsync();
+            Task B = RefreshCardsAsync();
+            await A;
+            await B;
         }
 
         private async Task RefreshEmployeesAsync()
         {
             EmployeeList ??= new();
             if (EmployeeList.Any() == false || App.NoticeUserHasChanged == true)
-                EmployeeList = await reportData.GetAllEmployeesAsync(false);
+            {
+                Task<ObservableCollection<Employee>> g = reportData.GetEmployeesAsync();
+                EmployeeList = await g;
+            }
         }
 
         private void Refresh_Cards()
@@ -109,47 +106,33 @@ namespace TimeClockApp.ViewModels
             ResetWageItems();
             if (SelectedFilter != null && SelectedFilter.EmployeeId > 0)
             {
-                TimeCards.Clear();
-                WagesList.Clear();
                 if (ShowFilterOptions && SelectedProject != null)
                     (TimeCards, WagesList, OwedWagesList) = reportData.GetReportTimeCardsForEmployee(SelectedFilter.EmployeeId, SelectedProject.ProjectId, DateOnly.FromDateTime(StartDate), DateOnly.FromDateTime(EndDate));
                 else
                     (TimeCards, WagesList, OwedWagesList) = reportData.GetReportTimeCardsForEmployee(SelectedFilter.EmployeeId, DateOnly.FromDateTime(StartDate), DateOnly.FromDateTime(EndDate));
-                if (WagesList != null && WagesList.Any())
-                {
-                    (RegTotalHours, TotalOTHours, TotalOT2Hours, TotalWorkHours) = reportData.GetHours(WagesList.ToList());
-                    (RegTotalPay, TotalOTPay, TotalOT2Pay, TotalGrossPay) = reportData.GetPay(WagesList.ToList());
-                    (_, _, _, TotalOwedGrossPay) = reportData.GetPay(OwedWagesList.ToList());
-                }
+
+                (RegTotalHours, TotalOTHours, TotalOT2Hours, TotalWorkHours) = reportData.GetHours(WagesList.ToList());
+                (RegTotalPay, TotalOTPay, TotalOT2Pay, TotalGrossPay) = reportData.GetPay(WagesList.ToList());
+                (_, _, _, TotalOwedGrossPay) = reportData.GetPay(OwedWagesList.ToList());
             }
         }
 
         [RelayCommand]
         private Task RefreshCardsAsync()
         {
-            return Task.Run(async () =>
+            return Task.Run(() =>
             {
-                ResetWageItems();
-                if (SelectedFilter != null && SelectedFilter.EmployeeId > 0)
-                {
-                    TimeCards.Clear();
-                    WagesList.Clear();
-                    if (ShowFilterOptions && SelectedProject != null)
-                        (TimeCards, WagesList, OwedWagesList) = await reportData.GetReportTimeCardsForEmployeeAsync(SelectedFilter.EmployeeId, SelectedProject.ProjectId, DateOnly.FromDateTime(StartDate), DateOnly.FromDateTime(EndDate));
-                    else
-                        (TimeCards, WagesList, OwedWagesList) = await reportData.GetReportTimeCardsForEmployeeAsync(SelectedFilter.EmployeeId, DateOnly.FromDateTime(StartDate), DateOnly.FromDateTime(EndDate));
-                    if (WagesList != null && WagesList.Any())
-                    {
-                        (RegTotalHours, TotalOTHours, TotalOT2Hours, TotalWorkHours) = reportData.GetHours(WagesList.ToList());
-                        (RegTotalPay, TotalOTPay, TotalOT2Pay, TotalGrossPay) = reportData.GetPay(WagesList.ToList());
-                        (_, _, _, TotalOwedGrossPay) = reportData.GetPay(OwedWagesList.ToList());
-                    }
-                }
+                Refresh_Cards();
+                return Task.CompletedTask;
             });
         }
 
         private void ResetWageItems()
         {
+            TimeCards.Clear();
+            WagesList.Clear();
+            OwedWagesList.Clear();
+
             RegTotalHours = 0;
             TotalOTHours = 0;
             TotalOT2Hours = 0;
@@ -171,8 +154,6 @@ namespace TimeClockApp.ViewModels
         [RelayCommand]
         private async Task LoadTimeCardsAsync()
         {
-            if (IsBusy)
-                return;
             if (DateOnly.FromDateTime(StartDate) > DateOnly.FromDateTime(EndDate))
             {
                 await App.AlertSvc.ShowAlertAsync("VALIDATION ERROR", "StartDate must be before EndDate");
@@ -183,131 +164,63 @@ namespace TimeClockApp.ViewModels
                 await App.AlertSvc.ShowAlertAsync("VALIDATION ERROR", "You must select a employee first");
                 return;
             }
-            IsBusy = true;
 
-            try
-            {
-                await RefreshCardsAsync();
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
-                await App.AlertSvc.ShowAlertAsync("ERROR", ex.Message + "\n" + ex.InnerException);
-                //throw;
-            }
-            finally
-            {
-                IsBusy = false;
-            }
+            Task loadCards = RefreshCardsAsync();
+            await loadCards;
         }
 
         [RelayCommand]
         private async Task MarkPaidAsync(TimeCard card)
         {
-            if (IsBusy || card == null)
+            if (card == null)
                 return;
 
-            IsBusy = true;
-
-            try
+            Task<bool> m = reportData.MarkTimeCardAsPaidAsync(card);
+            if (await m)
             {
-                if (await reportData.MarkTimeCardAsPaidAsync(card))
-                    await RefreshCardsAsync();
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
-                await App.AlertSvc.ShowAlertAsync("ERROR", ex.Message + "\n" + ex.InnerException);
-                //throw;
-            }
-            finally
-            {
-                IsBusy = false;
+                Task refreshed = RefreshCardsAsync();
+                await refreshed;
             }
         }
 
         [RelayCommand]
         private async Task MarkAllPaidAsync()
         {
-            if (IsBusy)
-                return;
-
-            IsBusy = true;
-
-            try
+            foreach (TimeCard item in TimeCards)
             {
-                foreach (TimeCard item in TimeCards)
-                {
-                    if (await reportData.MarkTimeCardAsPaidAsync(item))
-                        System.Diagnostics.Debug.WriteLine("Marked card as paid");
-                }
-                await RefreshCardsAsync();
+                Task<bool> b = reportData.MarkTimeCardAsPaidAsync(item);
+                if (await b)
+                    System.Diagnostics.Debug.WriteLine("Marked card as paid");
             }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
-                await App.AlertSvc.ShowAlertAsync("ERROR", ex.Message + "\n" + ex.InnerException);
-
-                //throw;
-            }
-            finally
-            {
-                IsBusy = false;
-            }
+            Task refreshed = RefreshCardsAsync();
+            await refreshed;
         }
+
 
         [RelayCommand]
         private async Task GetAllUnpaidTimeCards()
         {
-            if (IsBusy)
-                return;
-
             if (SelectedFilter != null && SelectedFilter.EmployeeId > 0)
             {
-                IsBusy = true;
-
-                try
-                {
-                    if (TimeCards.Any())
-                        TimeCards.Clear();
-
-                    (TimeCards, TotalWorkHours) = await reportData.GetAllUnpaidTimeCardsForEmployeeAsync(SelectedFilter.EmployeeId);
-
-                    TotalPaidWorkHours = 0;
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
-                    await App.AlertSvc.ShowAlertAsync("EXCEPTION", ex.Message + "\n" + ex.InnerException);
-                }
-                finally
-                {
-                    IsBusy = false;
-                }
+                ResetWageItems();
+                (TimeCards, WagesList, OwedWagesList) = await reportData.GetAllUnpaidTimeCardsForEmployeeAsync(SelectedFilter.EmployeeId);
+                (RegTotalHours, TotalOTHours, TotalOT2Hours, TotalWorkHours) = reportData.GetHours(WagesList.ToList());
+                (RegTotalPay, TotalOTPay, TotalOT2Pay, TotalGrossPay) = reportData.GetPay(WagesList.ToList());
+                (_, _, _, TotalOwedGrossPay) = reportData.GetPay(OwedWagesList.ToList());
             }
         }
 
         [RelayCommand]
         private async Task ReportClockOut(TimeCard card)
         {
-            if (IsBusy || card == null)
+            if (card == null)
                 return;
 
-            IsBusy = true;
-
-            try
+            Task<bool> b = reportData.EmployeeClockOutAsync(card);
+            if (await b)
             {
-                if (await reportData.EmployeeClockOutAsync(card))
-                    await RefreshCardsAsync();
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
-                await App.AlertSvc.ShowAlertAsync("EXCEPTION", ex.Message + "\n" + ex.InnerException);
-            }
-            finally
-            {
-                IsBusy = false;
+                Task refreshed = RefreshCardsAsync();
+                await refreshed;
             }
         }
 
@@ -332,7 +245,20 @@ namespace TimeClockApp.ViewModels
         [RelayCommand]
         private void OnToggleHelpInfoBox()
         {
-            HelpInfoBoxVisibile = !HelpInfoBoxVisibile;
+            HelpInfoBoxVisible = !HelpInfoBoxVisible;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // TODO: dispose managed state (managed objects)
+                reportData.Dispose();
+            }
+
+            // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+            // TODO: set large fields to null
+            base.Dispose();
         }
     }
 }

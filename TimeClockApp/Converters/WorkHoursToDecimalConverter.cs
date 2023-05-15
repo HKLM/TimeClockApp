@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-
-namespace TimeClockApp.Converters
+﻿namespace TimeClockApp.Converters
 {
     public class WorkHoursToDecimalConverter : IValueConverter
     {

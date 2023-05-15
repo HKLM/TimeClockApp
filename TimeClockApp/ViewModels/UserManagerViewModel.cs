@@ -1,12 +1,4 @@
-﻿using System.Collections.ObjectModel;
-
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-
-using TimeClockApp.Models;
-using TimeClockApp.Services;
-
-namespace TimeClockApp.ViewModels
+﻿namespace TimeClockApp.ViewModels
 {
     public partial class UserManagerViewModel : TimeStampViewModel
     {
@@ -37,14 +29,14 @@ namespace TimeClockApp.ViewModels
         }
 
         [ObservableProperty]
-        private EmploymentStatus isEmployeed;
-        public IReadOnlyList<string> AllCatagory { get; } = Enum.GetNames(typeof(EmploymentStatus));
+        private EmploymentStatus isEmployed;
+        public IReadOnlyList<string> AllCategory { get; } = Enum.GetNames(typeof(EmploymentStatus));
         [ObservableProperty]
         public bool enableSaveDelButton;
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(enable_AddButton))]
+        [NotifyPropertyChangedFor(nameof(Enable_AddButton))]
         public bool enableAddButton;
-        public bool enable_AddButton
+        public bool Enable_AddButton
         {
             get => EnableAddButton;
             set => EnableAddButton = (EmployeeId > 0);
@@ -81,11 +73,6 @@ namespace TimeClockApp.ViewModels
         [RelayCommand]
         private async Task LoadEmployeesAsync()
         {
-            if (IsBusy)
-                return;
-
-            IsBusy = true;
-
             try
             {
                 await RefreshEmployeesAsync(false);
@@ -94,10 +81,6 @@ namespace TimeClockApp.ViewModels
             {
                 System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
                 await App.AlertSvc.ShowAlertAsync("ERROR", ex.Message + "\n" + ex.InnerException);
-            }
-            finally
-            {
-                IsBusy = false;
             }
         }
 
@@ -112,7 +95,7 @@ namespace TimeClockApp.ViewModels
                     JobTitle = e.JobTitle;
                     PayRate = e.Employee_PayRate;
                     EmployeeId = e.EmployeeId;
-                    IsEmployeed = e.Employee_Employed;
+                    IsEmployed = e.Employee_Employed;
                 }
             }
         }
@@ -120,11 +103,6 @@ namespace TimeClockApp.ViewModels
         [RelayCommand]
         private async Task SaveNewEmployeeAsync()
         {
-            if (IsBusy)
-                return;
-
-            IsBusy = true;
-
             try
             {
                 if (EmployeeName != null && EmployeeName != "" && JobTitle != null && JobTitle != "")
@@ -139,20 +117,11 @@ namespace TimeClockApp.ViewModels
                 System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
                 await App.AlertSvc.ShowAlertAsync("ERROR", ex.Message + "\n" + ex.InnerException);
             }
-            finally
-            {
-                IsBusy = false;
-            }
         }
 
         [RelayCommand]
         private async Task FireEmployeeAsync()
         {
-            if (IsBusy)
-                return;
-
-            IsBusy = true;
-
             try
             {
                 if (SelectedEmployee != null)
@@ -169,24 +138,15 @@ namespace TimeClockApp.ViewModels
                 System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
                 await App.AlertSvc.ShowAlertAsync("ERROR", ex.Message + "\n" + ex.InnerException);
             }
-            finally
-            {
-                IsBusy = false;
-            }
         }
 
 
         [RelayCommand]
         private void SaveEditEmployee()
         {
-            if (IsBusy)
-                return;
-
-            IsBusy = true;
-
             try
             {
-                if (EmployeeId > 0 && HRservice.UpdateEmployee(EmployeeId, EmployeeName, PayRate, IsEmployeed))
+                if (EmployeeId > 0 && HRservice.UpdateEmployee(EmployeeId, EmployeeName, PayRate, IsEmployed))
                 {
                     RefreshEmployees(true);
                     App.AlertSvc.ShowAlert("NOTICE", "Saved " + EmployeeName);
@@ -197,16 +157,12 @@ namespace TimeClockApp.ViewModels
                 System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
                 App.AlertSvc.ShowAlert("ERROR", ex.Message + "\n" + ex.InnerException);
             }
-            finally
-            {
-                IsBusy = false;
-            }
         }
 
         [RelayCommand]
         private void OnToggleHelpInfoBox()
         {
-            HelpInfoBoxVisibile = !HelpInfoBoxVisibile;
+            HelpInfoBoxVisible = !HelpInfoBoxVisible;
         }
     }
 }

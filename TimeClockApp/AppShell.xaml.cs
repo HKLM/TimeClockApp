@@ -1,7 +1,5 @@
 ﻿using System.Reflection;
 
-using TimeClockApp.Pages;
-
 namespace TimeClockApp;
 
 [XamlCompilation(XamlCompilationOptions.Compile)]
@@ -17,7 +15,7 @@ public partial class AppShell : Shell
     {
         Routing.RegisterRoute("EditTimeCard", typeof(EditTimeCard));
         Routing.RegisterRoute("ChangeStartTime", typeof(ChangeStartTime));
-        Routing.RegisterRoute("EditExpencePage", typeof(EditExpencePage));
+        Routing.RegisterRoute("EditExpensePage", typeof(EditExpensePage));
         Routing.RegisterRoute("TeamEmployeesPage", typeof(TeamEmployeesPage));
     }
 

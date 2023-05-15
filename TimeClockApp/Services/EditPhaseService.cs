@@ -1,11 +1,8 @@
-﻿using System.Collections.ObjectModel;
-using System.Data;
+﻿using System.Data;
 
 using CommunityToolkit.Maui.Core.Extensions;
 
 using Microsoft.EntityFrameworkCore;
-
-using TimeClockApp.Models;
 
 namespace TimeClockApp.Services
 {
@@ -35,7 +32,7 @@ namespace TimeClockApp.Services
                 return false;
             try
             {
-                Phase p = new Phase(phaseName);
+                Phase p = new(phaseName);
 
                 Context.Add<Phase>(p);
                 return (Context.SaveChanges() > 0);

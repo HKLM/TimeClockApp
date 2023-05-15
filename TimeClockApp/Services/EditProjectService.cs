@@ -1,7 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-using TimeClockApp.Models;
-
 namespace TimeClockApp.Services
 {
     public partial class EditProjectService : TimeCardDataStore
@@ -45,7 +43,7 @@ namespace TimeClockApp.Services
                     }
                 }
 
-                Project p = new Project(projectName);
+                Project p = new(projectName);
                 Context.Add<Project>(p);
                 Context.SaveChanges();
             }

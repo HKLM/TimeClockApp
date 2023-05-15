@@ -344,10 +344,6 @@
 		<Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource DarkMagentaAccent}, Dark={StaticResource DarkMagentaAccent}}" />
 		<Setter Property="IconImageSource" Value="edit_calendar.png" />
 	</Style>
-	<Style Class="SwpieGreen" TargetType="SwipeItem">
-		<Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource DarkGreenAccent}, Dark={StaticResource DarkGreenAccent}}" />
-		<Setter Property="IconImageSource" Value="today_24px.png" />
-	</Style>
 	<!--#endregion-->
 	
 	<!--#region  KEY BASED STYLES -->
@@ -381,12 +377,12 @@
 
 	<Style x:Key="GreenButton" BasedOn="{StaticResource BaseButton}" TargetType="Button">
 		<Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource DarkGreenAccent}, Dark={StaticResource DarkGreenAccent}}" />
-		<Setter Property="ImageSource" Value="play_circle.png" />
+		<Setter Property="ImageSource" Value="play_circle_big.png" />
 	</Style>
 
 	<Style x:Key="RedButton" BasedOn="{StaticResource BaseButton}" TargetType="Button">
 		<Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource FireBrickAccent}, Dark={StaticResource FireBrickAccent}}" />
-		<Setter Property="ImageSource" Value="pause_circle_outline.png" />
+		<Setter Property="ImageSource" Value="pause_circle_outline_big.png" />
 	</Style>
 
 	<Style x:Key="LabelSmall" TargetType="Label">

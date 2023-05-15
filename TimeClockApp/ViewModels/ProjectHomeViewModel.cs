@@ -1,18 +1,10 @@
-﻿using System.Collections.ObjectModel;
-
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-
-using TimeClockApp.Models;
-using TimeClockApp.Services;
-
-#nullable enable
+﻿#nullable enable
 
 namespace TimeClockApp.ViewModels
 {
     public partial class ProjectHomeViewModel : TimeStampViewModel
     {
-        protected ProjectDetailService cardService;
+        protected readonly ProjectDetailService cardService;
 
         [ObservableProperty]
         private ObservableCollection<Project> projectList = new();
@@ -33,7 +25,7 @@ namespace TimeClockApp.ViewModels
 
         #region "DatePicker Min/Max Bindings"
         public DateTime PickerMinDate { get; set; }
-        private DateTime pickerMaxDate = DateTime.Now;
+        protected readonly DateTime pickerMaxDate = DateTime.Now;
         public DateTime PickerMaxDate { get => pickerMaxDate; }
         #endregion
         [ObservableProperty]
@@ -64,12 +56,8 @@ namespace TimeClockApp.ViewModels
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(TotalProject))]
         [NotifyPropertyChangedFor(nameof(TotalEstimatedWComp))]
-        private double total_Wages;
-        public double TotalWages
-        {
-            get => Total_Wages;
-            set => Total_Wages = (value * -1);
-        }
+        private double totalWages;
+        private double SetTotalWages(double wage) => (TotalWages = wage * -1);
 
         [ObservableProperty]
         private double totalProject;
@@ -77,38 +65,27 @@ namespace TimeClockApp.ViewModels
         private double totalProfitLoss;
 
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(TotalProject))]
-        private double totalEstimated_WComp = 0;
-        public double TotalEstimatedWComp
-        {
-            get => TotalEstimated_WComp;
-            set => TotalEstimated_WComp = CalcWorkerComp(value);
-        }
-
-        private double CalcWorkerComp(double wagespaid) => wagespaid != 0 ? (wagespaid / 100) * WorkCompRate : 0;
-
-        private double WorkCompRate = 0;
-
-        [ObservableProperty]
-        private double employerTaxes = 0;
+        private double employerTaxes;
         private double EmployerTaxRate = 0;
 
         [ObservableProperty]
         private double overHeadAmount = 0;
-
         private int OverHeadRate = 0;
 
-        private bool is_Refreshing;
-        public bool IsRefreshing
-        {
-            get { return is_Refreshing; }
-            set { is_Refreshing = value; }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(TotalProject))]
+        private double totalEstimatedWComp = 0;
 
-        public ProjectHomeViewModel()
+        private double CalcWorkerComp(double wagespaid) => wagespaid != 0 ? (wagespaid / 100) * WorkCompRate : 0;
+        private double WorkCompRate = 0;
+
+        [ObservableProperty]
+        private bool isRefreshing;
+
+        public ProjectHomeViewModel(ProjectDetailService service)
         {
-            cardService = new();
-            Total_Wages = 0;
+            cardService = service;
+            TotalWages = 0;
             TotalHours = 0;
             TotalIncome = 0;
             TotalProfitLoss = 0;
@@ -126,11 +103,12 @@ namespace TimeClockApp.ViewModels
             FilterDateStart = FilterDateEnd.AddDays(-7);
         }
 
-        public void OnAppearing()
+        public Task OnAppearingAsync()
         {
             (WorkCompRate, EmployerTaxRate, OverHeadRate) = cardService.GetTaxRates();
             RefreshProjectPhases();
-            LoadDetails();
+            Task ld = LoadDetailsAsync();
+            return ld;
         }
 
         private void RefreshProjectTotal()
@@ -166,16 +144,17 @@ namespace TimeClockApp.ViewModels
             else if (SelectedProject != null && (SelectedPhase == null || SelectedPhase.PhaseId == 0))
             {
                 if (UseFilterDate)
-                    (TotalExpenses, TotalIncome, TotalWages, TotalHours) = cardService.GetProjectDetails(SelectedProject.ProjectId, FilterDateStart, FilterDateEnd);
+                    (TotalExpenses, TotalIncome, TotalWages, TotalHours) = cardService.GetProjectDetails(SelectedProject.ProjectId, null, FilterDateStart, FilterDateEnd);
                 else
                     (TotalExpenses, TotalIncome, TotalWages, TotalHours) = cardService.GetProjectDetails(SelectedProject.ProjectId);
             }
+            SetTotalWages(TotalWages);
             EmployerTaxes = TotalWages * EmployerTaxRate;
-            TotalEstimatedWComp = TotalWages;
+            TotalEstimatedWComp = CalcWorkerComp(TotalWages);
             RefreshProjectTotal();
         }
 
-        private async Task<bool> LoadDetailsAsync()
+        private async Task LoadDetailsAsync()
         {
             if (SelectedProject != null && SelectedPhase != null && SelectedPhase.PhaseId != 0)
             {
@@ -187,40 +166,21 @@ namespace TimeClockApp.ViewModels
             else if (SelectedProject != null && (SelectedPhase == null || SelectedPhase.PhaseId == 0))
             {
                 if (UseFilterDate)
-                    (TotalExpenses, TotalIncome, TotalWages, TotalHours) = await cardService.GetProjectDetailsAsync(SelectedProject.ProjectId, FilterDateStart, FilterDateEnd);
+                    (TotalExpenses, TotalIncome, TotalWages, TotalHours) = await cardService.GetProjectDetailsAsync(SelectedProject.ProjectId, null, FilterDateStart, FilterDateEnd);
                 else
                     (TotalExpenses, TotalIncome, TotalWages, TotalHours) = await cardService.GetProjectDetailsAsync(SelectedProject.ProjectId);
             }
+            SetTotalWages(TotalWages);
             EmployerTaxes = TotalWages * EmployerTaxRate;
-            TotalEstimatedWComp = TotalWages;
-            return true;
+            TotalEstimatedWComp = CalcWorkerComp(TotalWages);
         }
 
         [RelayCommand]
         private async Task RefreshDataAsync()
         {
-            if (IsRefreshing)
-                return;
-
-            IsRefreshing = true;
-
-            try
-            {
-                await Task.Run(async () =>
-                {
-                    if (await LoadDetailsAsync())
-                        RefreshProjectTotal();
-                });
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
-                await App.AlertSvc.ShowAlertAsync("ERROR", ex.Message + "\n" + ex.InnerException);
-            }
-            finally
-            {
-                IsRefreshing = false;
-            }
+            Task load = LoadDetailsAsync();
+            await load;
+            RefreshProjectTotal();
         }
 
         [RelayCommand]
@@ -232,7 +192,20 @@ namespace TimeClockApp.ViewModels
         [RelayCommand]
         private void OnToggleHelpInfoBox()
         {
-            HelpInfoBoxVisibile = !HelpInfoBoxVisibile;
+            HelpInfoBoxVisible = !HelpInfoBoxVisible;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // TODO: dispose managed state (managed objects)
+                cardService.Dispose();
+            }
+
+            // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+            // TODO: set large fields to null
+            base.Dispose();
         }
     }
 }

@@ -1,9 +1,9 @@
 namespace TimeClockApp.Pages;
 
 [XamlCompilation(XamlCompilationOptions.Compile)]
-public partial class EditExpencePage : ContentPage
+public partial class EditExpensePage : ContentPage
 {
-    public EditExpencePage()
+    public EditExpensePage()
     {
         InitializeComponent();
     }

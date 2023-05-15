@@ -1,24 +1,17 @@
-﻿using System.Collections.ObjectModel;
-
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-
-using TimeClockApp.Models;
-using TimeClockApp.Services;
-
-namespace TimeClockApp.ViewModels
+﻿namespace TimeClockApp.ViewModels
 {
     public partial class TeamEmployeesViewModel : TimeStampViewModel
     {
-        protected UserManagerService employeeService;
+        protected readonly UserManagerService employeeService;
 
         [ObservableProperty]
         private ObservableCollection<Employee> employee_List = new();
 
-        public TeamEmployeesViewModel()
+        public TeamEmployeesViewModel(UserManagerService service)
         {
-            employeeService = new();
+            employeeService = service;
         }
+
         public void OnAppearing()
         {
             RefreshEmployeeList();
@@ -36,11 +29,6 @@ namespace TimeClockApp.ViewModels
         [RelayCommand]
         private void SetTeamActive(Employee? employee)
         {
-            if (IsBusy)
-                return;
-
-            IsBusy = true;
-
             try
             {
                 if (employee?.EmployeeId > 0)
@@ -58,20 +46,11 @@ namespace TimeClockApp.ViewModels
                 System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
                 App.AlertSvc.ShowAlert("ERROR", ex.Message + "\n" + ex.InnerException);
             }
-            finally
-            {
-                IsBusy = false;
-            }
         }
 
         [RelayCommand]
         private void SetTeamNotActive(Employee? employee)
         {
-            if (IsBusy)
-                return;
-
-            IsBusy = true;
-
             try
             {
                 if (employee?.EmployeeId > 0)
@@ -89,16 +68,25 @@ namespace TimeClockApp.ViewModels
                 System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
                 App.AlertSvc.ShowAlert("ERROR", ex.Message + "\n" + ex.InnerException);
             }
-            finally
-            {
-                IsBusy = false;
-            }
         }
 
         [RelayCommand]
         private void OnToggleHelpInfoBox()
         {
-            HelpInfoBoxVisibile = !HelpInfoBoxVisibile;
+            HelpInfoBoxVisible = !HelpInfoBoxVisible;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // TODO: dispose managed state (managed objects)
+                employeeService.Dispose();
+            }
+
+            // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+            // TODO: set large fields to null
+            base.Dispose();
         }
     }
 }

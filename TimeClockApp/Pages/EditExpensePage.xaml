@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
-	x:Class="TimeClockApp.Pages.EditExpencePage"
+	x:Class="TimeClockApp.Pages.EditExpensePage"
 	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 	xmlns:Converter="clr-namespace:TimeClockApp.Converters"
@@ -32,7 +32,7 @@
 				Padding="8"
 				CornerRadius="10"
 				HorizontalOptions="FillAndExpand"
-				IsVisible="{Binding HelpInfoBoxVisibile}"
+				IsVisible="{Binding HelpInfoBoxVisible}"
 				VerticalOptions="Center">
 				<Label
 					LineBreakMode="WordWrap"
@@ -67,14 +67,14 @@
 					<Label
 						Grid.Row="2"
 						Style="{StaticResource LabelSmall}"
-						Text="Catagory: "
+						Text="Category: "
 						VerticalTextAlignment="Center" />
 					<Picker
 						Grid.Row="2"
 						Grid.Column="2"
 						HorizontalOptions="Fill"
-						ItemsSource="{Binding AllCatagory}"
-						SelectedIndex="{Binding Catagory, Converter={StaticResource expenseEnumToIntConverter}, Mode=TwoWay}"
+						ItemsSource="{Binding AllCategory}"
+						SelectedIndex="{Binding Category, Converter={StaticResource expenseEnumToIntConverter}, Mode=TwoWay}"
 						VerticalTextAlignment="Center" />
 					<Label
 						Grid.Row="3"

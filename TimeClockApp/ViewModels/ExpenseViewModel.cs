@@ -1,16 +1,8 @@
-﻿using System.Collections.ObjectModel;
-
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-
-using TimeClockApp.Models;
-using TimeClockApp.Services;
-
-namespace TimeClockApp.ViewModels
+﻿namespace TimeClockApp.ViewModels
 {
     public partial class ExpenseViewModel : TimeStampViewModel
     {
-        protected ExpenseService dataService;
+        protected readonly ExpenseService dataService;
 
         [ObservableProperty]
         private Expense expenseItem = new();
@@ -39,8 +31,8 @@ namespace TimeClockApp.ViewModels
         }
 
         [ObservableProperty]
-        private ExpenseType catagory = ExpenseType.Materials;
-        public IReadOnlyList<string> AllCatagory { get; } = Enum.GetNames(typeof(ExpenseType));
+        private ExpenseType category = ExpenseType.Materials;
+        public IReadOnlyList<string> AllCategory { get; } = Enum.GetNames(typeof(ExpenseType));
 
         [ObservableProperty]
         private DateOnly expenseDate;
@@ -58,12 +50,13 @@ namespace TimeClockApp.ViewModels
         private bool showArchived;
         private bool ShowRecent => !ShowArchived;
 
-        public ExpenseViewModel()
+        public ExpenseViewModel(ExpenseService service)
         {
-            dataService = new();
+            dataService = service;
             ShowArchived = false;
             PickerMinDate = dataService.GetAppFirstRunDate();
             pickerMaxDate = DateTime.Now;
+            Category = ExpenseType.Materials;
         }
 
         public void OnAppearing()
@@ -100,10 +93,6 @@ namespace TimeClockApp.ViewModels
         [RelayCommand]
         private async Task RefreshExpenseList()
         {
-            if (IsBusy)
-                return;
-
-            IsBusy = true;
             IsRefreshingList = true;
             try
             {
@@ -116,18 +105,12 @@ namespace TimeClockApp.ViewModels
                 IsRefreshingList = false;
                 await App.AlertSvc.ShowAlertAsync("ERROR", ex.Message + "\n" + ex.InnerException);
             }
-            finally
-            {
-                IsBusy = false;
-            }
             IsRefreshingList = false;
         }
 
         [RelayCommand]
         private async Task AddNewExpenseAsync()
         {
-            if (IsBusy)
-                return;
             if (SelectedProject == null || SelectedProject.ProjectId < 1 || SelectedPhase == null)
                 return;
 
@@ -136,11 +119,10 @@ namespace TimeClockApp.ViewModels
                 await App.AlertSvc.ShowAlertAsync("ERROR", "Amount can not be 0");
                 return;
             }
-            IsBusy = true;
 
             try
             {
-                if (dataService.AddNewExpense(SelectedProject.ProjectId, SelectedPhase.PhaseId, Amount, string.Empty, SelectedProject.Name, SelectedPhase.PhaseTitle, Catagory))
+                if (dataService.AddNewExpense(SelectedProject.ProjectId, SelectedPhase.PhaseId, Amount, string.Empty, SelectedProject.Name, SelectedPhase.PhaseTitle, Category))
                 {
                     await App.AlertSvc.ShowAlertAsync("NOTICE", "Saved");
                     Amount = 0;
@@ -154,19 +136,11 @@ namespace TimeClockApp.ViewModels
                 System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
                 await App.AlertSvc.ShowAlertAsync("ERROR", ex.Message + "\n" + ex.InnerException);
             }
-            finally
-            {
-                IsBusy = false;
-            }
         }
 
         [RelayCommand]
         private void ArchiveExpenseList()
         {
-            if (IsBusy)
-                return;
-
-            IsBusy = true;
             IsRefreshingList = true;
             try
             {
@@ -180,21 +154,12 @@ namespace TimeClockApp.ViewModels
                 IsRefreshingList = false;
                 App.AlertSvc.ShowAlert("ERROR", ex.Message + "\n" + ex.InnerException);
             }
-            finally
-            {
-                IsBusy = false;
-            }
             IsRefreshingList = false;
         }
 
         [RelayCommand]
         private void ToggleShowArchived(bool ToggledValue)
         {
-            if (IsBusy)
-                return;
-
-            IsBusy = true;
-
             try
             {
                 ShowArchived = ToggledValue;
@@ -205,16 +170,25 @@ namespace TimeClockApp.ViewModels
                 System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
                 App.AlertSvc.ShowAlert("ERROR", ex.Message + "\n" + ex.InnerException);
             }
-            finally
-            {
-                IsBusy = false;
-            }
         }
 
         [RelayCommand]
         private void OnToggleHelpInfoBox()
         {
-            HelpInfoBoxVisibile = !HelpInfoBoxVisibile;
+            HelpInfoBoxVisible = !HelpInfoBoxVisible;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // TODO: dispose managed state (managed objects)
+                dataService.Dispose();
+            }
+
+            // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+            // TODO: set large fields to null
+            base.Dispose();
         }
     }
 }

@@ -1,12 +1,8 @@
-﻿using System.Globalization;
-
-using CsvHelper;
+﻿using CsvHelper;
 
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-
-using TimeClockApp.Models;
 
 namespace TimeClockApp.Services
 {
@@ -59,7 +55,7 @@ namespace TimeClockApp.Services
                 //    if (E == "True")
                 //        es = EmploymentStatus.Employed;
                 //    else if (E == "False")
-                //        es = EmploymentStatus.NotEmployeed;
+                //        es = EmploymentStatus.NotEmployed;
                 //    else
                 //        es = (EmploymentStatus)Enum.ToObject(typeof(EmploymentStatus), System.Convert.ToInt32(E));
 
@@ -478,7 +474,7 @@ namespace TimeClockApp.Services
                     updateCard.PhaseId = card.PhaseId;
                     updateCard.Amount = card.Amount;
                     updateCard.Memo = card.Memo;
-                    updateCard.Catagory = card.Catagory;
+                    updateCard.Category = card.Category;
                     updateCard.ExpenseDate = card.ExpenseDate;
                     updateCard.IsRecent = card.IsRecent;
                     updateCard.ExpenseProject = card.ExpenseProject ?? string.Empty;

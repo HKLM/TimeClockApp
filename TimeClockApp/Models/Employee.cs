@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 using CsvHelper.Configuration;
 
@@ -30,8 +29,8 @@ namespace TimeClockApp.Models
         /// <summary>
         /// No longer Employed (Fired, quit, etc)
         /// </summary>
-        [Description("NotEmployeed")]
-        NotEmployeed = 3,
+        [Description("NotEmployed")]
+        NotEmployed = 3,
         /// <summary>
         /// Delete this Employee. Employee will no longer be displayed on any screen.
         /// </summary>
@@ -80,7 +79,7 @@ namespace TimeClockApp.Models
         public double Employee_PayRate { get; set; }
 
         /// <summary>
-        /// Valve determins if this Employee is displayed on the Home TimeCards page.
+        /// Valve determines if this Employee is displayed on the Home TimeCards page.
         /// </summary>
         [Required]
         public EmploymentStatus Employee_Employed { get; set; }

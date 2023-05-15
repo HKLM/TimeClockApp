@@ -1,10 +1,6 @@
-﻿using System.Collections.ObjectModel;
-
-using CommunityToolkit.Maui.Core.Extensions;
+﻿using CommunityToolkit.Maui.Core.Extensions;
 
 using Microsoft.EntityFrameworkCore;
-
-using TimeClockApp.Models;
 
 namespace TimeClockApp.Services
 {
@@ -22,20 +18,20 @@ namespace TimeClockApp.Services
             return Context.Expense
                 .Include(item => item.Project)
                 .Where(item => item.ProjectId == projectId
-                    && item.Catagory != ExpenseType.Deleted
+                    && item.Category != ExpenseType.Deleted
                     && item.IsRecent == showRecent)
                 .OrderByDescending(e => e.ExpenseDate)
                 .ToObservableCollection();
         }
 
-        public bool AddNewExpense(int projectId, int phaseId, double amount, string memo, string projectName, string phaseTitle, ExpenseType catagory = ExpenseType.Materials)
+        public bool AddNewExpense(int projectId, int phaseId, double amount, string memo, string projectName, string phaseTitle, ExpenseType category = ExpenseType.Materials)
         {
             if (projectId == 0) return false;
             //make expenses a negative number
-            if (catagory != ExpenseType.Income)
+            if (category != ExpenseType.Income)
                 amount *= (-1);
 
-            Expense exp = new Expense(projectId, phaseId, amount, DateOnly.FromDateTime(DateTime.Now), projectName, phaseTitle, memo, catagory);
+            Expense exp = new(projectId, phaseId, amount, DateOnly.FromDateTime(DateTime.Now), projectName, phaseTitle, memo, category);
 
             Context.Add<Expense>(exp);
             return (Context.SaveChanges() > 0);
@@ -50,7 +46,7 @@ namespace TimeClockApp.Services
             if (origExpense != null)
             {
                 origExpense.Amount = newExpense.Amount;
-                origExpense.Catagory = newExpense.Catagory;
+                origExpense.Category = newExpense.Category;
                 origExpense.Memo = newExpense.Memo;
                 origExpense.ExpenseDate = newExpense.ExpenseDate;
                 origExpense.ProjectId = newExpense.ProjectId;

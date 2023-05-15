@@ -1,6 +1,4 @@
-﻿using TimeClockApp.Models;
-
-namespace TimeClockApp.Services
+﻿namespace TimeClockApp.Services
 {
     public class UserManagerService : TimeCardDataStore
     {
@@ -11,7 +9,7 @@ namespace TimeClockApp.Services
 
             try
             {
-                Employee p = new Employee(employeeName, payRate, jobTitle);
+                Employee p = new(employeeName, payRate, jobTitle);
 
                 Context.Add<Employee>(p);
                 return (Context.SaveChanges() > 0);
@@ -26,16 +24,7 @@ namespace TimeClockApp.Services
 
         public Employee GetEmployee(int employeeID) => Context.Employee.Find(employeeID);
 
-        //public async Task<ObservableCollection<Employee>> GetAllEmployeeAsync()
-        //{
-        //    List<Employee> e = await Context.Employee
-        //        .Where(e => e.Employee_Employed != EmploymentStatus.Deleted)
-        //        .OrderBy(e => e.Employee_Name)
-        //        .ToListAsync();
-        //    return new ObservableCollection<Employee>(e);
-        //}
-
-        public bool UpdateEmployee(int id, string name, double payRate, EmploymentStatus employeed)
+        public bool UpdateEmployee(int id, string name, double payRate, EmploymentStatus employed)
         {
             if (id == 0)
                 return false;
@@ -45,7 +34,7 @@ namespace TimeClockApp.Services
             {
                 item.Employee_Name = name;
                 item.Employee_PayRate = payRate;
-                item.Employee_Employed = employeed;
+                item.Employee_Employed = employed;
 
                 try
                 {
@@ -73,7 +62,7 @@ namespace TimeClockApp.Services
                 {
                     if (Context.Employee.Count() > 1)
                     {
-                        item.Employee_Employed = EmploymentStatus.NotEmployeed;
+                        item.Employee_Employed = EmploymentStatus.NotEmployed;
                         Context.Update<Employee>(item);
                         return (Context.SaveChanges() > 0);
                     }
@@ -89,11 +78,11 @@ namespace TimeClockApp.Services
             return false;
         }
 
-        public bool UpdateEmploymentStatus(Employee item, EmploymentStatus employeed)
+        public bool UpdateEmploymentStatus(Employee item, EmploymentStatus employed)
         {
             if (item != null)
             {
-                item.Employee_Employed = employeed;
+                item.Employee_Employed = employed;
                 try
                 {
                     Context.Update<Employee>(item);

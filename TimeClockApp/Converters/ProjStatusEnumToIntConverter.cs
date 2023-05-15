@@ -1,8 +1,4 @@
-﻿using System.Globalization;
-
-using TimeClockApp.Models;
-
-namespace TimeClockApp.Converters
+﻿namespace TimeClockApp.Converters
 {
     public class ProjStatusEnumToIntConverter : IValueConverter
     {

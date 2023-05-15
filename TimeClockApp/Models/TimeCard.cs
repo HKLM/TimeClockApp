@@ -1,11 +1,8 @@
 ﻿//#define TIMESTAMP
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 using CsvHelper.Configuration;
-
-using TimeClockApp.Services;
 
 //#nullable enable
 
@@ -65,8 +62,8 @@ namespace TimeClockApp.Models
     /// Record of single continuous amount of time, the employee worked in a single day.
     /// </summary>
     /// <remarks>
-    /// TODO -If breaks are not paid time, end current TimeCard at the begining of break.
-    /// Start a new TimeCard upon end of the break time or add a breaktime collumn
+    /// TODO -If breaks are not paid time, end current TimeCard at the beginning of break.
+    /// Start a new TimeCard upon end of the break time or add a breaktime column
     /// </remarks>
 #if TIMESTAMP
     public partial class TimeCard : BaseEntity
@@ -213,7 +210,7 @@ namespace TimeClockApp.Models
         /// Date of this TimeCard.
         /// </summary>
         /// <remarks>
-        /// Used for display in UI and quicker querys when looking for a Date
+        /// Used for display in UI and quicker queries when looking for a Date
         /// </remarks>
         [Required]
         [Column(TypeName = "date")]
@@ -275,7 +272,7 @@ namespace TimeClockApp.Models
         public double TimeCard_EmployeePayRate { get; set; }
 
         /// <summary>
-        /// When set to TRUE, Permamently prevents all further changes to this TimeCard.
+        /// When set to TRUE, Permanently prevents all further changes to this TimeCard.
         /// </summary>
         [Required]
         public bool TimeCard_bReadOnly { get; set; }
@@ -290,7 +287,7 @@ namespace TimeClockApp.Models
         /// </summary>
         public string PhaseTitle { get; set; } = null;
 
-        //Navagation Entities
+        //Navigation Entities
         public virtual Employee Employee { get; set; }
         public virtual Project Project { get; set; }
         public virtual Phase Phase { get; set; }

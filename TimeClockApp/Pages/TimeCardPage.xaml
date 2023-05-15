@@ -10,9 +10,6 @@
 	x:Name="PageTimeCard"
 	Title="TimeCards"
 	x:DataType="vm:TimeCardPageViewModel">
-	<ContentPage.BindingContext>
-		<vm:TimeCardPageViewModel x:Name="viewModel" />
-	</ContentPage.BindingContext>
 	<ContentPage.ToolbarItems>
 		<ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
 		<ToolbarItem x:Name="TeamPageToolbarButton" IconImageSource="manage_accounts.png" Clicked="TeamPageToolbarButton_Clicked" />
@@ -73,7 +70,8 @@
 							CommandParameter="{Binding}"
 							HorizontalOptions="End"
 							Style="{StaticResource GreenButton}"
-							Text="Start" />
+							Text="Start" 
+							ZIndex="1" />
 						<Label
 							Grid.Row="4"
 							HorizontalOptions="Fill"
@@ -146,7 +144,8 @@
 							CommandParameter="{Binding}"
 							HorizontalOptions="End"
 							Style="{StaticResource RedButton}"
-							Text="End" />
+							Text="End"
+							ZIndex="1" />
 						<Label
 							Grid.Row="4"
 							HorizontalOptions="Fill"
@@ -170,7 +169,7 @@
 					Padding="8"
 					CornerRadius="10"
 					HorizontalOptions="FillAndExpand"
-					IsVisible="{Binding HelpInfoBoxVisibile}"
+					IsVisible="{Binding HelpInfoBoxVisible}"
 					VerticalOptions="Center">
 				<Label
 						LineBreakMode="WordWrap"

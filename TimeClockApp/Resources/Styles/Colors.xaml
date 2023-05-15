@@ -31,7 +31,7 @@
 	<SolidColorBrush x:Key="TertiaryBrush" Color="{StaticResource Tertiary}"/>
 	<SolidColorBrush x:Key="WhiteBrush" Color="{StaticResource White}"/>
 	<SolidColorBrush x:Key="BlackBrush" Color="{StaticResource Black}"/>
-
+	
 	<Color x:Key="Blue100Accent">#3E8EED</Color>
 	<Color x:Key="Blue300Accent">#A7CBF6</Color>
 	<Color x:Key="GoldAccent">#FFD700</Color>

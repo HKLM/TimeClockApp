@@ -1,12 +1,4 @@
-﻿using System.Collections.ObjectModel;
-
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-
-using TimeClockApp.Models;
-using TimeClockApp.Services;
-
-namespace TimeClockApp.ViewModels
+﻿namespace TimeClockApp.ViewModels
 {
     public partial class SettingsPageViewModel : TimeStampViewModel
     {
@@ -30,11 +22,7 @@ namespace TimeClockApp.ViewModels
         [RelayCommand]
         private void SaveSetting(Config? item)
         {
-            if (IsBusy)
-                return;
             if (item == null) return;
-
-            IsBusy = true;
 
             try
             {
@@ -46,20 +34,12 @@ namespace TimeClockApp.ViewModels
                 System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
                 configService.ShowPopupError(ex.Message + "\n" + ex.InnerException, "ERROR");
             }
-            finally
-            {
-                IsBusy = false;
-            }
         }
 
         [RelayCommand]
         private void DisplayHint(Config? item)
         {
-            if (IsBusy)
-                return;
             if (item == null) return;
-
-            IsBusy = true;
 
             try
             {
@@ -70,10 +50,6 @@ namespace TimeClockApp.ViewModels
             {
                 System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
                 configService.ShowPopupError(ex.Message + "\n" + ex.InnerException, "ERROR");
-            }
-            finally
-            {
-                IsBusy = false;
             }
         }
 
@@ -90,9 +66,22 @@ namespace TimeClockApp.ViewModels
         [RelayCommand]
         private void OnToggleHelpInfoBox()
         {
-            HelpInfoBoxVisibile = !HelpInfoBoxVisibile;
-            if (!HelpInfoBoxVisibile)
+            HelpInfoBoxVisible = !HelpInfoBoxVisible;
+            if (!HelpInfoBoxVisible)
                 HelpInfo = string.Empty;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // TODO: dispose managed state (managed objects)
+                configService.Dispose();
+            }
+
+            // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+            // TODO: set large fields to null
+            base.Dispose();
         }
     }
 }

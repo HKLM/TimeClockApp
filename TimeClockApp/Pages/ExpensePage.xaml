@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
-	x:Class="TimeClockApp.Pages.ExpencePage"
+	x:Class="TimeClockApp.Pages.ExpensePage"
 	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 	xmlns:Converter="clr-namespace:TimeClockApp.Converters"
@@ -10,9 +10,6 @@
 	xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
 	Title="Expences"
 	x:DataType="vm:ExpenseViewModel">
-	<ContentPage.BindingContext>
-		<vm:ExpenseViewModel x:Name="viewModel" />
-	</ContentPage.BindingContext>
 	<ContentPage.ToolbarItems>
 		<ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
 		<ToolbarItem
@@ -58,7 +55,7 @@
 							<Label
 								Grid.Column="1"
 								Style="{StaticResource LabelSmall}"
-								Text="{Binding Catagory, StringFormat='{0}'}"
+								Text="{Binding Category, StringFormat='{0}'}"
 								VerticalTextAlignment="Center" />
 							<Label
 								Grid.Column="2"
@@ -81,7 +78,7 @@
 				Padding="8"
 				CornerRadius="10"
 				HorizontalOptions="FillAndExpand"
-				IsVisible="{Binding HelpInfoBoxVisibile}"
+				IsVisible="{Binding HelpInfoBoxVisible}"
 				VerticalOptions="Center">
 				<Label
 					LineBreakMode="WordWrap"
@@ -119,13 +116,13 @@
 					RowDefinitions="Auto,Auto,Auto,Auto">
 					<Label
 						Style="{StaticResource LabelSmall}"
-						Text="Catagory: "
+						Text="Category: "
 						VerticalTextAlignment="Center" />
 					<Picker
 						Grid.Column="2"
 						HorizontalOptions="Fill"
-						ItemsSource="{Binding AllCatagory}"
-						SelectedIndex="{Binding Catagory, Converter={StaticResource expenseEnumToIntConverter}, Mode=TwoWay}"
+						ItemsSource="{Binding AllCategory}"
+						SelectedIndex="{Binding Category, Converter={StaticResource expenseEnumToIntConverter}, Mode=TwoWay}"
 						VerticalTextAlignment="Center" />
 					<Label
 						Grid.Row="1"

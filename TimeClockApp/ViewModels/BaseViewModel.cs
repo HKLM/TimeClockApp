@@ -1,7 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-
-namespace TimeClockApp.ViewModels
+﻿namespace TimeClockApp.ViewModels
 {
-    public abstract partial class BaseViewModel : ObservableValidator
+    public abstract partial class BaseViewModel : ObservableObject
     { }
 }

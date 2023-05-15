@@ -1,16 +1,14 @@
-﻿using System.Collections.ObjectModel;
-using System.Data;
+﻿using System.Data;
 
 using Microsoft.EntityFrameworkCore;
 
 using TimeClockApp.Helpers;
-using TimeClockApp.Models;
 
 namespace TimeClockApp.Services
 {
     public partial class TimeCardService : TimeCardDataStore
     {
-        public async Task<double> GetHourTotalForEmployeecAsync(int employeeId, DateOnly start, DateOnly end)
+        public async Task<double> GetHourTotalForEmployeeAsync(int employeeId, DateOnly start, DateOnly end)
         {
             IQueryable<TimeCard> t = Context.TimeCard
                 .AsNoTracking()
@@ -20,7 +18,7 @@ namespace TimeClockApp.Services
                     && item.TimeCard_Status == ShiftStatus.ClockedOut
                     && !item.TimeCard_bReadOnly);
 
-            return await t.AnyAsync() ? await t.SumAsync(o => o.TimeCard_WorkHours) : 0;
+            return await t.SumAsync(o => (double?)o.TimeCard_WorkHours) ?? 0;
         }
 
 #nullable enable
@@ -46,7 +44,7 @@ namespace TimeClockApp.Services
 
                 if (x != null)
                 {
-                    x.TotalWorkHours = await GetHourTotalForEmployeecAsync(employee.EmployeeId, payrollPeriod, d);
+                    x.TotalWorkHours = await GetHourTotalForEmployeeAsync(employee.EmployeeId, payrollPeriod, d);
                     _timeCards.Add(x);
                 }
                 else
@@ -72,7 +70,8 @@ namespace TimeClockApp.Services
                 };
 
                 Context.Add<TimeCard>(c);
-                return await Context.SaveChangesAsync() != 0;
+                Task<int> saveData = Context.SaveChangesAsync();
+                return await saveData != 0;
             }
             return false;
         }
@@ -82,14 +81,17 @@ namespace TimeClockApp.Services
             if (timeCard != null && timeCard.TimeCardId != 0)
             {
                 TimeCard t = GetTimeCard(timeCard.TimeCardId);
-                if (await ValidateClockOutAsync(t))
+                Task<bool> valClockOut = ValidateClockOutAsync(t);
+                if (await valClockOut)
                 {
                     t.TimeCard_EndTime = TimeHelper.RoundTimeOnly(new TimeOnly(DateTime.Now.Hour, DateTime.Now.Minute));
                     t.TimeCard_Status = ShiftStatus.ClockedOut;
                     Context.Update<TimeCard>(t);
-                    if (await Context.SaveChangesAsync() > 0)
+                    Task<int> saveData = Context.SaveChangesAsync();
+                    if (await saveData > 0)
                     {
-                        return await CalculatePayAsync(t);
+                        Task<bool> calcPay = CalculatePayAsync(t);
+                        return await calcPay;
                     }
                 }
             }
@@ -104,17 +106,6 @@ namespace TimeClockApp.Services
                     && !tc.TimeCard_bReadOnly
                     && tc.TimeCard_Status == ShiftStatus.ClockedIn)
                 .Any();
-        }
-
-        private async Task<bool> IsEmployeeNotOnTheClockAsync(int employeeID)
-        {
-            bool b = await Context.TimeCard
-                .AsNoTracking()
-                .Where(tc => tc.EmployeeId == employeeID
-                    && !tc.TimeCard_bReadOnly
-                    && tc.TimeCard_Status == ShiftStatus.ClockedIn)
-                .AnyAsync();
-            return !b;
         }
     }
 }

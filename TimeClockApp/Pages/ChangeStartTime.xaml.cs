@@ -3,9 +3,12 @@ namespace TimeClockApp.Pages;
 [XamlCompilation(XamlCompilationOptions.Compile)]
 public partial class ChangeStartTime : ContentPage
 {
-    public ChangeStartTime()
+    protected readonly ChangeStartTimeViewModel viewModel;
+
+    public ChangeStartTime(ChangeStartTimeViewModel ViewModel)
     {
         InitializeComponent();
+        BindingContext = viewModel = ViewModel;
     }
 
     protected override void OnAppearing()

@@ -1,19 +1,17 @@
-﻿using System.Collections.ObjectModel;
-using System.Data;
+﻿using System.Data;
 
 using CommunityToolkit.Maui.Core.Extensions;
 
 using Microsoft.EntityFrameworkCore;
 
 using TimeClockApp.Helpers;
-using TimeClockApp.Models;
 
 namespace TimeClockApp.Services
 {
     public class TimeCardDataStore : SqliteDataStore
     {
         /// <summary>
-        /// returns the first previous saturday before the <paramref name="day"/>
+        /// returns the first previous Saturday before the <paramref name="day"/>
         /// </summary>
         /// <param name="day"></param>
         /// <returns></returns>
@@ -81,28 +79,33 @@ namespace TimeClockApp.Services
                 .ToListAsync());
         }
 
-        public ObservableCollection<Employee> GetAllEmployees(bool includeNotEmployeed = false)
+        public ObservableCollection<Employee> GetAllEmployees(bool includeNotEmployed = false)
         {
-            EmploymentStatus es = includeNotEmployeed ? EmploymentStatus.Deleted : EmploymentStatus.NotEmployeed;
+            EmploymentStatus es = includeNotEmployed ? EmploymentStatus.Deleted : EmploymentStatus.NotEmployed;
             return Context.Employee
                 .Where(e => e.Employee_Employed < es)
                 .OrderBy(e => e.Employee_Name)
                 .ToObservableCollection();
         }
 
-        public async Task<ObservableCollection<Employee>> GetAllEmployeesAsync(bool includeNotEmployeed = false)
+        public async Task<ObservableCollection<Employee>> GetAllEmployeesAsync(bool includeNotEmployed = false)
         {
-            EmploymentStatus es = includeNotEmployeed ? EmploymentStatus.Deleted : EmploymentStatus.NotEmployeed;
+            EmploymentStatus es = includeNotEmployed ? EmploymentStatus.Deleted : EmploymentStatus.NotEmployed;
             return new ObservableCollection<Employee>(await Context.Employee
                 .Where(e => e.Employee_Employed < es)
                 .OrderBy(e => e.Employee_Name)
                 .ToListAsync());
         }
 
+        public async Task<ObservableCollection<Employee>> GetEmployeesAsync() => new ObservableCollection<Employee>(await Context.Employee
+                .Where(e => e.Employee_Employed == EmploymentStatus.Employed)
+                .OrderBy(e => e.Employee_Name)
+                .ToListAsync());
+
         public ObservableCollection<Employee> GetEmployeesGroupInStatus()
         {
             return Context.Employee
-                .Where(e => e.Employee_Employed < EmploymentStatus.NotEmployeed)
+                .Where(e => e.Employee_Employed < EmploymentStatus.NotEmployed)
                 .OrderBy(e => e.Employee_Employed)
                 .ThenBy(e => e.Employee_Name)
                 .ToObservableCollection();
@@ -115,10 +118,13 @@ namespace TimeClockApp.Services
 
         public TimeCard GetTimeCard(int timeCardID) => Context.TimeCard.Find(timeCardID);
 
-        internal bool IsTimeCardReadOnly(int timeCardId)
-        {
-            return false; //TODO
-        }
+        /// <summary>
+        /// Checks if the time card has the read only flag set
+        /// </summary>
+        /// <param name="timeCardId">Id of time card to check</param>
+        /// <param name="isAdmin">if IsAdmin is set true, override the ReadOnly flag and allow edits. Defaults to false</param>
+        /// <returns></returns>
+        internal bool IsTimeCardReadOnly(int timeCardId, bool isAdmin = false) => isAdmin ? false : GetTimeCard(timeCardId).TimeCard_bReadOnly;
 
         internal async Task<bool> ValidateClockOutAsync(TimeCard timeCard)
         {
@@ -171,12 +177,10 @@ namespace TimeClockApp.Services
 
         private bool ValidatingClockOutTimes(TimeOnly startTime, TimeOnly endtime) => endtime.CompareTo(startTime) >= 0;
 
-        //private bool ValidatingClockOutDate(ref TimeCard timeCard) => timeCard.TimeCard_Date.CompareTo(DateOnly.FromDateTime(DateTime.Now)) <= 0;
-
         private bool CheckIfTimeIsCloseToNow(TimeOnly clockNowRndTime, TimeOnly timestart)
         {
             TimeSpan timechk = clockNowRndTime - timestart;
-            TimeSpan chkThreshold = new TimeSpan(0, 5, 0);
+            TimeSpan chkThreshold = new(0, 5, 0);
             return timechk < chkThreshold;
         }
 
@@ -311,7 +315,8 @@ namespace TimeClockApp.Services
             {
                 Context.Update<Wages>(w);
             }
-            return await Context.SaveChangesAsync() != 0;
+            Task<int> saved = Context.SaveChangesAsync();
+            return await saved != 0;
         }
 
         public int GetCurrentProject()

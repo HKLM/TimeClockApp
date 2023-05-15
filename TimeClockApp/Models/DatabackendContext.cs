@@ -94,16 +94,13 @@ namespace TimeClockApp.Models
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            if (optionsBuilder != null)
-            {
-                optionsBuilder
+            optionsBuilder?
 #if DEBUG
                     .EnableSensitiveDataLogging(true)
                     .EnableDetailedErrors()
                     .LogTo(Console.WriteLine, LogLevel.Debug)
 #endif
                     .UseSqlite($"Filename={App.SQLiteDBPath}");
-            }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -187,7 +184,7 @@ namespace TimeClockApp.Models
                 ConfigId = 1,
                 Name = "Company",
                 StringValue = "TimeClock App",
-                Hint = "The businuess entity name"
+                Hint = "The business entity name"
             },
             new Config
             {
@@ -271,9 +268,9 @@ namespace TimeClockApp.Models
 
             // Default phase titles that should be created upon the database creation
             string[] phaseTitles = new string[] {".Misc","Cement","Cement-Forms","Framing","Prep-Painting","Painting","Bathroom","Deck","Demo",
-                "Doors/Windows","Drywall","Electrical","Fence","Finish Hardware","Flooring","HVAC","Insulation","Irrigation","Kitchen","Landscaping",
+                "Doors","Windows","Drywall","Electrical","Fence","Finish Hardware","Flooring","HVAC","Insulation","Irrigation","Kitchen","Landscaping",
                 "Plumbing","Siding","Stucco","Stucco-Lath","Subfloor","Tile","Trim/Baseboards","Building Paper","Drywall-Tape+Mud",
-                "Stairs","Data/Comm/AV","Countertop","Excavation","Administrative","Clean Up","Roofing","Masonary/Brick","Dumps","Cabinets",
+                "Stairs","Data/Comm/AV","Countertop","Excavation","Administrative","Clean Up","Roofing","Masonry/Brick","Dumps","Cabinets",
                 "Light Fixtures","Water Heater","Inspection"};
 
             Array.Sort(phaseTitles);

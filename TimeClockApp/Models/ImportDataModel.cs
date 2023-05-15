@@ -29,14 +29,16 @@
 
         public bool IsAnyTrue()
         {
-            List<bool> list = new List<bool>();
-            list.Add(this.bTimeCard);
-            list.Add(this.bWages);
-            list.Add(this.bEmployee);
-            list.Add(this.bPhase);
-            list.Add(this.bProject);
-            list.Add(this.bConfig);
-            list.Add(this.bExpense);
+            List<bool> list = new()
+            {
+                this.bTimeCard,
+                this.bWages,
+                this.bEmployee,
+                this.bPhase,
+                this.bProject,
+                this.bConfig,
+                this.bExpense
+            };
             return list.Find(element => element.Equals(true));
         }
 
@@ -47,42 +49,32 @@
         public int DeleteCachedFile()
         {
             int i = 0;
-            if (File.Exists(FileTimeCard))
-            {
-                File.Delete(FileTimeCard);
+            if (CachedFileCleanUp(FileTimeCard))
                 i++;
-            }
-            if (File.Exists(FileWages))
-            {
-                File.Delete(FileWages);
+            if (CachedFileCleanUp(FileWages))
                 i++;
-            }
-            if (File.Exists(FileEmployee))
-            {
-                File.Delete(FileEmployee);
+            if (CachedFileCleanUp(FileEmployee))
                 i++;
-            }
-            if (File.Exists(FileProject))
-            {
-                File.Delete(FileProject);
+            if (CachedFileCleanUp(FileProject))
                 i++;
-            }
-            if (File.Exists(FilePhase))
-            {
-                File.Delete(FilePhase);
+            if (CachedFileCleanUp(FilePhase))
                 i++;
-            }
-            if (File.Exists(FileConfig))
-            {
-                File.Delete(FileConfig);
+            if (CachedFileCleanUp(FileConfig))
                 i++;
-            }
-            if (File.Exists(FileExpense))
-            {
-                File.Delete(FileExpense);
+            if (CachedFileCleanUp(FileExpense))
                 i++;
-            }
+
             return i;
+        }
+
+        private bool CachedFileCleanUp(string file)
+        {
+            if (File.Exists(file))
+            {
+                File.Delete(file);
+                return true;
+            }
+            return false;
         }
     }
 }

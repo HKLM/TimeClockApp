@@ -3,14 +3,18 @@ namespace TimeClockApp.Pages;
 [XamlCompilation(XamlCompilationOptions.Compile)]
 public partial class ProjectHome : ContentPage
 {
-    public ProjectHome()
+    protected readonly ProjectHomeViewModel viewModel;
+
+    public ProjectHome(ProjectHomeViewModel ViewModel)
     {
         InitializeComponent();
+        BindingContext = viewModel = ViewModel;
     }
 
-    protected override void OnAppearing()
+    protected override async void OnAppearing()
     {
         base.OnAppearing();
-        viewModel.OnAppearing();
+        Task viewmod = viewModel.OnAppearingAsync();
+        await viewmod;
     }
 }

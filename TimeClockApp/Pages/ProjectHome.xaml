@@ -7,9 +7,6 @@
 	xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
 	Title="Project Overview"
 	x:DataType="vm:ProjectHomeViewModel">
-	<ContentPage.BindingContext>
-		<vm:ProjectHomeViewModel x:Name="viewModel" />
-	</ContentPage.BindingContext>
 	<ContentPage.ToolbarItems>
 		<ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
 	</ContentPage.ToolbarItems>
@@ -26,7 +23,7 @@
 					Padding="8"
 					CornerRadius="10"
 					HorizontalOptions="FillAndExpand"
-					IsVisible="{Binding HelpInfoBoxVisibile}"
+					IsVisible="{Binding HelpInfoBoxVisible}"
 					VerticalOptions="Center">
 					<Label
 						LineBreakMode="WordWrap"

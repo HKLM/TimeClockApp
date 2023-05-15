@@ -1,14 +1,6 @@
-﻿using System.Collections.ObjectModel;
-
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-
-using TimeClockApp.Models;
-using TimeClockApp.Services;
-
-namespace TimeClockApp.ViewModels
+﻿namespace TimeClockApp.ViewModels
 {
-    public partial class EditPhaseViewModel : TimeStampViewModel
+    public partial class EditPhaseViewModel : TimeStampViewModel, IDisposable
     {
         protected EditPhaseService phaseService;
         [ObservableProperty]
@@ -30,7 +22,6 @@ namespace TimeClockApp.ViewModels
         public bool EnableAddDelButtons => !string.IsNullOrEmpty(PhaseTitle);
         public bool EnableSaveButton => PhaseId > 0;
 
-
         public EditPhaseViewModel()
         {
             phaseService = new();
@@ -48,22 +39,11 @@ namespace TimeClockApp.ViewModels
 
             PhaseList = phaseService.GetEditPhaseList();
             PhaseTitle = string.Empty;
-
-            //if (SelectedPhase != null)
-            //{
-            //    PhaseId = SelectedPhase.PhaseId;
-            //    PhaseTitle = SelectedPhase.PhaseTitle;
-            //}
         }
 
         [RelayCommand]
         private void SaveNewPhase()
         {
-            if (IsBusy)
-                return;
-
-            IsBusy = true;
-
             try
             {
                 if (PhaseTitle != null && PhaseTitle != "")
@@ -79,20 +59,11 @@ namespace TimeClockApp.ViewModels
                 System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
                 App.AlertSvc.ShowAlert("ERROR", ex.Message + "\n" + ex.InnerException);
             }
-            finally
-            {
-                IsBusy = false;
-            }
         }
 
         [RelayCommand]
         private async Task DeletePhase()
         {
-            if (IsBusy)
-                return;
-
-            IsBusy = true;
-
             try
             {
                 if (SelectedPhase != null)
@@ -112,20 +83,11 @@ namespace TimeClockApp.ViewModels
                 System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
                 await App.AlertSvc.ShowAlertAsync("ERROR", ex.Message + "\n" + ex.InnerException);
             }
-            finally
-            {
-                IsBusy = false;
-            }
         }
 
         [RelayCommand]
         private void SavePhaseEdit()
         {
-            if (IsBusy)
-                return;
-
-            IsBusy = true;
-
             try
             {
                 if (PhaseTitle != null && PhaseTitle != "")
@@ -143,16 +105,25 @@ namespace TimeClockApp.ViewModels
                 System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
                 App.AlertSvc.ShowAlert("ERROR", ex.Message + "\n" + ex.InnerException);
             }
-            finally
-            {
-                IsBusy = false;
-            }
         }
 
         [RelayCommand]
         private void OnToggleHelpInfoBox()
         {
-            HelpInfoBoxVisibile = !HelpInfoBoxVisibile;
+            HelpInfoBoxVisible = !HelpInfoBoxVisible;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // TODO: dispose managed state (managed objects)
+                phaseService.Dispose();
+            }
+
+            // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+            // TODO: set large fields to null
+            base.Dispose();
         }
     }
 }

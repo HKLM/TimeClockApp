@@ -1,8 +1,4 @@
-﻿using System.Collections.ObjectModel;
-
-using CommunityToolkit.Maui.Core.Extensions;
-
-using TimeClockApp.Models;
+﻿using CommunityToolkit.Maui.Core.Extensions;
 
 namespace TimeClockApp.Services
 {

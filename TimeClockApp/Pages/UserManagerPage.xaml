@@ -31,7 +31,7 @@
 				Padding="8"
 				CornerRadius="10"
 				HorizontalOptions="FillAndExpand"
-				IsVisible="{Binding HelpInfoBoxVisibile}"
+				IsVisible="{Binding HelpInfoBoxVisible}"
 				VerticalOptions="Center">
 				<Label
 					LineBreakMode="WordWrap"
@@ -117,8 +117,8 @@
 					<Picker
 						Grid.Row="6"
 						HorizontalOptions="Fill"
-						ItemsSource="{Binding AllCatagory}"
-						SelectedIndex="{Binding IsEmployeed, Converter={StaticResource employmentEnumToIntConverter}, Mode=TwoWay}"
+						ItemsSource="{Binding AllCategory}"
+						SelectedIndex="{Binding IsEmployed, Converter={StaticResource employmentEnumToIntConverter}, Mode=TwoWay}"
 						VerticalTextAlignment="Center" />
 					<BoxView
 						Grid.Row="7"

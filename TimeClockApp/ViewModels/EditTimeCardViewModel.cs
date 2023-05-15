@@ -1,34 +1,30 @@
-﻿using System.Collections.ObjectModel;
-
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-
-using TimeClockApp.Helpers;
-using TimeClockApp.Models;
-using TimeClockApp.Services;
+﻿using TimeClockApp.Helpers;
 
 namespace TimeClockApp.ViewModels
 {
     [QueryProperty("IdTimeCard", "id")]
     public partial class EditTimeCardViewModel : TimeStampViewModel
     {
-        protected EditTimeCardService cardService;
+        protected readonly EditTimeCardService cardService;
         public string IdTimeCard
         {
             set
             {
-                if (value != null)
+                if (value != null
+                    && int.TryParse(Uri.UnescapeDataString(value), out int i))
                 {
-                    if (int.TryParse(Uri.UnescapeDataString(value), out int i))
-                    {
-                        if (i > 0)
-                            TimeCardID = i;
-                    }
+                    if (i > 0)
+                        TimeCardID = i;
                 }
             }
         }
+
         [ObservableProperty]
         private int timeCardID = 0;
+        partial void OnTimeCardIDChanged(int value)
+        {
+            RefreshCard();
+        }
 
         [ObservableProperty]
         private TimeCard timeCardEditing = new();
@@ -83,78 +79,27 @@ namespace TimeClockApp.ViewModels
         private ShiftStatus timeCard_Status = ShiftStatus.NA;
         public IReadOnlyList<string> AllShiftStatus { get; } = Enum.GetNames(typeof(ShiftStatus));
 
-        public EditTimeCardViewModel()
+        public EditTimeCardViewModel(EditTimeCardService service)
         {
-            cardService = new();
-            IsAdmin = IntToBool(cardService.GetConfigInt(9, 0));
+            cardService = service;
         }
 
-        public async Task OnAppearingAsync()
+        public void OnAppearing()
         {
-            ProjectList = await cardService.GetProjectsListAsync();
-            PhaseList = await cardService.GetPhaseListAsync();
             PickerMinDate = cardService.GetAppFirstRunDate();
-            await RefreshCardAsync();
-        }
-
-        [RelayCommand]
-        private async Task LoadTimeCardAsync()
-        {
-            if (IsBusy)
-                return;
-
-            IsBusy = true;
-
-            try
-            {
-                if (TimeCardID > 0)
-                {
-                    if (TimeCardEditing == null || TimeCardEditing.TimeCardId == 0)
-                    {
-                        //should be null only at 1st loading
-                        TimeCardEditing = await cardService.GetTimeCardByIDAsync(TimeCardID);
-                        if (TimeCardEditing == null || TimeCardEditing.TimeCardId == 0) return;
-                    }
-                    if (TimeCardEditing != null && TimeCardEditing.TimeCardId != 0)
-                    {
-                        TimeCard_StartTime = TimeCardEditing.TimeCard_StartTime;
-                        TimeCard_Status = TimeCardEditing.TimeCard_Status;
-                        TimeCard_WorkHours = TimeCardEditing.TimeCard_WorkHours;
-                        TimeCard_bReadOnly = TimeCardEditing.TimeCard_bReadOnly;
-                        TimeCard_Date = TimeCardEditing.TimeCard_Date;
-                        TimeCard_EmployeeName = TimeCardEditing.TimeCard_EmployeeName;
-                        TimeCard_EmployeePayRate = TimeCardEditing.TimeCard_EmployeePayRate;
-                        TimeCardEmployeeId = TimeCardEditing.EmployeeId;
-
-                        TimeCard_EndTime = TimeCardEditing.TimeCard_EndTime;
-                        SelectedProject = await cardService.GetProjectAsync(TimeCardEditing.ProjectId);
-                        SelectedPhase = await cardService.GetPhaseAsync(TimeCardEditing.PhaseId);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
-                await App.AlertSvc.ShowAlertAsync("ERROR", ex.Message + "\n" + ex.InnerException);
-            }
-            finally
-            {
-                IsBusy = false;
-            }
+            IsAdmin = IntToBool(cardService.GetConfigInt(9, 0));
+            RefreshProjectPhases();
+            RefreshCard();
         }
 
         [RelayCommand]
         private async Task SaveTimeCardAsync()
         {
-            if (IsBusy)
-                return;
-
             if (TimeCard_EndTime < TimeCard_StartTime && (TimeCard_EndTime != new TimeOnly()))
             {
                 await App.AlertSvc.ShowAlertAsync("ERROR", "StartTime must be before EndTime.");
                 return;
             }
-            IsBusy = true;
 
             try
             {
@@ -172,29 +117,47 @@ namespace TimeClockApp.ViewModels
                 TimeCardEditing.PhaseTitle = SelectedPhase.PhaseTitle;
                 TimeCardEditing.TimeCard_EndTime = TimeCard_EndTime;
 
-                if (cardService.UpdateTimeCard(TimeCardEditing))
+                if (cardService.UpdateTimeCard(TimeCardEditing, IsAdmin))
                     await App.AlertSvc.ShowAlertAsync("NOTICE", "TimeCard saved");
                 else
                     await App.AlertSvc.ShowAlertAsync("NOTICE", "Failed to save TimeCard");
 
-                await RefreshCardAsync();
+                RefreshCard();
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
                 await App.AlertSvc.ShowAlertAsync("Exception", ex.Message + "\n" + ex.InnerException);
             }
-            finally
+        }
+
+        private void RefreshProjectPhases()
+        {
+            //Only get data from DB once, unless it has been notified that it has changed
+            ProjectList ??= new();
+
+            if (ProjectList.Any() == false || App.NoticeProjectHasChanged == true)
+                ProjectList = cardService.GetProjectsList();
+
+            PhaseList ??= new();
+            if (PhaseList.Any() == false || App.NoticePhaseHasChanged == true)
+                PhaseList = cardService.GetPhaseList();
+
+            if (TimeCardID == 0)
             {
-                IsBusy = false;
+                if (SelectedProject == null || SelectedProject.ProjectId == 0)
+                    SelectedProject = cardService.GetCurrentProjectEntity();
+
+                if (SelectedPhase == null || SelectedPhase.PhaseId == 0)
+                    SelectedPhase = cardService.GetCurrentPhaseEntity();
             }
         }
 
-        private async Task RefreshCardAsync()
+        private void RefreshCard()
         {
             if (TimeCardID > 0)
             {
-                TimeCardEditing = await cardService.GetTimeCardByIDAsync(TimeCardID);
+                TimeCardEditing = cardService.GetTimeCardByID(TimeCardID);
                 if (TimeCardEditing != null)
                 {
                     TimeCard_StartTime = TimeCardEditing.TimeCard_StartTime;
@@ -207,8 +170,8 @@ namespace TimeClockApp.ViewModels
                     TimeCardEmployeeId = TimeCardEditing.EmployeeId;
                     TimeCard_EndTime = TimeCardEditing.TimeCard_EndTime;
 
-                    SelectedProject = await cardService.GetProjectAsync(TimeCardEditing.ProjectId);
-                    SelectedPhase = await cardService.GetPhaseAsync(TimeCardEditing.PhaseId);
+                    SelectedProject = cardService.GetProject(TimeCardEditing.ProjectId);
+                    SelectedPhase = cardService.GetPhase(TimeCardEditing.PhaseId);
                 }
             }
         }
@@ -216,7 +179,20 @@ namespace TimeClockApp.ViewModels
         [RelayCommand]
         private void OnToggleHelpInfoBox()
         {
-            HelpInfoBoxVisibile = !HelpInfoBoxVisibile;
+            HelpInfoBoxVisible = !HelpInfoBoxVisible;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // TODO: dispose managed state (managed objects)
+                cardService.Dispose();
+            }
+
+            // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+            // TODO: set large fields to null
+            base.Dispose();
         }
     }
 }

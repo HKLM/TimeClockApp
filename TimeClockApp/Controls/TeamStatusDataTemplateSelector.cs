@@ -1,6 +1,4 @@
-﻿using TimeClockApp.Models;
-
-namespace TimeClockApp.Controls
+﻿namespace TimeClockApp.Controls
 {
     public partial class TeamStatusDataTemplateSelector : DataTemplateSelector
     {

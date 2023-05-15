@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 using CsvHelper.Configuration;
 
@@ -8,8 +7,6 @@ namespace TimeClockApp.Models
     //TODO move to database table so that user can modify the entries
     public enum ExpenseType
     {
-        [Description("Refund")]
-        Refund = -1,
         [Description("Income")]
         Income = 0,
         [Description("Materials")]
@@ -28,20 +25,22 @@ namespace TimeClockApp.Models
         Permit = 7,
         [Description("Misc")]
         Misc = 8,
+        [Description("Refund")]
+        Refund = 9,
         [Description("Deleted")]
-        Deleted = 20,
+        Deleted = 10
     }
 
     public class Expense : BaseEntity
     {
         public Expense() { }
-        public Expense(int projectId, int phaseId, double amount, DateOnly expenseDate, string projectName = "", string phaseTitle = "", string memo = "", ExpenseType catagory = ExpenseType.Materials)
+        public Expense(int projectId, int phaseId, double amount, DateOnly expenseDate, string projectName = "", string phaseTitle = "", string memo = "", ExpenseType category = ExpenseType.Materials)
         {
             ProjectId = projectId;
             PhaseId = phaseId;
             Memo = memo;
             Amount = amount;
-            Catagory = catagory;
+            Category = category;
             ExpenseDate = expenseDate;
             IsRecent = true;
             ExpenseProject = projectName == "" ? null : projectName;
@@ -79,13 +78,13 @@ namespace TimeClockApp.Models
         public double Amount { get; set; }
 
         /// <summary>
-        /// A way to catagorize expenses
+        /// A way to categorize expenses
         /// </summary>
         [Required]
-        public ExpenseType Catagory { get; set; }
+        public ExpenseType Category { get; set; }
 
         /// <summary>
-        /// When false, this record is consitered archived. No longer actively displayed.
+        /// When false, this record is considered archived. No longer actively displayed.
         /// </summary>
         public bool IsRecent { get; set; }
 
@@ -110,7 +109,7 @@ namespace TimeClockApp.Models
             rv += "ExpenseDate:     " + ExpenseDate.ToString() + Environment.NewLine;
             rv += "Memo:            " + Memo + Environment.NewLine;
             rv += "Amount:          " + Amount.ToString() + Environment.NewLine;
-            rv += "Catagory:        " + Catagory.ToString() + Environment.NewLine;
+            rv += "Category:        " + Category.ToString() + Environment.NewLine;
             rv += "IsRecent:        " + IsRecent.ToString() + Environment.NewLine;
             rv += "ExpenseProject:  " + ExpenseProject + Environment.NewLine;
             rv += "ExpensePhase:    " + ExpensePhase + Environment.NewLine;
@@ -130,7 +129,7 @@ namespace TimeClockApp.Models
             Map(m => m.ExpenseDate);
             Map(m => m.Memo).Optional();
             Map(m => m.Amount);
-            Map(m => m.Catagory);
+            Map(m => m.Category).Name("Category", "Catagory").Default(ExpenseType.Materials);
             Map(m => m.IsRecent);
             Map(m => m.ExpenseProject).Optional();
             Map(m => m.ExpensePhase).Optional();

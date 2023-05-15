@@ -1,11 +1,14 @@
 namespace TimeClockApp.Pages;
 
 [XamlCompilation(XamlCompilationOptions.Compile)]
-public partial class ExpencePage : ContentPage
+public partial class ExpensePage : ContentPage
 {
-    public ExpencePage()
+    protected readonly ExpenseViewModel viewModel;
+
+    public ExpensePage(ExpenseViewModel ViewModel)
     {
         InitializeComponent();
+        BindingContext = this.viewModel = ViewModel;
     }
 
     protected override void OnAppearing()
@@ -21,7 +24,7 @@ public partial class ExpencePage : ContentPage
         {
             if (int.TryParse(swipeItem.CommandParameter.ToString(), out int i))
             {
-                await Shell.Current.GoToAsync($"EditExpencePage?id={i}");
+                await Shell.Current.GoToAsync($"EditExpensePage?id={i}");
                 viewModel.OnAppearing();
             }
         }

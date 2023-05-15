@@ -1,15 +1,7 @@
-﻿using System.Collections.ObjectModel;
-
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-
-using TimeClockApp.Models;
-using TimeClockApp.Services;
-
-namespace TimeClockApp.ViewModels
+﻿namespace TimeClockApp.ViewModels
 {
     [QueryProperty("IdExpense", "id")]
-    public partial class EditExpensePageViewModel : TimeStampViewModel
+    public partial class EditExpensePageViewModel : TimeStampViewModel, IDisposable
     {
         protected ExpenseService dataService;
         public string IdExpense
@@ -44,9 +36,9 @@ namespace TimeClockApp.ViewModels
         private Phase selectedPhase = new();
 
         [ObservableProperty]
-        private ExpenseType catagory = ExpenseType.Materials;
+        private ExpenseType category = ExpenseType.Materials;
 
-        public IReadOnlyList<string> AllCatagory { get; } = Enum.GetNames(typeof(ExpenseType));
+        public IReadOnlyList<string> AllCategory { get; } = Enum.GetNames(typeof(ExpenseType));
 
         [ObservableProperty]
         private DateOnly expenseDate;
@@ -85,7 +77,7 @@ namespace TimeClockApp.ViewModels
                 Amount = ExpenseItem.Amount;
                 Memo = ExpenseItem.Memo;
                 ExpenseDate = ExpenseItem.ExpenseDate;
-                Catagory = ExpenseItem.Catagory;
+                Category = ExpenseItem.Category;
                 SelectedProject = ExpenseItem.Project;
                 SelectedPhase = ExpenseItem.Phase;
             }
@@ -106,20 +98,15 @@ namespace TimeClockApp.ViewModels
         [RelayCommand]
         private async Task EditExpenseAsync()
         {
-            if (IsBusy)
-                return;
-
             if (ExpenseItem == null || ExpenseItem.ExpenseId == 0)
                 return;
-
-            IsBusy = true;
 
             try
             {
                 ExpenseItem.Amount = Amount;
                 ExpenseItem.Memo = Memo;
                 ExpenseItem.ExpenseDate = ExpenseDate;
-                ExpenseItem.Catagory = Catagory;
+                ExpenseItem.Category = Category;
                 ExpenseItem.ProjectId = SelectedProject.ProjectId;
                 ExpenseItem.PhaseId = SelectedPhase.PhaseId;
                 ExpenseItem.ExpenseProject = SelectedProject.Name;
@@ -138,22 +125,13 @@ namespace TimeClockApp.ViewModels
                 System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
                 await App.AlertSvc.ShowAlertAsync("Exception", ex.Message + "\n" + ex.InnerException);
             }
-            finally
-            {
-                IsBusy = false;
-            }
         }
 
         [RelayCommand]
         private async Task DelExpenseAsync()
         {
-            if (IsBusy)
-                return;
-
             if (ExpenseItem == null || ExpenseItem.ExpenseId == 0)
                 return;
-
-            IsBusy = true;
 
             try
             {
@@ -173,16 +151,25 @@ namespace TimeClockApp.ViewModels
                 System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
                 await App.AlertSvc.ShowAlertAsync("Exception", ex.Message + "\n" + ex.InnerException);
             }
-            finally
-            {
-                IsBusy = false;
-            }
         }
 
         [RelayCommand]
         private void OnToggleHelpInfoBox()
         {
-            HelpInfoBoxVisibile = !HelpInfoBoxVisibile;
+            HelpInfoBoxVisible = !HelpInfoBoxVisible;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // TODO: dispose managed state (managed objects)
+                dataService.Dispose();
+            }
+
+            // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+            // TODO: set large fields to null
+            base.Dispose();
         }
     }
 }

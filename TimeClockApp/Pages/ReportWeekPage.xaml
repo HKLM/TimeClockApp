@@ -10,9 +10,6 @@
 	x:Name="PayrollPage"
 	Title="Payroll Report"
 	x:DataType="vm:ReportWeekViewModel">
-	<ContentPage.BindingContext>
-		<vm:ReportWeekViewModel x:Name="viewModel" />
-	</ContentPage.BindingContext>
 	<ContentPage.ToolbarItems>
 		<ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
 		<ToolbarItem Command="{Binding MarkAllPaidCommand}" Text="Mark All Paid" />
@@ -43,11 +40,11 @@
 				<VerticalStackLayout>
 					<Grid
 						ColumnDefinitions="*,*,*,*,88"
-						ColumnSpacing="10"
+						ColumnSpacing="5"
 						RowDefinitions="Auto">
 						<Label
-							Style="{StaticResource LabelPad}"
-							Text="{Binding TimeCard_Date, Converter={StaticResource dateOnlyConverter}, StringFormat='{0:MMM d ddd}'}"
+							Style="{StaticResource LabelMicro}"
+							Text="{Binding TimeCard_Date, Converter={StaticResource dateOnlyConverter}, StringFormat='{0:ddd MMM d}'}"
 							VerticalTextAlignment="Center"
 							LineBreakMode="NoWrap" />
 						<Label
@@ -105,9 +102,9 @@
 				<VerticalStackLayout>
 					<Grid
 						ColumnDefinitions="*,*,*,*,88"
-						ColumnSpacing="10"
+						ColumnSpacing="5"
 						RowDefinitions="Auto">
-						<Label Style="{StaticResource LabelPad}" Text="{Binding TimeCard_Date, Converter={StaticResource dateOnlyConverter}, StringFormat='{0:MMM d ddd}'}" />
+						<Label Style="{StaticResource LabelMicro}" Text="{Binding TimeCard_Date, Converter={StaticResource dateOnlyConverter}, StringFormat='{0:ddd MMM d}'}" />
 						<Label
 							Grid.Column="1"
 							Style="{StaticResource LabelPad}"
@@ -140,11 +137,11 @@
 			<VerticalStackLayout>
 				<Grid
 					ColumnDefinitions="*,*,*,*,88"
-					ColumnSpacing="10"
+					ColumnSpacing="5"
 					RowDefinitions="Auto">
 					<Label 
-						Style="{StaticResource LabelPad}" 
-						Text="{Binding TimeCard_Date, Converter={StaticResource dateOnlyConverter}, StringFormat='{0:MMM d ddd}'}" 
+						Style="{StaticResource LabelMicro}" 
+						Text="{Binding TimeCard_Date, Converter={StaticResource dateOnlyConverter}, StringFormat='{0:ddd MMM d}'}" 
 						LineBreakMode="NoWrap" />
 					<Label
 						Grid.Column="1"
@@ -197,8 +194,8 @@
 						ColumnSpacing="10"
 						RowDefinitions="Auto">
 						<Label
-							Style="{StaticResource LabelPad}"
-							Text="{Binding TimeCard_Date, Converter={StaticResource dateOnlyConverter}, StringFormat='{0:MMM d ddd}'}"
+							Style="{StaticResource LabelMicro}"
+							Text="{Binding TimeCard_Date, Converter={StaticResource dateOnlyConverter}, StringFormat='{0:ddd MMM d}'}"
 							VerticalTextAlignment="Center" 
 							LineBreakMode="NoWrap" />
 						<Label
@@ -272,9 +269,9 @@
 				<VerticalStackLayout>
 					<Grid
 						ColumnDefinitions="*,*,*,*,*,*,88"
-						ColumnSpacing="10"
+						ColumnSpacing="5"
 						RowDefinitions="Auto">
-						<Label Style="{StaticResource LabelPad}" Text="{Binding TimeCard_Date, Converter={StaticResource dateOnlyConverter}, StringFormat='{0:MMM d ddd}'}" />
+						<Label Style="{StaticResource LabelMicro}" Text="{Binding TimeCard_Date, Converter={StaticResource dateOnlyConverter}, StringFormat='{0:ddd MMM d}'}" />
 						<Label
 							Grid.Column="1"
 							Padding="10,0,10,0"
@@ -321,9 +318,9 @@
 			<VerticalStackLayout>
 				<Grid
 					ColumnDefinitions="*,*,*,*,*,*,88"
-					ColumnSpacing="10"
+					ColumnSpacing="5"
 					RowDefinitions="Auto">
-					<Label Style="{StaticResource LabelPad}" Text="{Binding TimeCard_Date, Converter={StaticResource dateOnlyConverter}, StringFormat='{0:MMM d ddd}'}" />
+					<Label Style="{StaticResource LabelMicro}" Text="{Binding TimeCard_Date, Converter={StaticResource dateOnlyConverter}, StringFormat='{0:ddd MMM d}'}" />
 					<Label
 						Grid.Column="1"
 						Padding="10,0,10,0"
@@ -387,7 +384,7 @@
 					Padding="8"
 					CornerRadius="10"
 					HorizontalOptions="FillAndExpand"
-					IsVisible="{Binding HelpInfoBoxVisibile}"
+					IsVisible="{Binding HelpInfoBoxVisible}"
 					VerticalOptions="Center">
 				<Label
 						LineBreakMode="WordWrap"

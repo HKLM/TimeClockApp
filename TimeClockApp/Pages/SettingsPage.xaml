@@ -41,7 +41,10 @@
 
 		<DataTemplate x:Key="stringTemplate">
 			<Grid ColumnDefinitions="200,40,*,40" RowDefinitions="Auto">
-				<Label Text="{Binding Name}" />
+				<Label
+					StyleClass="LabelSmallCenter"
+					Text="{Binding Name}"
+					VerticalTextAlignment="Center" />
 				<ImageButton
 					Grid.Column="1"
 					Command="{Binding Source={x:Reference AppSettingsPage}, Path=BindingContext.DisplayHintCommand}"
@@ -74,7 +77,7 @@
 				Padding="8"
 				CornerRadius="10"
 				HorizontalOptions="FillAndExpand"
-				IsVisible="{Binding HelpInfoBoxVisibile}"
+				IsVisible="{Binding HelpInfoBoxVisible}"
 				VerticalOptions="Center">
 				<Label
 					LineBreakMode="WordWrap"

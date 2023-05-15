@@ -1,12 +1,4 @@
-﻿using System.Collections.ObjectModel;
-
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-
-using TimeClockApp.Models;
-using TimeClockApp.Services;
-
-namespace TimeClockApp.ViewModels
+﻿namespace TimeClockApp.ViewModels
 {
     public partial class EditProjectViewModel : TimeStampViewModel
     {
@@ -80,11 +72,6 @@ namespace TimeClockApp.ViewModels
         [RelayCommand]
         private void SaveNewProject()
         {
-            if (IsBusy)
-                return;
-
-            IsBusy = true;
-
             try
             {
                 if (Name != null && Name != "")
@@ -103,20 +90,11 @@ namespace TimeClockApp.ViewModels
             {
                 System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
             }
-            finally
-            {
-                IsBusy = false;
-            }
         }
 
         [RelayCommand]
         private void DeleteProject()
         {
-            if (IsBusy)
-                return;
-
-            IsBusy = true;
-
             try
             {
                 if (SelectedProject != null && SelectedProject.ProjectId > 1)
@@ -137,20 +115,11 @@ namespace TimeClockApp.ViewModels
             {
                 System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
             }
-            finally
-            {
-                IsBusy = false;
-            }
         }
 
         [RelayCommand]
         private void SaveEditProject()
         {
-            if (IsBusy)
-                return;
-
-            IsBusy = true;
-
             try
             {
                 if (Name != null && Name != "" && ProjectId > 1)
@@ -170,16 +139,25 @@ namespace TimeClockApp.ViewModels
             {
                 System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
             }
-            finally
-            {
-                IsBusy = false;
-            }
         }
 
         [RelayCommand]
         private void OnToggleHelpInfoBox()
         {
-            HelpInfoBoxVisibile = !HelpInfoBoxVisibile;
+            HelpInfoBoxVisible = !HelpInfoBoxVisible;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // TODO: dispose managed state (managed objects)
+                projectService.Dispose();
+            }
+
+            // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+            // TODO: set large fields to null
+            base.Dispose();
         }
     }
 }

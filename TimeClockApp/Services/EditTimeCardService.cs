@@ -1,12 +1,10 @@
-﻿using System.Collections.ObjectModel;
-using System.Data;
+﻿using System.Data;
 
 using CommunityToolkit.Maui.Core.Extensions;
 
 using Microsoft.EntityFrameworkCore;
 
 using TimeClockApp.Helpers;
-using TimeClockApp.Models;
 
 namespace TimeClockApp.Services
 {
@@ -56,12 +54,12 @@ namespace TimeClockApp.Services
             }
         }
 
-        public bool UpdateTimeCard(TimeCard newTimeCard)
+        public bool UpdateTimeCard(TimeCard newTimeCard, bool isAdmin = false)
         {
             if (newTimeCard == null)
                 return false;
 
-            if (IsTimeCardReadOnly(newTimeCard.TimeCardId))
+            if (IsTimeCardReadOnly(newTimeCard.TimeCardId, isAdmin))
                 return false;
 
             TimeCard origTimeCard = Context.TimeCard.Find(newTimeCard.TimeCardId);
