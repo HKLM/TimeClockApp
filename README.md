@@ -6,8 +6,10 @@ Simple app for employer to track employees time cards for payroll use. Supports 
 
 ### Screenshots
 
-| !Screenshot(/images/Screenshot_1.png) | !Screenshot(/images/Screenshot_2.png) |
-| !Screenshot(/images/Screenshot_3.png) | !Screenshot(/images/Screenshot_4.png) |
+| screenshots | screenshots |
+| --- | --- |
+| ![Screenshot 1](/images/Screenshot_1.png) | ![Screenshot 2](/images/Screenshot_2.png) |
+| ![Screenshot 3](/images/Screenshot_3.png) | ![Screenshot 4](/images/Screenshot_4.png) |
 
 ### NOTICE
 
