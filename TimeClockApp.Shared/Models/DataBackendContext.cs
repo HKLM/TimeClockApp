@@ -1,44 +1,78 @@
-﻿#define USESQLITE
-//#define TRIGGER
+﻿//#define TRIGGER
 //#define TIMESTAMP
-
 //#define NEW_DATABASE
 //#define SAVECREATESQL
 
 #if TRIGGER
 using Microsoft.Data.Sqlite;
 #endif
+using System;
+using System.Diagnostics.CodeAnalysis;
+
 using Microsoft.EntityFrameworkCore;
 #if DEBUG
 using Microsoft.Extensions.Logging;
 #endif
+using TimeClockApp.FileHelper;
 
-namespace TimeClockApp.Models
+namespace TimeClockApp.Shared.Models
 {
-    public partial class DatabackendContext : DbContext
+    [RequiresUnreferencedCode("Calls DynamicBehavior.")]
+    public partial class DataBackendContext : DbContext
     {
-        public DatabackendContext()
+        public static bool Initialized { get; protected set; }
+
+        public static bool FirstRun { get; private set; } = true;
+        public static void SetFirstRun(bool IsFirstRun) => FirstRun = IsFirstRun;
+
+        public DataBackendContext()
         {
-            if (App.FirstRun)
-            {
-#if NEW_DATABASE
-                this.Database.EnsureDeleted();
-#endif
-#if USESQLITE
-                if (this.Database.EnsureCreated())
+#if MIGRATION
+            SQLiteSetting.SQLiteDBPath = Path.Combine("../", "BaseTimeClock.db3");
 #else
-                if (File.Exists(App.SQLiteDBPath))
-                    this.Database.Migrate();
-                else
+            SQLiteSetting.SQLiteDBPath = SQLiteSetting.GetSQLiteDBPath();
 #endif
-                    CreateDBTrigger();
+            Initialize();
+        }
+
+        [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+        public DataBackendContext(string _DbFilePath)
+        {
+            SQLiteSetting.SQLiteDBPath = _DbFilePath;
+            Initialize();
+        }
+
+        private void Initialize()
+        {
+            if (!Initialized)
+            {
+                try
+                {
+#if NEW_DATABASE
+                    this.Database.EnsureDeleted();
+#endif
 #if SAVECREATESQL
-                FileHelperService fhs = new();
-                string sqltxt = fhs.GetDBPath("CreateDB.sql");
-                string sql = this.Database.GenerateCreateScript();
-                File.WriteAllText(sqltxt, sql);
+                    FileService fhs = new();
+                    string sqltxt = Path.Combine(fhs.GetDownloadPath(), "CreateDB.sql");
+                    //string sqltxt = fhs.GetDBPath("CreateDB.sql");
+
+                    string sql = this.Database.GenerateCreateScript();
+                    File.WriteAllText(sqltxt, sql);
 #endif
-                App.SetFirstRun(false);
+                    SQLitePCL.Batteries_V2.Init();
+                    Database.Migrate();
+                    CreateDBTrigger();
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException, "DB");
+                    //throw;
+                }
+                finally
+                {
+                    Initialized = true;
+                    SetFirstRun(false);
+                }
             }
         }
 
@@ -47,9 +81,9 @@ namespace TimeClockApp.Models
             int i = 0;
             if (this.Config != null)
             {
-                int z = 2;
+                const int z = 2;
                 Config c = this.Config.Find(z);
-                if (c.StringValue == null || c.StringValue == string.Empty)
+                if (string.IsNullOrEmpty(c.StringValue))
                 {
                     c.StringValue = DateOnly.FromDateTime(DateTime.Now).ToShortDateString();
                     this.Config.Update(c);
@@ -88,9 +122,7 @@ namespace TimeClockApp.Models
         public DbSet<TimeCard> TimeCard { get; set; }
         public DbSet<Phase> Phase { get; set; }
         public DbSet<Config> Config { get; set; }
-        public DbSet<Wages> Wages { get; set; }
         public DbSet<Expense> Expense { get; set; }
-
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -98,9 +130,11 @@ namespace TimeClockApp.Models
 #if DEBUG
                     .EnableSensitiveDataLogging(true)
                     .EnableDetailedErrors()
+#endif
+#if TRACE && DEBUG
                     .LogTo(Console.WriteLine, LogLevel.Debug)
 #endif
-                    .UseSqlite($"Filename={App.SQLiteDBPath}");
+                    .UseSqlite($"Filename={SQLiteSetting.SQLiteDBPath}");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -113,36 +147,37 @@ namespace TimeClockApp.Models
             }
 #endif
 
-            #region ForeignKeys
+#region ForeignKeys
 
             modelBuilder.Entity<TimeCard>()
                 .HasOne(t => t.Employee)
-                .WithMany(e => e.TimeCards)
+                .WithMany(t => t.TimeCards)
                 .HasForeignKey(t => t.EmployeeId);
 
             modelBuilder.Entity<TimeCard>()
                 .HasOne(t => t.Project)
-                .WithMany(e => e.TimeCards)
+                .WithMany(t => t.TimeCards)
                 .HasForeignKey(t => t.ProjectId);
 
             modelBuilder.Entity<TimeCard>()
                 .HasOne(t => t.Phase)
-                .WithMany(e => e.TimeCards)
+                .WithMany(t => t.TimeCards)
                 .HasForeignKey(t => t.PhaseId);
-
-            modelBuilder.Entity<Wages>()
-                .HasOne(t => t.TimeCard)
-                .WithOne(e => e.Wages)
-                .HasForeignKey<TimeCard>(t => t.WagesId);
 
             modelBuilder.Entity<Expense>()
                 .HasOne(t => t.Project)
-                .WithMany(e => e.Expenses)
+                .WithMany(t => t.Expenses)
                 .HasForeignKey(t => t.ProjectId);
 
-            #endregion ForeignKeys
+            modelBuilder.Entity<TimeSheet>()
+                .HasOne(t => t.Employee)
+                .WithMany(t => t.TimeSheets)
+                .HasForeignKey(t => t.EmployeeId)
+                .IsRequired(false);
 
-            #region DefaultValues
+#endregion ForeignKeys
+
+#region DefaultValues
 
             modelBuilder.Entity<Employee>()
                 .Property(b => b.Employee_Employed)
@@ -163,27 +198,29 @@ namespace TimeClockApp.Models
                 .Property(e => e.IsRecent)
                 .HasDefaultValue(true);
 
-            #endregion DefaultValues
+#endregion DefaultValues
 
-            #region Indexs
+#region Indexs
 
             modelBuilder.Entity<TimeCard>()
-                 .HasIndex(b => b.TimeCard_DateTime)
-                 .IsDescending(new bool[] { true })
-                 .HasDatabaseName("IX_TimeCardDateTime");
+                 .HasIndex(b => new { b.EmployeeId, b.TimeCard_Status, b.TimeCard_Date, b.TimeCard_bReadOnly})
+                 .HasDatabaseName("IX_TimeCardEmpStatDateRead");
 
             modelBuilder.Entity<TimeCard>()
                 .Property(t => t.TimeCard_WorkHours)
                 .HasComputedColumnSql("round((strftime('%s', [TimeCard_EndTime]) - strftime('%s', [TimeCard_StartTime])) / 3600.0, 2)", stored: true);
 
-            #endregion Indexs
+            modelBuilder.Entity<TimeSheet>()
+                 .HasIndex(b => new { b.EmployeeId, b.Status, b.PayPeriodWeekNum })
+                 .HasDatabaseName("IX_TimeSheetEmpStatWeek");
 
+#endregion Indexs
 
             modelBuilder.Entity<Config>().HasData(new Config
             {
                 ConfigId = 1,
                 Name = "Company",
-                StringValue = "TimeClock App",
+                StringValue = "Company Name",
                 Hint = "The business entity name"
             },
             new Config
@@ -216,19 +253,19 @@ namespace TimeClockApp.Models
             new Config
             {
                 ConfigId = 6,
-                Name = "EstimateEmployerTaxes", /* TODO */
-                StringValue = "0.1019073159256645"
+                Name = "EstimateEmployerTaxes",
+                StringValue = "0.1019"
             },
             new Config
             {
                 ConfigId = 7,
-                Name = "ProfitRate", /* TODO */
+                Name = "ProfitRate",
                 IntValue = 10
             },
             new Config
             {
                 ConfigId = 8,
-                Name = "OverHeadRate", /* TODO */
+                Name = "OverHeadRate",
                 IntValue = 8
             },
             new Config
@@ -237,24 +274,41 @@ namespace TimeClockApp.Models
                 Name = "IsAdmin",
                 IntValue = 0,
                 Hint = "Enables dangerous timecard edits"
+            },
+            new Config
+            {
+                ConfigId = 10,
+                Name = "DaysInPayPeriod",
+                IntValue = 7,
+                Hint = "Number of Days in a Pay Period (7,14,etc)"
+            },
+            new Config
+            {
+                ConfigId = 11,
+                Name = "PayDayOfWeek",
+                IntValue = 5,
+                Hint = "Day of week that is the end of the pay period (0=Sunday...3=Wednesday...5=Friday,6=Saturday)"
             });
 
-            // Default employees that should be created upon the database creation
-            modelBuilder.Entity<Employee>().HasData(new Employee
-            {
-                EmployeeId = 1,
-                Employee_Name = "Employee 1",
-                Employee_PayRate = 20.00,
-                JobTitle = "Technician",
-                Employee_Employed = EmploymentStatus.Employed
-            }
-            );
+			modelBuilder.Entity<Employee>().HasData(new Employee
+			{
+				EmployeeId = 1,
+				Employee_Name = "John Doe",
+				Employee_PayRate = 20.00,
+				JobTitle = "Job Title",
+				Employee_Employed = EmploymentStatus.Employed
+			},
+			new Employee
+			{
+				EmployeeId = 2,
+				Employee_Name = "Jane Doe",
+				Employee_PayRate = 25.00,
+				JobTitle = "Job Title",
+				Employee_Employed = EmploymentStatus.Employed
+			});
 
             DateOnly date = DateOnly.FromDateTime(DateTime.Now);
-
-            // Default project names that should be created upon the database creation
-            string[] projectNames = new string[] { ".None", "Sample" };
-
+            string[] projectNames = new string[] {".None","Sample" };
             for (int i = 0; i < projectNames.Length; i++)
             {
                 modelBuilder.Entity<Project>().HasData(new Project
@@ -266,14 +320,8 @@ namespace TimeClockApp.Models
                 });
             }
 
-            // Default phase titles that should be created upon the database creation
-            string[] phaseTitles = new string[] {".Misc","Cement","Cement-Forms","Framing","Prep-Painting","Painting","Bathroom","Deck","Demo",
-                "Doors","Windows","Drywall","Electrical","Fence","Finish Hardware","Flooring","HVAC","Insulation","Irrigation","Kitchen","Landscaping",
-                "Plumbing","Siding","Stucco","Stucco-Lath","Subfloor","Tile","Trim/Baseboards","Building Paper","Drywall-Tape+Mud",
-                "Stairs","Data/Comm/AV","Countertop","Excavation","Administrative","Clean Up","Roofing","Masonry/Brick","Dumps","Cabinets",
-                "Light Fixtures","Water Heater","Inspection"};
-
-            Array.Sort(phaseTitles);
+            string[] phaseTitles = new string[] { ".Misc", "Phase 1", "Phase 2", "Phase 3", "Office Work" };
+			Array.Sort(phaseTitles);
             for (int i = 0; i < phaseTitles.Length; i++)
             {
                 modelBuilder.Entity<Phase>().HasData(new Phase
@@ -324,13 +372,13 @@ namespace TimeClockApp.Models
         /// <returns>DateTime.UtcNow of DateTimeKind.Utc</returns>
         public static DateTime GetUTC()
         {
-            return DateTime.UtcNow;
+            return DateTime.Now;
         }
 
         private void OnBeforeSaving()
         {
             IEnumerable<Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry> entries = ChangeTracker.Entries();
-            DateTime utcNow = GetUTC();
+            DateTime utcNow = DateTime.Now;
 
             foreach (var entry in entries)
             {

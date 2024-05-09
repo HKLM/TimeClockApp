@@ -1,13 +1,13 @@
 namespace TimeClockApp.Pages;
 
 [XamlCompilation(XamlCompilationOptions.Compile)]
-public partial class ReportWeekPage : ContentPage
+public partial class PayrollDetailPage : ContentPage
 {
-    protected readonly ReportWeekViewModel viewModel;
+    protected readonly PayrollDetailViewModel viewModel;
     private double _width = 0;
     private double _height = 0;
 
-    public ReportWeekPage(ReportWeekViewModel ViewModel)
+    public PayrollDetailPage(PayrollDetailViewModel ViewModel)
     {
         InitializeComponent();
         BindingContext = viewModel = ViewModel;
@@ -16,8 +16,9 @@ public partial class ReportWeekPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        Task viewmod = viewModel.OnAppearingAsync();
-        await viewmod;
+
+        await viewModel.OnAppearing();
+
         _width = this.Width;
         _height = this.Height;
         if (_width != 0)
@@ -31,25 +32,9 @@ public partial class ReportWeekPage : ContentPage
         SwipeItem swipeItem = (SwipeItem)sender;
         if (swipeItem != null)
         {
-            if (int.TryParse(swipeItem.CommandParameter.ToString(), out int i))
+            if (int.TryParse(swipeItem.CommandParameter!.ToString(), out int i))
             {
                 await Shell.Current.GoToAsync($"EditTimeCard?id={i}");
-                if (!viewModel.RefreshCardsCommand.IsRunning)
-                    await viewModel.RefreshCardsCommand.ExecuteAsync(null);
-            }
-        }
-    }
-
-    private async void SwipeChangeTime_Clicked(object sender, EventArgs e)
-    {
-        SwipeItem swipeItem = (SwipeItem)sender;
-        if (swipeItem != null)
-        {
-            if (int.TryParse(swipeItem.CommandParameter.ToString(), out int i))
-            {
-                await Shell.Current.GoToAsync($"ChangeStartTime?id={i}");
-                if (!viewModel.RefreshCardsCommand.IsRunning)
-                    await viewModel.RefreshCardsCommand.ExecuteAsync(null);
             }
         }
     }

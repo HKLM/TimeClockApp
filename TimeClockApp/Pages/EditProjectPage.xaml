@@ -4,7 +4,7 @@
 	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 	xmlns:Converter="clr-namespace:TimeClockApp.Converters"
-	xmlns:models="clr-namespace:TimeClockApp.Models"
+	xmlns:models="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
 	xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
 	Title="Projects Manager"
 	x:DataType="vm:EditProjectViewModel">

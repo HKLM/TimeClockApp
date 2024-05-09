@@ -1,0 +1,488 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="TimeClockApp.Pages.PayrollDetailPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:controls="clr-namespace:TimeClockApp.Controls"
+    xmlns:converter="clr-namespace:TimeClockApp.Converters"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
+    x:Name="PayrollDetail"
+    Title="Payroll Details">
+    <ContentPage.Behaviors>
+        <toolkit:EventToCommandBehavior Command="{Binding InitCommand}" EventName="Loaded" />
+    </ContentPage.Behaviors>
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
+        <ToolbarItem Command="{Binding MarkAllPaidCommand}" Text="Mark All Paid" />
+    </ContentPage.ToolbarItems>
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converter:TimeOnlyConverter x:Key="timeOnlyConverter" />
+            <converter:DateOnlyConverter x:Key="dateOnlyConverter" />
+            <converter:ReverseBoolConverter x:Key="reverseBoolConverter" />
+        </ResourceDictionary>
+
+        <!--
+            PORTRAIT MODE
+        -->
+        <DataTemplate x:Key="unpaidTemplate">
+            <SwipeView>
+                <SwipeView.LeftItems>
+                    <SwipeItems>
+                        <SwipeItem
+                            Clicked="SwipeEdit_Clicked"
+                            CommandParameter="{Binding TimeCardId}"
+                            StyleClass="SwpieOrange" Text="Edit Card" />
+                    </SwipeItems>
+                </SwipeView.LeftItems>
+
+                <VerticalStackLayout>
+                    <Grid ColumnDefinitions="65,73,73,40,Auto" ColumnSpacing="3" RowDefinitions="Auto">
+                        <Label
+                            LineBreakMode="NoWrap"
+                            Style="{StaticResource LabelMicro}"
+                            Text="{Binding TimeCard_Date, Converter={StaticResource dateOnlyConverter}, StringFormat='{0:ddd MMM d}'}"
+                            VerticalTextAlignment="Center" />
+                        <Label
+                            Grid.Column="1"
+                            LineBreakMode="NoWrap"
+                            Style="{StaticResource LabelPadCenter}"
+                            Text="{Binding TimeCard_StartTime, Converter={StaticResource timeOnlyConverter}}" />
+                        <Label
+                            Grid.Column="2"
+                            LineBreakMode="NoWrap"
+                            Style="{StaticResource LabelPadCenter}"
+                            Text="{Binding TimeCard_EndTime, Converter={StaticResource timeOnlyConverter}}" />
+                        <Label
+                            Grid.Column="3"
+                            LineBreakMode="NoWrap"
+                            Style="{StaticResource LabelPadCenter}"
+                            Text="{Binding TimeCard_WorkHours, StringFormat='{0:F2}'}" />
+                        <Button
+                            Grid.Column="4"
+                            Command="{Binding Source={x:Reference PayrollDetail}, Path=BindingContext.MarkPaidCommand}"
+                            CommandParameter="{Binding}"
+                            IsEnabled="{Binding TimeCard_bReadOnly, Converter={StaticResource reverseBoolConverter}}"
+                            Style="{StaticResource ReportButton}"
+                            Text="MarkPaid" />
+                    </Grid>
+                </VerticalStackLayout>
+            </SwipeView>
+        </DataTemplate>
+
+        <DataTemplate x:Key="onClockTemplate">
+            <SwipeView>
+                <SwipeView.LeftItems>
+                    <SwipeItems>
+                        <SwipeItem
+                            Clicked="SwipeEdit_Clicked"
+                            CommandParameter="{Binding TimeCardId}"
+                            StyleClass="SwpieGold" Text="Edit Start Time" />
+                    </SwipeItems>
+                </SwipeView.LeftItems>
+                <VerticalStackLayout>
+                    <Grid ColumnDefinitions="65,73,73,40,Auto" ColumnSpacing="3" RowDefinitions="Auto">
+                        <Label 
+                            Style="{StaticResource LabelMicro}" 
+                            Text="{Binding TimeCard_Date, Converter={StaticResource dateOnlyConverter}, StringFormat='{0:ddd MMM d}'}"
+                            VerticalTextAlignment="Center" />
+                        <Label
+                            Grid.Column="1"
+                            LineBreakMode="NoWrap"
+                            Style="{StaticResource LabelPadCenter}"
+                            Text="{Binding TimeCard_StartTime, Converter={StaticResource timeOnlyConverter}}"
+                            VerticalTextAlignment="Center" />
+                        <Label
+                            Grid.Column="2"
+                            LineBreakMode="NoWrap"
+                            Style="{StaticResource LabelPadCenter}"
+                            Text="--"
+                            VerticalTextAlignment="Center" />
+                        <Label
+                            Grid.Column="3"
+                            LineBreakMode="NoWrap"
+                            Style="{StaticResource LabelPadCenter}"
+                            Text="--"
+                            VerticalTextAlignment="Center" />
+                        <Button
+                            Grid.Column="4"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource DarkGreenAccent}, Dark={StaticResource DarkGreenAccent}}"
+                            Command="{Binding Source={x:Reference PayrollDetail}, Path=BindingContext.ReportClockOutCommand}"
+                            CommandParameter="{Binding}"
+                            Style="{StaticResource ReportButton}"
+                            Text="{Binding TimeCard_Status, StringFormat='{0}'}" />
+                    </Grid>
+                </VerticalStackLayout>
+            </SwipeView>
+        </DataTemplate>
+
+        <DataTemplate x:Key="paidTemplate">
+            <VerticalStackLayout>
+                <Grid ColumnDefinitions="65,73,73,40,Auto" ColumnSpacing="3" RowDefinitions="Auto">
+                    <Label LineBreakMode="NoWrap"
+                           Style="{StaticResource LabelMicro}"
+                           Text="{Binding TimeCard_Date, Converter={StaticResource dateOnlyConverter}, StringFormat='{0:ddd MMM d}'}"
+                           VerticalTextAlignment="Center" />
+                    <Label
+                        Grid.Column="1"
+                        LineBreakMode="NoWrap"
+                        Style="{StaticResource LabelPadCenter}"
+                        Text="{Binding TimeCard_StartTime, Converter={StaticResource timeOnlyConverter}}" />
+                    <Label
+                        Grid.Column="2"
+                        LineBreakMode="NoWrap"
+                        Style="{StaticResource LabelPadCenter}"
+                        Text="{Binding TimeCard_EndTime, Converter={StaticResource timeOnlyConverter}}" />
+                    <Label
+                        Grid.Column="3"
+                        LineBreakMode="NoWrap"
+                        Style="{StaticResource LabelPadCenter}"
+                        Text="{Binding TimeCard_WorkHours, StringFormat='{0:F2}'}" />
+                    <Button
+                        Grid.Column="4"
+                        IsEnabled="False"
+                        Style="{StaticResource ReportButton}"
+                        Text="{Binding TimeCard_Status, StringFormat='{0}'}"
+                        Padding="26,14" />
+
+                </Grid>
+            </VerticalStackLayout>
+        </DataTemplate>
+        <!--  END PORTRAIT MODE  -->
+
+        <!--
+            LANDSCAPE MODE
+        -->
+        <DataTemplate x:Key="landUnpaidTemplate">
+            <SwipeView>
+                <SwipeView.LeftItems>
+                    <SwipeItems>
+                        <SwipeItem
+                            Clicked="SwipeEdit_Clicked"
+                            CommandParameter="{Binding TimeCardId}"
+                            StyleClass="SwpieOrange" Text="Edit Card" />
+                    </SwipeItems>
+                </SwipeView.LeftItems>
+
+                <VerticalStackLayout>
+                    <Grid ColumnDefinitions="65,80,80,80,80,60,*" ColumnSpacing="5" RowDefinitions="Auto">
+                        <Label
+                            LineBreakMode="NoWrap"
+                            Style="{StaticResource LabelMicro}"
+                            Text="{Binding TimeCard_Date, Converter={StaticResource dateOnlyConverter}, StringFormat='{0:ddd MMM d}'}"
+                            VerticalTextAlignment="Center" />
+                        <Label
+                            Grid.Column="1"
+                            Padding="10,0,10,0"
+                            HorizontalTextAlignment="Start" LineBreakMode="NoWrap"
+                            Style="{StaticResource LabelMicro}"
+                            Text="{Binding ProjectName}"
+                            VerticalTextAlignment="Center" />
+                        <Label
+                            Grid.Column="2"
+                            Padding="10,0,10,0"
+                            HorizontalTextAlignment="Start" LineBreakMode="NoWrap"
+                            Style="{StaticResource LabelMicro}"
+                            Text="{Binding PhaseTitle}"
+                            VerticalTextAlignment="Center" />
+                        <Label
+                            Grid.Column="3"
+                            LineBreakMode="NoWrap"
+                            Style="{StaticResource LabelPad_HStart}"
+                            Text="{Binding TimeCard_StartTime, Converter={StaticResource timeOnlyConverter}}" />
+                        <Label
+                            Grid.Column="4"
+                            LineBreakMode="NoWrap"
+                            Style="{StaticResource LabelPad_HStart}"
+                            Text="{Binding TimeCard_EndTime, Converter={StaticResource timeOnlyConverter}}" />
+                        <Label
+                            Grid.Column="5"
+                            LineBreakMode="NoWrap"
+                            Style="{StaticResource LabelPad_HStart}"
+                            Text="{Binding TimeCard_WorkHours, StringFormat='{0:F2}'}" />
+                        <Button
+                            Grid.Column="6"
+                            Command="{Binding Source={x:Reference PayrollDetail}, Path=BindingContext.MarkPaidCommand}"
+                            CommandParameter="{Binding}"
+                            IsEnabled="{Binding TimeCard_bReadOnly, Converter={StaticResource reverseBoolConverter}}"
+                            Style="{StaticResource ReportButton}"
+                            Text="MarkPaid" />
+                    </Grid>
+                </VerticalStackLayout>
+            </SwipeView>
+        </DataTemplate>
+
+        <DataTemplate x:Key="landOnClockTemplate">
+            <SwipeView>
+                <SwipeView.LeftItems>
+                    <SwipeItems>
+                        <SwipeItem
+                            Clicked="SwipeEdit_Clicked"
+                            CommandParameter="{Binding TimeCardId}"
+                            StyleClass="SwpieGold" Text="Edit Start Time" />
+                    </SwipeItems>
+                </SwipeView.LeftItems>
+                <VerticalStackLayout>
+                    <Grid ColumnDefinitions="65,80,80,80,80,60,*" ColumnSpacing="5" RowDefinitions="Auto">
+                        <Label 
+                            Style="{StaticResource LabelMicro}" 
+                            Text="{Binding TimeCard_Date, Converter={StaticResource dateOnlyConverter}, StringFormat='{0:ddd MMM d}'}"
+                            VerticalTextAlignment="Center" />
+                        <Label
+                            Grid.Column="1"
+                            Padding="10,0,10,0"
+                            HorizontalTextAlignment="Start"
+                            Style="{StaticResource LabelMicro}"
+                            Text="{Binding ProjectName}"
+                            VerticalTextAlignment="Center" />
+                        <Label
+                            Grid.Column="2"
+                            Padding="10,0,10,0"
+                            HorizontalTextAlignment="Start"
+                            Style="{StaticResource LabelMicro}"
+                            Text="{Binding PhaseTitle}"
+                            VerticalTextAlignment="Center" />
+                        <Label
+                            Grid.Column="3"
+                            LineBreakMode="NoWrap"
+                            Style="{StaticResource LabelPad_HStart}"
+                            Text="{Binding TimeCard_StartTime, Converter={StaticResource timeOnlyConverter}}" />
+                        <Label
+                            Grid.Column="4"
+                            LineBreakMode="NoWrap"
+                            Style="{StaticResource LabelPad_HStart}"
+                            Text="--" />
+                        <Label
+                            Grid.Column="5"
+                            LineBreakMode="NoWrap"
+                            Style="{StaticResource LabelPad_HStart}"
+                            Text="--" />
+                        <Button
+                            Grid.Column="6"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource DarkGreenAccent}, Dark={StaticResource DarkGreenAccent}}"
+                            Command="{Binding Source={x:Reference PayrollDetail}, Path=BindingContext.ReportClockOutCommand}"
+                            CommandParameter="{Binding}"
+                            Style="{StaticResource ReportButton}"
+                            Text="{Binding TimeCard_Status, StringFormat='{0}'}" />
+                    </Grid>
+                </VerticalStackLayout>
+            </SwipeView>
+        </DataTemplate>
+
+        <DataTemplate x:Key="landPaidTemplate">
+            <VerticalStackLayout>
+                <Grid ColumnDefinitions="65,80,80,80,80,60,*" ColumnSpacing="5" RowDefinitions="Auto">
+                    <Label 
+                        Style="{StaticResource LabelMicro}" 
+                        Text="{Binding TimeCard_Date, Converter={StaticResource dateOnlyConverter}, StringFormat='{0:ddd MMM d}'}"
+                        VerticalTextAlignment="Center" />
+                    <Label
+                        Grid.Column="1"
+                        Padding="10,0,10,0"
+                        HorizontalTextAlignment="Start"
+                        Style="{StaticResource LabelMicro}"
+                        Text="{Binding ProjectName}"
+                        VerticalTextAlignment="Center" />
+                    <Label
+                        Grid.Column="2"
+                        Padding="10,0,10,0"
+                        HorizontalTextAlignment="Start"
+                        Style="{StaticResource LabelMicro}"
+                        Text="{Binding PhaseTitle}"
+                        VerticalTextAlignment="Center" />
+                    <Label
+                        Grid.Column="3"
+                        LineBreakMode="NoWrap"
+                        Style="{StaticResource LabelPad_HStart}"
+                        Text="{Binding TimeCard_StartTime, Converter={StaticResource timeOnlyConverter}}"
+                        VerticalTextAlignment="Center" />
+                    <Label
+                        Grid.Column="4"
+                        LineBreakMode="NoWrap"
+                        Style="{StaticResource LabelPad_HStart}"
+                        Text="{Binding TimeCard_EndTime, Converter={StaticResource timeOnlyConverter}}"
+                        VerticalTextAlignment="Center" />
+                    <Label
+                        Grid.Column="5"
+                        LineBreakMode="NoWrap"
+                        Style="{StaticResource LabelPad_HStart}"
+                        Text="{Binding TimeCard_WorkHours, StringFormat='{0:F2}'}"
+                        VerticalTextAlignment="Center" />
+                    <Button
+                        Grid.Column="6"
+                        IsEnabled="False"
+                        Style="{StaticResource ReportButton}"
+                        Text="{Binding TimeCard_Status, StringFormat='{0}'}"
+                        Padding="25,14" />
+                </Grid>
+            </VerticalStackLayout>
+        </DataTemplate>
+        <!--
+            END LANDSCAPE MODE
+        -->
+
+        <controls:ReportCardDataTemplateSelector
+            x:Key="reportcardtemplatesel"
+            OnTheClockTemplate="{StaticResource onClockTemplate}"
+            PaidTemplate="{StaticResource paidTemplate}"
+            UnpaidTemplate="{StaticResource unpaidTemplate}" />
+        <controls:ReportCardLandscapeDataTemplateSelector
+            x:Key="landscapereportcardtemplatesel"
+            OnTheClockLandscapeTemplate="{StaticResource landOnClockTemplate}"
+            PaidLandscapeTemplate="{StaticResource landPaidTemplate}"
+            UnpaidLandscapeTemplate="{StaticResource landUnpaidTemplate}" />
+
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <VerticalStackLayout Margin="5,0" Spacing="5">
+            <ActivityIndicator IsRunning="True" IsVisible="{Binding Loading}" />
+            <VerticalStackLayout IsVisible="{Binding HasError}">
+                <Label Text="Loading failed" />
+                <Button Command="{Binding InitCommand}" Text="Retry" />
+            </VerticalStackLayout>
+            <Frame
+                x:Name="helpbox"
+                Padding="8"
+                CornerRadius="10" HorizontalOptions="FillAndExpand"
+                IsVisible="{Binding HelpInfoBoxVisible}"
+                VerticalOptions="Center">
+                <Label 
+                    LineBreakMode="WordWrap" 
+                    Style="{StaticResource LabelSmall}" 
+                    Text="Payroll Page. &#10;&#10;Select the employee to have that persons timecards and totals, displayed for the given time period. &#10;&#10;Timecards are shown by Date, the Start Time, the End Time, the hours for that card, and a button, that can mark that timecard as paid.&#10;&#10;Marking a time card as paid, locks the time card and it can no longer be changed." />
+            </Frame>
+            <Label Style="{StaticResource LabelSmall}" Text="Employee:" VerticalTextAlignment="Center" />
+            <Picker
+                HorizontalOptions="FillAndExpand"
+                ItemDisplayBinding="{Binding Employee_Name}"
+                ItemsSource="{Binding EmployeeList}"
+                SelectedItem="{Binding SelectedFilter, Mode=TwoWay}"
+                VerticalOptions="Center" />
+            <Button
+                Command="{Binding ToggleFilterOptionsCommand}"
+                ContentLayout="Right, 20" ImageSource="filter.png" Text="Filter" />
+            <Grid
+                ColumnDefinitions="150,*" ColumnSpacing="5"
+                IsVisible="{Binding ShowFilterOptions}"
+                RowDefinitions="Auto,Auto,Auto" RowSpacing="10">
+                <Label
+                    Grid.Row="1"
+                    Style="{StaticResource LabelSmall}"
+                    Text="Pay Period Start Date:" VerticalTextAlignment="Center" />
+                <DatePicker
+                    Grid.Row="1" Grid.Column="1"
+                    Date="{Binding StartDate, Mode=TwoWay}"
+                    HorizontalOptions="CenterAndExpand"
+                    MaximumDate="{Binding PickerMaxDate}"
+                    MinimumDate="{Binding PickerMinDate}" />
+                <Label
+                    Grid.Row="2"
+                    Style="{StaticResource LabelSmall}"
+                    Text="End Date:" VerticalTextAlignment="Center" />
+                <DatePicker
+                    Grid.Row="2" Grid.Column="1"
+                    Date="{Binding EndDate, Mode=TwoWay}"
+                    HorizontalOptions="CenterAndExpand"
+                    MaximumDate="{Binding PickerMaxDate}"
+                    MinimumDate="{Binding PickerMinDate}" />
+            </Grid>
+            <HorizontalStackLayout Spacing="10">
+                <Button x:DataType="vm:PayrollDetailViewModel" Command="{Binding RefreshingCardsCommand}" Text="Refresh" />
+                <Button x:DataType="vm:PayrollDetailViewModel" Command="{Binding GetAllUnpaidTimeCardsCommand}" Text="Get All Unpaid" />
+            </HorizontalStackLayout>
+            <Label FontSize="Small" Text="{Binding PayPeriod}" />
+            <Frame
+                Padding="8"
+                CornerRadius="10" HasShadow="True"
+                IsVisible="{Binding Source={x:Reference PayrollDetail}, Path=BindingContext.NotDisplayLandscapeMode}">
+                <CollectionView
+                    x:Name="ReportTimeCards"
+                    Margin="0,5"
+                    x:DataType="vm:PayrollDetailViewModel" EmptyView="No items to display"
+                    ItemTemplate="{StaticResource reportcardtemplatesel}"
+                    ItemsSource="{Binding TimeCards}" />
+            </Frame>
+            <Frame
+                Padding="8"
+                CornerRadius="10" HasShadow="True"
+                IsVisible="{Binding Source={x:Reference PayrollDetail}, Path=BindingContext.DisplayLandscapeMode}">
+                <CollectionView
+                    x:Name="ReportLandscapeTimeCards"
+                    Margin="0,5"
+                    x:DataType="vm:PayrollDetailViewModel" EmptyView="No items to display"
+                    ItemTemplate="{StaticResource landscapereportcardtemplatesel}"
+                    ItemsSource="{Binding TimeCards}" />
+            </Frame>
+            <Label
+                FontSize="Micro"
+                Text="HOUR TOTALS" HorizontalOptions="Center" />
+            <Frame
+                Padding="8" 
+                CornerRadius="10" 
+                HorizontalOptions="FillAndExpand">
+                <Grid
+                    ColumnDefinitions="60,*,*,*,*" ColumnSpacing="12" RowDefinitions="Auto,Auto,Auto,Auto"
+                    RowSpacing="10">
+                    <Label Grid.Column="1" FontSize="Small" Text="Reg" />
+                    <Label Grid.Column="2" FontSize="Small" Text="OT" />
+                    <Label Grid.Column="3" FontSize="Small" Text="OT2" />
+                    <Label Grid.Column="4" FontSize="Small" Text="Total" />
+                    <Label Grid.Row="1" FontSize="Micro" Text="Total HR" />
+                    <Label Grid.Row="2" FontSize="Micro" Text="Unpaid HR" />
+                    <Label Grid.Row="3" FontSize="Micro" Text="Wages" />
+
+                    <Label
+                        Grid.Row="1" Grid.Column="1"
+                        FontSize="Small"
+                        Text="{Binding RegTotalHours, StringFormat='{0:F2}'}" />
+                    <Label
+                        Grid.Row="1" Grid.Column="2"
+                        FontSize="Small"
+                        Text="{Binding TotalOTHours, StringFormat='{0:F2}'}" />
+                    <Label
+                        Grid.Row="1" Grid.Column="3"
+                        FontSize="Small"
+                        Text="{Binding TotalOT2Hours, StringFormat='{0:F2}'}" />
+                    <Label
+                        Grid.Row="1" Grid.Column="4"
+                        FontSize="Small"
+                        Text="{Binding TotalWorkHours, StringFormat='{0:F2}'}" />
+                    <Label
+                        Grid.Row="2" Grid.Column="1"
+                        FontSize="Small" FontAttributes="Bold"
+                        Text="{Binding UnPaidRegTotalHours, StringFormat='{0:F2}'}" />
+                    <Label
+                        Grid.Row="2" Grid.Column="2"
+                        FontSize="Small" FontAttributes="Bold"
+                        Text="{Binding UnPaidTotalOTHours, StringFormat='{0:F2}'}" />
+                    <Label
+                        Grid.Row="2" Grid.Column="3"
+                        FontSize="Small" FontAttributes="Bold"
+                        Text="{Binding UnPaidTotalOT2Hours, StringFormat='{0:F2}'}" />
+                    <Label
+                        Grid.Row="2" Grid.Column="4"
+                        FontSize="Small"
+                        Text="{Binding UnPaidTotalWorkHours, StringFormat='{0:F2}'}" />
+                    <Label
+                        Grid.Row="3" Grid.Column="1"
+                        FontSize="Micro"
+                        Text="Gross:" />
+                    <Label
+                        Grid.Row="3" Grid.Column="2"
+                        FontSize="Small"
+                        Text="{Binding TotalGrossPay, StringFormat='{0:C}'}" />
+                    <Label
+                        Grid.Row="3" Grid.Column="3"
+                        FontSize="Micro" FontAttributes="Bold"
+                        Text="Due:" />
+                    <Label
+                        Grid.Row="3" Grid.Column="4"
+                        FontSize="Small" FontAttributes="Bold"
+                        Text="{Binding TotalOwedGrossPay, StringFormat='{0:C}'}" />
+                </Grid>
+            </Frame>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

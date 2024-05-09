@@ -1,11 +1,11 @@
-﻿using TimeClockApp.Helpers;
+﻿using TimeClockApp.Shared.Helpers;
 
 namespace TimeClockApp.ViewModels
 {
     [QueryProperty("IdTimeCard", "id")]
-    public partial class ChangeStartTimeViewModel : TimeStampViewModel, IDisposable
+    public partial class ChangeStartTimeViewModel(EditTimeCardService service) : TimeStampViewModel
     {
-        protected readonly EditTimeCardService cardService;
+        protected readonly EditTimeCardService cardService = service;
         public string IdTimeCard
         {
             set
@@ -47,18 +47,13 @@ namespace TimeClockApp.ViewModels
         public DateTime PickerMaxDate { get => pickerMaxDate; }
         #endregion
         [ObservableProperty]
-        private ObservableCollection<Project> projectList = new();
+        private ObservableCollection<Project> projectList = [];
         [ObservableProperty]
         private Project selectedProject;
         [ObservableProperty]
-        private ObservableCollection<Phase> phaseList = new();
+        private ObservableCollection<Phase> phaseList = [];
         [ObservableProperty]
         private Phase selectedPhase;
-
-        public ChangeStartTimeViewModel(EditTimeCardService service)
-        {
-            cardService = service;
-        }
 
         public void OnAppearing()
         {
@@ -88,13 +83,13 @@ namespace TimeClockApp.ViewModels
         private void RefreshProjectPhases()
         {
             //Only get data from DB once, unless it has been notified that it has changed
-            ProjectList ??= new();
+            ProjectList ??= [];
 
-            if (ProjectList.Any() == false || App.NoticeProjectHasChanged == true)
+            if (ProjectList.Count == 0 || App.NoticeProjectHasChanged)
                 ProjectList = cardService.GetProjectsList();
 
-            PhaseList ??= new();
-            if (PhaseList.Any() == false || App.NoticePhaseHasChanged == true)
+            PhaseList ??= [];
+            if (PhaseList.Count == 0 || App.NoticePhaseHasChanged)
                 PhaseList = cardService.GetPhaseList();
 
             if (TimeCardID == 0)
@@ -128,19 +123,6 @@ namespace TimeClockApp.ViewModels
         private void OnToggleHelpInfoBox()
         {
             HelpInfoBoxVisible = !HelpInfoBoxVisible;
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                // TODO: dispose managed state (managed objects)
-                cardService.Dispose();
-            }
-
-            // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-            // TODO: set large fields to null
-            base.Dispose();
         }
     }
 }

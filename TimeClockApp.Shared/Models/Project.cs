@@ -1,10 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 using CsvHelper.Configuration;
 
 using Microsoft.EntityFrameworkCore;
 
-namespace TimeClockApp.Models
+namespace TimeClockApp.Shared.Models
 {
     public enum ProjectStatus
     {

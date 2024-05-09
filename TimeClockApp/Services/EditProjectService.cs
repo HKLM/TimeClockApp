@@ -2,7 +2,7 @@
 
 namespace TimeClockApp.Services
 {
-    public partial class EditProjectService : TimeCardDataStore
+    public class EditProjectService : TimeCardDataStore
     {
         public static string GetProjectNameFromId(int projectId)
         {
@@ -16,7 +16,7 @@ namespace TimeClockApp.Services
         }
 
         /// <summary>
-        /// 
+        /// Add new project
         /// </summary>
         /// <param name="projectName"></param>
         /// <returns>Returns true if replacing existing Project of same name.</returns>
@@ -57,7 +57,7 @@ namespace TimeClockApp.Services
 
         public bool UpdateProject(string name, int id, DateOnly date, ProjectStatus status)
         {
-            if (id < 2 || name == null || name == "" || Context.Project.Any(x => x.ProjectId != id && x.Name.Contains(name)))
+            if (id < 2 || name == null || name?.Length == 0 || Context.Project.Any(x => x.ProjectId != id && x.Name.Contains(name)))
                 return false;
             try
             {

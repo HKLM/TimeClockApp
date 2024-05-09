@@ -1,10 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 using CsvHelper.Configuration;
 
 using Microsoft.EntityFrameworkCore;
 
-namespace TimeClockApp.Models
+namespace TimeClockApp.Shared.Models
 {
     /// <summary>
     /// Employment Status
@@ -41,10 +42,9 @@ namespace TimeClockApp.Models
     [Index(nameof(Employee_Name), IsUnique = true)]
     public class Employee
     {
-
         public Employee()
         {
-            TimeCards = new HashSet<TimeCard>();
+            TimeCards = new List<TimeCard>();
         }
 
         public Employee(string employee_Name, double employee_PayRate, string jobTitle)
@@ -69,7 +69,7 @@ namespace TimeClockApp.Models
 
         [Required]
         [StringLength(50)]
-        public string Employee_Name { get; set; }
+        public required string Employee_Name { get; set; } = string.Empty;
 
         /// <summary>
         /// Employees Rate of Pay.
@@ -87,7 +87,8 @@ namespace TimeClockApp.Models
         [StringLength(50)]
         public string JobTitle { get; set; }
 
-        public virtual ICollection<TimeCard> TimeCards { get; set; }
+        public virtual ICollection<TimeCard> TimeCards { get; set; } = new List<TimeCard>();
+        public virtual ICollection<TimeSheet> TimeSheets { get; set;  } = new List<TimeSheet>();
 
         public override string ToString()
         {

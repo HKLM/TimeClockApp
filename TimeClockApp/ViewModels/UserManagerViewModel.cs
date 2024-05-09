@@ -18,11 +18,11 @@
         private double payRate;
 
         [ObservableProperty]
-        private ObservableCollection<Employee> employeeList = new();
+        private ObservableCollection<Employee> employeeList = [];
 
         [ObservableProperty]
         private Employee selectedEmployee;
-        partial void OnSelectedEmployeeChanged(global::TimeClockApp.Models.Employee value)
+        partial void OnSelectedEmployeeChanged(global::TimeClockApp.Shared.Models.Employee value)
         {
             RefreshInfo();
             EnableSaveDelButton = SelectedEmployee != null && SelectedEmployee.EmployeeId > 0;

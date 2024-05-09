@@ -1,5 +1,5 @@
 ﻿//#define TIMESTAMP
-namespace TimeClockApp.Models
+namespace TimeClockApp.Shared.Models
 {
     /// <summary>
     /// Adds timestamps for when the row has changed and was created.

@@ -1,12 +1,13 @@
 ﻿namespace TimeClockApp.ViewModels
 {
-    public partial class EditTimeCardHomeViewModel : TimeStampViewModel
+    public partial class EditTimeCardHomeViewModel(EditTimeCardService _cardService) : TimeStampViewModel
     {
-        protected EditTimeCardService cardService;
+        protected EditTimeCardService cardService = _cardService;
+
         [ObservableProperty]
-        private ObservableCollection<TimeCard> timeCardsHome = new();
+        private ObservableCollection<TimeCard> timeCardsHome = [];
         [ObservableProperty]
-        private ObservableCollection<Employee> employeeList = new();
+        private ObservableCollection<Employee> employeeList = [];
 
         [ObservableProperty]
         private Employee selectedFilter;
@@ -25,14 +26,10 @@
             GetTimeCardList();
         }
 
-        public EditTimeCardHomeViewModel()
-        {
-            cardService = new();
-            EmployeeList = cardService.GetAllEmployees();
-        }
-
         public void OnAppearing()
         {
+            EmployeeList = cardService.GetAllEmployees();
+
             GetTimeCardList();
         }
 
@@ -44,7 +41,7 @@
             {
                 if (SelectedFilter != null && SelectedFilter.EmployeeId != 0)
                 {
-                    if (TimeCardsHome.Any())
+                    if (TimeCardsHome.Count > 0)
                         TimeCardsHome.Clear();
                     TimeCardsHome = cardService.GetTimeCardsForEmployee(SelectedFilter.EmployeeId, ShowPaid);
                 }
@@ -61,7 +58,7 @@
         {
             if (SelectedFilter != null && SelectedFilter.EmployeeId != 0)
             {
-                if (TimeCardsHome.Any())
+                if (TimeCardsHome.Count > 0)
                     TimeCardsHome.Clear();
 
                 try
@@ -79,19 +76,6 @@
         private void OnToggleHelpInfoBox()
         {
             HelpInfoBoxVisible = !HelpInfoBoxVisible;
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                // TODO: dispose managed state (managed objects)
-                cardService.Dispose();
-            }
-
-            // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-            // TODO: set large fields to null
-            base.Dispose();
         }
     }
 }

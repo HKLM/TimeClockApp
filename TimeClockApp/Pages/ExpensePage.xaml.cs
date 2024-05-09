@@ -20,7 +20,7 @@ public partial class ExpensePage : ContentPage
     private async void ExpenseEditAction_Clicked(object sender, EventArgs e)
     {
         SwipeItem swipeItem = (SwipeItem)sender;
-        if (swipeItem != null)
+        if (swipeItem?.CommandParameter != null)
         {
             if (int.TryParse(swipeItem.CommandParameter.ToString(), out int i))
             {

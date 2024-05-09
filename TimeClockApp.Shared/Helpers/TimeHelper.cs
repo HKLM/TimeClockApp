@@ -1,4 +1,6 @@
-﻿namespace TimeClockApp.Helpers
+﻿using System.Globalization;
+
+namespace TimeClockApp.Shared.Helpers
 {
     public static class TimeHelper
     {
@@ -34,5 +36,16 @@
             DateTime? roundTime = RoundDateTime(dt, TimeSpan.FromMinutes(15));
             return TimeOnly.FromDateTime(roundTime.Value);
         }
+
+        /// <summary>
+        /// Gets the weeks number for the given date
+        /// </summary>
+        /// <param name="thisDate">The date to get the week number for</param>
+        /// <returns>the week number</returns>
+        public static int GetWeekNumber(DateTime thisDate) =>
+            CultureInfo.InvariantCulture.Calendar.GetWeekOfYear(thisDate, System.Globalization.CalendarWeekRule.FirstDay, DayOfWeek.Saturday);
+
+        public static int GetWeekNumber(DateOnly thisDate) =>
+            CultureInfo.InvariantCulture.Calendar.GetWeekOfYear(new DateTime(thisDate.Year, thisDate.Month, thisDate.Day), System.Globalization.CalendarWeekRule.FirstDay, DayOfWeek.Saturday);
     }
 }

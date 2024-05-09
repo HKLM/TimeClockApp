@@ -2,7 +2,9 @@
 
 using CsvHelper.Configuration;
 
-namespace TimeClockApp.Models
+#nullable enable
+
+namespace TimeClockApp.Shared.Models
 {
     /// <summary>
     /// Settings data storage. Each Setting has a Id and Name to Identify each setting. 
@@ -16,13 +18,13 @@ namespace TimeClockApp.Models
         /// String name to help identify what this row is for
         /// </summary>
         [Required]
-        public string Name { get; set; }
+        public required string Name { get; set; }
 
         /// <summary>
         /// Optional-This settings value as a string.
         /// </summary>
         /// <remarks>Default is null</remarks>
-        public string StringValue { get; set; }
+        public string? StringValue { get; set; }
 
         /// <summary>
         /// Optional-This settings value as a integer
@@ -33,14 +35,14 @@ namespace TimeClockApp.Models
         /// <summary>
         /// Optional brief description of this config item.
         /// </summary>
-        public string Hint { get; set; }
+        public string? Hint { get; set; }
 
         public override string ToString()
         {
             string rv = Environment.NewLine + "--------------[  ConfigId: " + ConfigId + "  ]---------------------" + Environment.NewLine;
             rv += "Name:        " + Name + Environment.NewLine;
             rv += "StringValue: " + StringValue + Environment.NewLine;
-            rv += "IntValue:    " + IntValue.Value.ToString() + Environment.NewLine;
+            rv += "IntValue:    " + IntValue?.ToString() + Environment.NewLine;
             rv += "Hint:        " + Hint + Environment.NewLine;
             rv += "------------------------------------------------------" + Environment.NewLine;
             return rv;

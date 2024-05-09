@@ -1,5 +1,4 @@
 ﻿using Android.App;
-using Android.Content;
 using Android.Content.PM;
 using Android.OS;
 
@@ -21,6 +20,7 @@ public class MainActivity : MauiAppCompatActivity
     public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
     {
         Microsoft.Maui.ApplicationModel.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
-        base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (OperatingSystem.IsAndroidVersionAtLeast(30))
+            base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 }

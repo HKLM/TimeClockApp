@@ -1,16 +1,11 @@
 ﻿namespace TimeClockApp.ViewModels
 {
-    public partial class TeamEmployeesViewModel : TimeStampViewModel
+    public partial class TeamEmployeesViewModel(UserManagerService service) : TimeStampViewModel
     {
-        protected readonly UserManagerService employeeService;
+        protected readonly UserManagerService employeeService = service;
 
         [ObservableProperty]
-        private ObservableCollection<Employee> employee_List = new();
-
-        public TeamEmployeesViewModel(UserManagerService service)
-        {
-            employeeService = service;
-        }
+        private ObservableCollection<Employee> employee_List = [];
 
         public void OnAppearing()
         {
@@ -74,19 +69,6 @@
         private void OnToggleHelpInfoBox()
         {
             HelpInfoBoxVisible = !HelpInfoBoxVisible;
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                // TODO: dispose managed state (managed objects)
-                employeeService.Dispose();
-            }
-
-            // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-            // TODO: set large fields to null
-            base.Dispose();
         }
     }
 }

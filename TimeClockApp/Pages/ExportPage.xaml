@@ -1,59 +1,74 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
-	x:Class="TimeClockApp.Pages.ExportPage"
-	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-	xmlns:models="clr-namespace:TimeClockApp.Models"
-	xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
-	Title="BackUp and Export"
-	x:DataType="vm:ExportPageViewModel">
-	<ContentPage.BindingContext>
-		<vm:ExportPageViewModel x:Name="viewModel" />
-	</ContentPage.BindingContext>
-	<ContentPage.ToolbarItems>
-		<ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
-	</ContentPage.ToolbarItems>
-	<StackLayout>
-		<Frame
-			x:Name="helpbox"
-			Padding="8"
-			CornerRadius="10"
-			HorizontalOptions="FillAndExpand"
-			IsVisible="{Binding HelpInfoBoxVisible}"
-			VerticalOptions="Center">
-			<Label
-				LineBreakMode="WordWrap"
-				Style="{StaticResource LabelSmall}"
-				Text="Import/Export Database. &#10;&#10;. &#10;&#10;TODO info on how to import" />
-		</Frame>
-
-		<VerticalStackLayout Spacing="20">
-			<ActivityIndicator IsRunning="{Binding IsBusy, Mode=TwoWay}" Color="DarkRed" />
-
-			<Label
-				HorizontalOptions="Center"
-				Text="Backup Data"
-				VerticalOptions="Center" />
-			<Label Text="Output Log:" />
-			<ScrollView>
-				<Label
-					HorizontalOptions="StartAndExpand"
-					LineBreakMode="WordWrap"
-					MaxLines="200"
-					Text="{Binding ExportLog, Mode=TwoWay}" />
-			</ScrollView>
-			<Button
-				Padding="20"
-				Command="{Binding ExportDataCommand}"
-				Text="Export Data" />
-			<Button
-				Padding="20"
-				Command="{Binding ImportDataCommand}"
-				Text="Import Data" />
-			<Button
-				Padding="20"
-				Command="{Binding BackupDBRequestCommand}"
-				Text="Backup Database" />
-		</VerticalStackLayout>
-	</StackLayout>
+    x:Class="TimeClockApp.Pages.ExportPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
+    Title="BackUp and Export"
+    x:DataType="vm:ExportPageViewModel">
+    <ContentPage.BindingContext>
+        <vm:ExportPageViewModel x:Name="viewModel" />
+    </ContentPage.BindingContext>
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
+    </ContentPage.ToolbarItems>
+    <ScrollView VerticalScrollBarVisibility="Always">
+        <StackLayout>
+            <ActivityIndicator IsRunning="{Binding Loading}" Color="DarkRed" />
+            <VerticalStackLayout IsVisible="{Binding HasError}">
+                <Label Text="ERROR-CHECK LOG" />
+            </VerticalStackLayout>
+            <Frame
+                x:Name="helpbox"
+                Padding="8"
+                CornerRadius="10" 
+                HorizontalOptions="FillAndExpand"
+                IsVisible="{Binding HelpInfoBoxVisible}"
+                VerticalOptions="Center">
+                <Label LineBreakMode="WordWrap" 
+                       Style="{StaticResource LabelSmall}" 
+                       Text="Import/Export Database. &#10;&#10;. &#10;&#10;TODO info on how to import &#10;&#10;Export Data and Import Data is done by a ZIP file containing the CSV files of the data. &#10;&#10;Backup Database will create a copy of the existing Sqlite database file and then give you a chose of where to put it. Note: There is no way to re-import this file back into this app. Only the import of data from CSV file is possible." />
+            </Frame>
+            <Frame
+                IsVisible="{Binding WarningBoxVisible}"
+                Padding="8"
+                Style="{StaticResource WarnFrame}" 
+                CornerRadius="10" 
+                HorizontalOptions="FillAndExpand"
+                VerticalOptions="Center">
+                <Grid ColumnDefinitions="*,*" RowDefinitions="*,*" ColumnSpacing="20" RowSpacing="20" >
+                    <Label
+                        Grid.ColumnSpan="2"
+                        FontAttributes="Bold" 
+                        Text="WARNING - This will overwrite your existing data with the imported data. &#10; &#10;This can not be undone." />
+                    <Button 
+                        Grid.Row="1"
+                        Command="{Binding ImportDataCommand}" 
+                        Text="OK" />
+                    <Button 
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        Command="{Binding CloseWarningBoxCommand}" 
+                        Text="CANCEL" />
+                </Grid>
+            </Frame>
+            <VerticalStackLayout Spacing="20">
+                <Label Text="Output Log:" />
+                <ScrollView>
+                    <Label
+                        HorizontalOptions="StartAndExpand" LineBreakMode="WordWrap" MaxLines="200"
+                        Text="{Binding ExportLog}" />
+                </ScrollView>
+                <Label Text="Type of data import:" />
+                <Grid ColumnDefinitions="Auto,35,auto" RowDefinitions="*">
+                    <Label Text="Add to existing" IsEnabled="False" />
+                    <Switch Grid.Column="1" IsToggled="{Binding OverwriteData}" IsEnabled="False"  />
+                    <Label Grid.Column="2" Text="OverWrite existing" />
+                </Grid>
+                <Button Padding="20" Command="{Binding ExportDataCommand}" Text="Export Data" />
+                <Button Padding="20" Command="{Binding ToggleWarningBoxCommand}" Text="Import Data" />
+                <Button Padding="20" Command="{Binding BackupDBRequestCommand}" Text="Backup Database" />
+            </VerticalStackLayout>
+        </StackLayout>
+    </ScrollView>
 </ContentPage>

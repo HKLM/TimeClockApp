@@ -2,10 +2,12 @@
 
 namespace TimeClockApp.ViewModels
 {
-    public partial class TimeStampViewModel : BaseViewModel, IDisposable
+    public partial class TimeStampViewModel : BaseViewModel
     {
+        public bool initDone = false;
+
         /// <summary>
-        /// The ToolBar Help Icon toggles displaying the HelpInfoxBox for each page
+        /// The ToolBar Help Icon toggles displaying the HelpInfoBox for each page
         /// </summary>
         [ObservableProperty]
         private bool helpInfoBoxVisible = false;
@@ -13,13 +15,26 @@ namespace TimeClockApp.ViewModels
         [ObservableProperty]
         private string? title = string.Empty;
 
+        /// <summary>
+        /// Used to display any errors to the user
+        /// </summary>
+        [ObservableProperty]
+        private string? errorMsg = string.Empty;
+
+        /// <summary>
+        /// If true allows editing locked TimeCards. By default after a TimeCard has been marked paid, it is locked by being set to ReadOnly.
+        /// </summary>
         [ObservableProperty]
         private bool isAdmin = false;
-        private bool disposedValue;
 
-        public TimeStampViewModel()
-        {
-        }
+#region "InitAsync Properties"
+        [ObservableProperty]
+        private bool loading = true;
+        [ObservableProperty]
+        private bool hasError = false;
+#endregion
+
+        public TimeStampViewModel() { }
 
         /// <summary>
         /// Converts Int to bool.
@@ -27,34 +42,5 @@ namespace TimeClockApp.ViewModels
         /// <param name="value"></param>
         /// <returns>true if 1</returns>
         public static bool IntToBool(int? value) => value.HasValue && value.Value is int @int && @int == 1;
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    // TODO: dispose managed state (managed objects)
-                }
-
-                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-                // TODO: set large fields to null
-                disposedValue = true;
-            }
-        }
-
-        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-        // ~TimeStampViewModel()
-        // {
-        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        //     Dispose(disposing: false);
-        // }
-
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
     }
 }

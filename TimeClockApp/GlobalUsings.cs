@@ -8,7 +8,7 @@ global using CommunityToolkit.Maui;
 global using CommunityToolkit.Mvvm.ComponentModel;
 global using CommunityToolkit.Mvvm.Input;
 
-global using TimeClockApp.Models;
+global using TimeClockApp.Shared.Models;
 global using TimeClockApp.Pages;
 global using TimeClockApp.Services;
 global using TimeClockApp.ViewModels;

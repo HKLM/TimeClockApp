@@ -1,8 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 using CsvHelper.Configuration;
 
-namespace TimeClockApp.Models
+namespace TimeClockApp.Shared.Models
 {
     //TODO move to database table so that user can modify the entries
     public enum ExpenseType
@@ -43,8 +44,8 @@ namespace TimeClockApp.Models
             Category = category;
             ExpenseDate = expenseDate;
             IsRecent = true;
-            ExpenseProject = projectName == "" ? null : projectName;
-            ExpensePhase = phaseTitle == "" ? null : phaseTitle;
+            ExpenseProject = projectName?.Length == 0 ? null : projectName;
+            ExpensePhase = phaseTitle?.Length == 0 ? null : phaseTitle;
         }
 
         [Key]
@@ -91,12 +92,12 @@ namespace TimeClockApp.Models
         /// <summary>
         /// Saved Project Name at the time this expense was made.
         /// </summary>
-        public string ExpenseProject { get; set; } = null;
+        public string ExpenseProject { get; set; }
 
         /// <summary>
         /// Saved Project Title at the time this expense was made.
         /// </summary>
-        public string ExpensePhase { get; set; } = null;
+        public string ExpensePhase { get; set; }
 
         public virtual Project Project { get; set; }
         public virtual Phase Phase { get; set; }

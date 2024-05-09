@@ -9,6 +9,9 @@
         // ----- "Fire and forget" calls -----
         void ShowAlert(string title, string message, string cancel = "OK");
 
+        /// <summary>
+        /// Display a confirmation dialog box
+        /// </summary>
         /// <param name="callback">Action to perform afterwards.</param>
         void ShowConfirmation(string title, string message, Action<bool> callback, string accept = "Yes", string cancel = "No");
     }

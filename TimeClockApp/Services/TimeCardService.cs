@@ -2,32 +2,16 @@
 
 using Microsoft.EntityFrameworkCore;
 
-using TimeClockApp.Helpers;
+using TimeClockApp.Shared.Helpers;
 
 namespace TimeClockApp.Services
 {
-    public partial class TimeCardService : TimeCardDataStore
+    public class TimeCardService : TimeCardDataStore
     {
-        public async Task<double> GetHourTotalForEmployeeAsync(int employeeId, DateOnly start, DateOnly end)
-        {
-            IQueryable<TimeCard> t = Context.TimeCard
-                .AsNoTracking()
-                .Where(item => item.EmployeeId == employeeId
-                    && (item.TimeCard_Date >= start
-                    && item.TimeCard_Date <= end)
-                    && item.TimeCard_Status == ShiftStatus.ClockedOut
-                    && !item.TimeCard_bReadOnly);
-
-            return await t.SumAsync(o => (double?)o.TimeCard_WorkHours) ?? 0;
-        }
-
 #nullable enable
-
-        public async Task<ObservableCollection<TimeCard>> GetLastTimeCardForAllEmployeesAsync()
+        public async Task<List<TimeCard>> GetLastTimeCardForAllEmployeesAsync()
         {
-            DateOnly payrollPeriod = DateOnly.FromDateTime(GetStartOfPayPeriod(DateTime.Now));
-            DateOnly d = DateOnly.FromDateTime(DateTime.Now);
-            ObservableCollection<TimeCard> _timeCards = new();
+            List<TimeCard> _timeCards = new();
 
             IOrderedQueryable<Employee> emp = Context.Employee
                  .Where(e => e.Employee_Employed == EmploymentStatus.Employed)
@@ -36,19 +20,13 @@ namespace TimeClockApp.Services
             foreach (Employee employee in emp)
             {
                 TimeCard? x = await Context.TimeCard
-                            .Where(item => item.EmployeeId == employee.EmployeeId
-                                && (item.TimeCard_Status < ShiftStatus.Paid
-                                && !item.TimeCard_bReadOnly))
-                            .OrderByDescending(item => item.TimeCard_DateTime)
-                            .FirstOrDefaultAsync();
+                    .Where(item => item.EmployeeId == employee.EmployeeId
+                        && (item.TimeCard_Status < ShiftStatus.Paid
+                        && !item.TimeCard_bReadOnly))
+                    .OrderByDescending(item => item.TimeCard_DateTime)
+                    .FirstOrDefaultAsync();
 
-                if (x != null)
-                {
-                    x.TotalWorkHours = await GetHourTotalForEmployeeAsync(employee.EmployeeId, payrollPeriod, d);
-                    _timeCards.Add(x);
-                }
-                else
-                    _timeCards.Add(new TimeCard(employee));
+                _timeCards.Add(x ?? new TimeCard(employee));
             }
             return _timeCards;
         }
@@ -90,8 +68,7 @@ namespace TimeClockApp.Services
                     Task<int> saveData = Context.SaveChangesAsync();
                     if (await saveData > 0)
                     {
-                        Task<bool> calcPay = CalculatePayAsync(t);
-                        return await calcPay;
+                        return true;
                     }
                 }
             }
@@ -106,6 +83,23 @@ namespace TimeClockApp.Services
                     && !tc.TimeCard_bReadOnly
                     && tc.TimeCard_Status == ShiftStatus.ClockedIn)
                 .Any();
+        }
+
+        public async Task<bool> MarkTimeCardAsPaidAsync(TimeCard timeCard)
+        {
+            if (timeCard != null && timeCard.TimeCardId != 0 
+                && !IsTimeCardReadOnly(timeCard.TimeCardId) 
+                && timeCard.TimeCard_Status == ShiftStatus.ClockedOut)
+            {
+                    TimeCard t = Context.TimeCard.Find(timeCard.TimeCardId);
+                    t.TimeCard_Status = ShiftStatus.Paid;
+                    t.TimeCard_bReadOnly = true;
+                    Context.Update<TimeCard>(t);
+                    Task<int> i = Context.SaveChangesAsync();
+                    if (await i != 0)
+                        return true;
+            }
+            return false;
         }
     }
 }

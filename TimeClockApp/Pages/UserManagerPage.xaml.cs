@@ -1,5 +1,6 @@
 namespace TimeClockApp.Pages;
 
+[XamlCompilation(XamlCompilationOptions.Compile)]
 public partial class UserManagerPage : ContentPage
 {
     public UserManagerPage()

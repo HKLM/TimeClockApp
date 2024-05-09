@@ -4,24 +4,27 @@
     {
         protected EditProjectService projectService;
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(EnableSaveButton))]
         private int projectId = 0;
+
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(EnableAddDelButtons))]
         private string name;
-        #region "DatePicker Min/Max Bindings"
+#region "DatePicker Min/Max Bindings"
         public DateTime PickerMinDate { get; set; }
-        private DateTime pickerMaxDate = DateTime.Now;
+        private readonly DateTime pickerMaxDate = DateTime.Now;
         public DateTime PickerMaxDate { get => pickerMaxDate; }
-        #endregion
+#endregion
 
         [ObservableProperty]
         private DateOnly projectDate;
 
         [ObservableProperty]
-        private ObservableCollection<Project> projectList = new();
+        private ObservableCollection<Project> projectList = [];
 
         [ObservableProperty]
         private Project selectedProject;
-        partial void OnSelectedProjectChanged(global::TimeClockApp.Models.Project value)
+        partial void OnSelectedProjectChanged(global::TimeClockApp.Shared.Models.Project value)
         {
             if (value != null)
             {
@@ -74,7 +77,7 @@
         {
             try
             {
-                if (Name != null && Name != "")
+                if (!string.IsNullOrEmpty(Name))
                 {
                     if (projectService.AddNewProject(Name))
                         App.AlertSvc.ShowAlert("Notice", Name + " saved.\nExisting project of same name has been archived.");
@@ -97,7 +100,7 @@
         {
             try
             {
-                if (SelectedProject != null && SelectedProject.ProjectId > 1)
+                if (SelectedProject?.ProjectId > 1)
                 {
                     string oldProject = SelectedProject.Name;
                     projectService.DeleteProject(SelectedProject);
@@ -122,7 +125,7 @@
         {
             try
             {
-                if (Name != null && Name != "" && ProjectId > 1)
+                if (!string.IsNullOrEmpty(Name) && ProjectId > 1)
                 {
                     projectService.UpdateProject(Name, ProjectId, ProjectDate, Project_Status);
                     App.NoticeProjectHasChanged = true;
@@ -145,19 +148,6 @@
         private void OnToggleHelpInfoBox()
         {
             HelpInfoBoxVisible = !HelpInfoBoxVisible;
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                // TODO: dispose managed state (managed objects)
-                projectService.Dispose();
-            }
-
-            // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-            // TODO: set large fields to null
-            base.Dispose();
         }
     }
 }

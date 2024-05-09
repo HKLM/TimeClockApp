@@ -1,10 +1,12 @@
 ﻿using System.IO.Compression;
 
+using TimeClockApp.FileHelper;
+
 namespace TimeClockApp.Utilities
 {
-    public static class ExportUtilties
+    public static class ExportUtilities
     {
-        private static readonly FileHelperService fhs = new();
+        private static readonly FileService fhs = new();
         public static async Task<bool> CompressAndExportFolder(string folderToZipPath)
         {
             // Get a temporary cache directory
@@ -23,7 +25,7 @@ namespace TimeClockApp.Utilities
             }
 
             // Get a timestamped filename
-            string exportZipFilename = $"MyAppData_{DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss")}.zip";
+            string exportZipFilename = $"MyAppData_{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.zip";
             Directory.CreateDirectory(exportZipTempDirectory);
 
             string exportZipFilePath = Path.Combine(exportZipTempDirectory, exportZipFilename);
@@ -65,9 +67,6 @@ namespace TimeClockApp.Utilities
                 string timecardFile = Path.Combine(unZipTempDirectory, "TimeCard.csv");
                 dataModel.bTimeCard = File.Exists(timecardFile);
                 dataModel.FileTimeCard = timecardFile;
-                string wagesFile = Path.Combine(unZipTempDirectory, "Wages.csv");
-                dataModel.bWages = File.Exists(wagesFile);
-                dataModel.FileWages = wagesFile;
                 string employeeFile = Path.Combine(unZipTempDirectory, "Employee.csv");
                 dataModel.bEmployee = File.Exists(employeeFile);
                 dataModel.FileEmployee = employeeFile;
@@ -88,7 +87,7 @@ namespace TimeClockApp.Utilities
             {
                 string ExportLog = "\nEXCEPTION ERROR\n" + ex.Message + "\n" + ex.InnerException;
                 Debug.WriteLine(ExportLog);
-                SqliteDataStore dataService = new();
+                SQLiteDataStore dataService = new();
                 dataService.ShowPopupError(ExportLog, "ABORTING DUE TO ERROR");
             }
             return dataModel;

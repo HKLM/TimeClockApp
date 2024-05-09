@@ -7,6 +7,7 @@ public partial class ExportPage : ContentPage
 	{
 		InitializeComponent();
 	}
+
     protected override void OnAppearing()
     {
         base.OnAppearing();

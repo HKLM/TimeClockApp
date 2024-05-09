@@ -6,11 +6,11 @@ namespace TimeClockApp.Services
 {
     public partial class ExpenseService : TimeCardDataStore
     {
-        public Expense GetExpense(int id)
+        public Expense GetExpense(int expenseId)
         {
             return Context.Expense
                 .Include(item => item.Project)
-                .First(item => item.ExpenseId == id);
+                .First(item => item.ExpenseId == expenseId);
         }
 
         public ObservableCollection<Expense> GetAllExpenses(int projectId, bool showRecent = true)

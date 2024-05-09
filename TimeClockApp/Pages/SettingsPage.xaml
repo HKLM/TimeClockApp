@@ -4,7 +4,7 @@
 	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 	xmlns:controls="clr-namespace:TimeClockApp.Controls"
-	xmlns:models="clr-namespace:TimeClockApp.Models"
+	xmlns:models="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
 	xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
 	x:Name="AppSettingsPage"
 	Title="Settings"
@@ -14,15 +14,18 @@
 	</ContentPage.BindingContext>
 	<ContentPage.Resources>
 
-		<DataTemplate x:Key="intTemplate">
+		<DataTemplate
+            x:Key="intTemplate"
+            x:DataType="models:Config">
 			<Grid ColumnDefinitions="200,40,*,40" RowDefinitions="Auto">
-				<Label
+				<Label                   
 					StyleClass="LabelSmallCenter"
 					Text="{Binding Name}"
 					VerticalTextAlignment="Center" />
 				<ImageButton
+                    x:DataType="vm:SettingsPageViewModel"
 					Grid.Column="1"
-					Command="{Binding Source={x:Reference AppSettingsPage}, Path=BindingContext.DisplayHintCommand}"
+                    Command="{Binding DisplayHintCommand, Source={RelativeSource AncestorType={x:Type vm:SettingsPageViewModel}}}"
 					CommandParameter="{Binding}"
 					HorizontalOptions="Center"
 					Source="help_icon_blue.png" />
@@ -31,33 +34,39 @@
 					Keyboard="Numeric"
 					Text="{Binding IntValue, Mode=TwoWay}" />
 				<ImageButton
+                    x:DataType="vm:SettingsPageViewModel"
 					Grid.Column="3"
-					Command="{Binding Source={x:Reference AppSettingsPage}, Path=BindingContext.SaveSettingCommand}"
+                    Command="{Binding SaveSettingCommand, Source={RelativeSource AncestorType={x:Type vm:SettingsPageViewModel}}}"
 					CommandParameter="{Binding}"
 					HorizontalOptions="Center"
 					Source="save.png" />
 			</Grid>
 		</DataTemplate>
 
-		<DataTemplate x:Key="stringTemplate">
+		<DataTemplate 
+            x:Key="stringTemplate"
+            x:DataType="models:Config">
 			<Grid ColumnDefinitions="200,40,*,40" RowDefinitions="Auto">
-				<Label
+				<Label                    
 					StyleClass="LabelSmallCenter"
 					Text="{Binding Name}"
 					VerticalTextAlignment="Center" />
 				<ImageButton
+                    x:DataType="vm:SettingsPageViewModel"
 					Grid.Column="1"
-					Command="{Binding Source={x:Reference AppSettingsPage}, Path=BindingContext.DisplayHintCommand}"
+                    Command="{Binding DisplayHintCommand, Source={RelativeSource AncestorType={x:Type vm:SettingsPageViewModel}}}"
 					CommandParameter="{Binding}"
 					HorizontalOptions="Center"
 					Source="help_icon_blue.png" />
 				<Entry
 					Grid.Column="2"
 					Keyboard="Text"
+                    x:DataType="models:Config"
 					Text="{Binding StringValue, Mode=TwoWay}" />
 				<ImageButton
+                    x:DataType="vm:SettingsPageViewModel"
 					Grid.Column="3"
-					Command="{Binding Source={x:Reference AppSettingsPage}, Path=BindingContext.SaveSettingCommand}"
+                    Command="{Binding SaveSettingCommand, Source={RelativeSource AncestorType={x:Type vm:SettingsPageViewModel}}}"
 					CommandParameter="{Binding}"
 					HorizontalOptions="Center"
 					Source="save.png" />

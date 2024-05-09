@@ -2,7 +2,7 @@
 
 namespace TimeClockApp.Services
 {
-    public class SettingsService : SqliteDataStore
+    public class SettingsService : SQLiteDataStore
     {
         public ObservableCollection<Config> GetSettingsList() => Context.Config.ToObservableCollection();
 

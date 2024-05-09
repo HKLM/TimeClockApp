@@ -4,6 +4,7 @@
 	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 	xmlns:controls="clr-namespace:TimeClockApp.Controls"
+    xmlns:models="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
 	xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
 	x:Name="PageTeamStatus"
 	Title="Team Employees"
@@ -19,10 +20,12 @@
 				HorizontalOptions="FillAndExpand"
 				VerticalOptions="Center">
 				<Grid ColumnDefinitions="*,30,150">
-					<Label Style="{StaticResource LabelTitleName}" Text="{Binding Employee_Name}" />
+					<Label
+                        x:DataType="models:Employee"
+                        Style="{StaticResource LabelTitleName}" Text="{Binding Employee_Name}" />
 					<Button
 						Grid.Column="2"
-						Command="{Binding Source={x:Reference PageTeamStatus}, Path=BindingContext.SetTeamNotActiveCommand}"
+						Command="{Binding SetTeamNotActiveCommand, Source={RelativeSource AncestorType={x:Type vm:TeamEmployeesViewModel}}}"
 						CommandParameter="{Binding}"
 						Style="{StaticResource GreenButton}"
 						Text="Active" />
@@ -37,10 +40,12 @@
 				HorizontalOptions="FillAndExpand"
 				VerticalOptions="Center">
 				<Grid ColumnDefinitions="*,30,150">
-					<Label Style="{StaticResource LabelTitleName}" Text="{Binding Employee_Name}" />
+					<Label 
+                        x:DataType="models:Employee"
+                        Style="{StaticResource LabelTitleName}" Text="{Binding Employee_Name}" />
 					<Button
 						Grid.Column="2"
-						Command="{Binding Source={x:Reference PageTeamStatus}, Path=BindingContext.SetTeamActiveCommand}"
+						Command="{Binding SetTeamActiveCommand, Source={RelativeSource AncestorType={x:Type vm:TeamEmployeesViewModel}}}"
 						CommandParameter="{Binding}"
 						Style="{StaticResource RedButton}"
 						Text="Not Active" />

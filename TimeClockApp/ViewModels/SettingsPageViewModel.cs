@@ -2,7 +2,7 @@
 {
     public partial class SettingsPageViewModel : TimeStampViewModel
     {
-        private SettingsService configService;
+        private readonly SettingsService configService;
         [ObservableProperty]
         private ObservableCollection<Config> settingsList = new();
 
@@ -43,7 +43,7 @@
 
             try
             {
-                HelpInfo = item.Hint;
+                HelpInfo = item.Hint! ?? string.Empty;
                 OnToggleHelpInfoBox();
             }
             catch (Exception ex)
@@ -58,7 +58,7 @@
         [RelayCommand]
         private void RefreshSettings()
         {
-            if (SettingsList.Any())
+            if (SettingsList.Count > 0)
                 SettingsList.Clear();
             SettingsList = configService.GetSettingsList();
         }
@@ -69,19 +69,6 @@
             HelpInfoBoxVisible = !HelpInfoBoxVisible;
             if (!HelpInfoBoxVisible)
                 HelpInfo = string.Empty;
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                // TODO: dispose managed state (managed objects)
-                configService.Dispose();
-            }
-
-            // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-            // TODO: set large fields to null
-            base.Dispose();
         }
     }
 }

@@ -1,11 +1,9 @@
-﻿namespace TimeClockApp.Models
+﻿namespace TimeClockApp.Shared.Models
 {
     public class ImportDataModel
     {
         public bool bTimeCard;
         public string FileTimeCard;
-        public bool bWages;
-        public string FileWages;
         public bool bEmployee;
         public string FileEmployee;
         public bool bProject;
@@ -19,7 +17,6 @@
 
         public List<TimeCard> ImTimeCard;
         public List<Employee> ImEmployee;
-        public List<Wages> ImWages;
         public List<Project> ImProject;
         public List<Phase> ImPhase;
         public List<Config> ImConfig;
@@ -29,16 +26,15 @@
 
         public bool IsAnyTrue()
         {
-            List<bool> list = new()
-            {
+            List<bool> list =
+            [
                 this.bTimeCard,
-                this.bWages,
                 this.bEmployee,
                 this.bPhase,
                 this.bProject,
                 this.bConfig,
                 this.bExpense
-            };
+            ];
             return list.Find(element => element.Equals(true));
         }
 
@@ -50,8 +46,6 @@
         {
             int i = 0;
             if (CachedFileCleanUp(FileTimeCard))
-                i++;
-            if (CachedFileCleanUp(FileWages))
                 i++;
             if (CachedFileCleanUp(FileEmployee))
                 i++;

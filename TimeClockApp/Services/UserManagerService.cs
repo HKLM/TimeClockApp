@@ -9,7 +9,12 @@
 
             try
             {
-                Employee p = new(employeeName, payRate, jobTitle);
+                Employee p = new()
+                {
+                    Employee_Name = employeeName,
+                    Employee_PayRate = payRate,
+                    JobTitle = jobTitle
+                };
 
                 Context.Add<Employee>(p);
                 return (Context.SaveChanges() > 0);
@@ -22,14 +27,12 @@
             return false;
         }
 
-        public Employee GetEmployee(int employeeID) => Context.Employee.Find(employeeID);
-
-        public bool UpdateEmployee(int id, string name, double payRate, EmploymentStatus employed)
+        public bool UpdateEmployee(int employeeId, string name, double payRate, EmploymentStatus employed)
         {
-            if (id == 0)
+            if (employeeId == 0)
                 return false;
 
-            Employee item = GetEmployee(id);
+            Employee item = GetEmployee(employeeId);
             if (item != null)
             {
                 item.Employee_Name = name;
@@ -50,25 +53,25 @@
             return false;
         }
 
-        public bool FireEmployee(int id)
+        public bool FireEmployee(int employeeId)
         {
-            if (id == 0)
+            if (employeeId == 0)
                 return false;
 
             try
             {
-                Employee item = GetEmployee(id);
-                if (item != null)
+                if (Context.Employee.Count() > 1)
                 {
-                    if (Context.Employee.Count() > 1)
+                    Employee item = GetEmployee(employeeId);
+                    if (item != null)
                     {
                         item.Employee_Employed = EmploymentStatus.NotEmployed;
                         Context.Update<Employee>(item);
                         return (Context.SaveChanges() > 0);
                     }
-                    else
-                        ShowPopupError("There must be atleast one employee.", "ERROR");
                 }
+                else
+                    ShowPopupError("There must be atleast one employee.", "ERROR");
             }
             catch (Exception e)
             {
@@ -78,14 +81,14 @@
             return false;
         }
 
-        public bool UpdateEmploymentStatus(Employee item, EmploymentStatus employed)
+        public bool UpdateEmploymentStatus(Employee theEmployee, EmploymentStatus employed)
         {
-            if (item != null)
+            if (theEmployee != null)
             {
-                item.Employee_Employed = employed;
+                theEmployee.Employee_Employed = employed;
                 try
                 {
-                    Context.Update<Employee>(item);
+                    Context.Update<Employee>(theEmployee);
                     return (Context.SaveChanges() > 0);
                 }
                 catch (Exception e)

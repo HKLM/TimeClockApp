@@ -1,19 +1,22 @@
 ﻿namespace TimeClockApp.ViewModels
 {
-    public partial class EditPhaseViewModel : TimeStampViewModel, IDisposable
+    public partial class EditPhaseViewModel : TimeStampViewModel
     {
         protected EditPhaseService phaseService;
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(EnableSaveButton))]
         private int phaseId = 0;
+
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(EnableAddDelButtons))]
         private string phaseTitle;
 
         [ObservableProperty]
-        private ObservableCollection<Phase> phaseList = new();
+        private ObservableCollection<Phase> phaseList = [];
 
         [ObservableProperty]
         private Phase selectedPhase;
-        partial void OnSelectedPhaseChanged(global::TimeClockApp.Models.Phase value)
+        partial void OnSelectedPhaseChanged(global::TimeClockApp.Shared.Models.Phase value)
         {
             PhaseId = value.PhaseId;
             PhaseTitle = value.PhaseTitle;
@@ -46,7 +49,7 @@
         {
             try
             {
-                if (PhaseTitle != null && PhaseTitle != "")
+                if (!string.IsNullOrEmpty(PhaseTitle))
                 {
                     phaseService.AddNewPhase(PhaseTitle);
                     App.NoticePhaseHasChanged = true;
@@ -90,7 +93,7 @@
         {
             try
             {
-                if (PhaseTitle != null && PhaseTitle != "")
+                if (!string.IsNullOrEmpty(PhaseTitle))
                 {
                     phaseService.UpdatePhase(PhaseTitle, PhaseId);
                     App.NoticePhaseHasChanged = true;
@@ -111,19 +114,6 @@
         private void OnToggleHelpInfoBox()
         {
             HelpInfoBoxVisible = !HelpInfoBoxVisible;
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                // TODO: dispose managed state (managed objects)
-                phaseService.Dispose();
-            }
-
-            // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-            // TODO: set large fields to null
-            base.Dispose();
         }
     }
 }

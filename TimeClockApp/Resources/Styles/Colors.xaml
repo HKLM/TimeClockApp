@@ -38,5 +38,6 @@
 	<Color x:Key="DarkMagentaAccent">#512BD4</Color>
 	<Color x:Key="FireBrickAccent">#B22222</Color>
 	<Color x:Key="DarkGreenAccent">#006400</Color>
-
+    <Color x:Key="OrangeRedAccent">#ff4500</Color>
+    
 </ResourceDictionary>

@@ -17,6 +17,7 @@ public partial class AppShell : Shell
         Routing.RegisterRoute("ChangeStartTime", typeof(ChangeStartTime));
         Routing.RegisterRoute("EditExpensePage", typeof(EditExpensePage));
         Routing.RegisterRoute("TeamEmployeesPage", typeof(TeamEmployeesPage));
+        Routing.RegisterRoute("PayrollDetailPage", typeof(PayrollDetailPage));
     }
 
     /// <summary>

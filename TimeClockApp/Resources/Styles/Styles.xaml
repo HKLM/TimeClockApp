@@ -268,7 +268,7 @@
 		<Setter Property="Shell.DisabledColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray800}}" />
 		<Setter Property="Shell.UnselectedColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray200}}" />
 		<Setter Property="Shell.NavBarHasShadow" Value="False" />
-		<!-- Bottom tab background color-->
+		 <!--Bottom tab background color-->
 		<Setter Property="Shell.TabBarBackgroundColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray600}}" />
 		<Setter Property="Shell.TabBarForegroundColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource White}}" />
 		<Setter Property="Shell.TabBarTitleColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource White}}" />
@@ -319,7 +319,6 @@
 	<Style TargetType="Label" Class="FlyoutItemLabelStyle">
 		<Setter Property="FontFamily" Value="OpenSansRegular" />
 		<Setter Property="FontSize" Value="Caption" />
-		<Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
 		<Setter Property="VerticalTextAlignment" Value="Center" />
 		<Setter Property="Padding" Value="5,0,0,0" />
 	</Style>
@@ -369,57 +368,62 @@
 		</Setter>
 	</Style>
 
-	<Style x:Key="ReportButton" BasedOn="{StaticResource BaseButton}" TargetType="Button">
-		<Setter Property="FontSize" Value="Small" />
-		<Setter Property="Padding" Value="10,14" />
-		<Setter Property="HorizontalOptions" Value="Center" />
-	</Style>
-
-	<Style x:Key="GreenButton" BasedOn="{StaticResource BaseButton}" TargetType="Button">
-		<Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource DarkGreenAccent}, Dark={StaticResource DarkGreenAccent}}" />
-		<Setter Property="ImageSource" Value="play_circle_big.png" />
-	</Style>
-
-	<Style x:Key="RedButton" BasedOn="{StaticResource BaseButton}" TargetType="Button">
+    <Style x:Key="ReportButton" BasedOn="{StaticResource BaseButton}" TargetType="Button">
+        <Setter Property="FontSize" Value="Small" />
+        <Setter Property="Padding" Value="10,14" />
+        <Setter Property="HorizontalOptions" Value="Center" />
+    </Style>
+    <Style x:Key="GreenButton" BasedOn="{StaticResource BaseButton}" TargetType="Button">
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource DarkGreenAccent}, Dark={StaticResource DarkGreenAccent}}" />
+        <Setter Property="ImageSource" Value="play_circle_big.png" />
+    </Style>
+    <Style x:Key="RedButton" BasedOn="{StaticResource BaseButton}" TargetType="Button">
 		<Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource FireBrickAccent}, Dark={StaticResource FireBrickAccent}}" />
 		<Setter Property="ImageSource" Value="pause_circle_outline_big.png" />
 	</Style>
 
-	<Style x:Key="LabelSmall" TargetType="Label">
-		<Setter Property="FontSize" Value="Small" />
-	</Style>
-	
-	<Style x:Key="Label_Sm_Ve" BasedOn="{StaticResource LabelSmall}" TargetType="Label">
-		<Setter Property="VerticalOptions" Value="End" />
-	</Style>
-	
-	<Style x:Key="LabelSmallCenter" TargetType="Label">
-		<Setter Property="FontSize" Value="Small" />
-		<Setter Property="VerticalTextAlignment" Value="Center" />
-	</Style>
+    <Style x:Key="LabelSmall" TargetType="Label">
+        <Setter Property="FontSize" Value="Small" />
+    </Style>
+    <Style x:Key="Label_Sm_Ve" BasedOn="{StaticResource LabelSmall}" TargetType="Label">
+        <Setter Property="VerticalOptions" Value="End" />
+    </Style>
+    <Style x:Key="LabelSmallCenter" TargetType="Label">
+        <Setter Property="FontSize" Value="Small" />
+        <Setter Property="VerticalTextAlignment" Value="Center" />
+    </Style>
+    <Style x:Key="LabelTitleName" TargetType="Label">
+        <Setter Property="FontSize" Value="Large" />
+        <Setter Property="FontAttributes" Value="Bold" />
+    </Style>
+    <Style x:Key="LabelMicro_Hstart" TargetType="Label">
+        <Setter Property="FontSize" Value="Small" />
+        <Setter Property="HorizontalTextAlignment" Value="Start" />
+    </Style>
+    <Style x:Key="LabelReportButton" BasedOn="{StaticResource LabelSmall}" TargetType="Label">
+        <Setter Property="HorizontalOptions" Value="Center" />
+    </Style>
+    <Style x:Key="LabelMicro" TargetType="Label">
+        <Setter Property="FontSize" Value="Micro" />
+        <Setter Property="HorizontalTextAlignment" Value="Center" />
+    </Style>
+    <Style x:Key="LabelPad" BasedOn="{StaticResource LabelSmall}" TargetType="Label">
+        <Setter Property="Padding" Value="5,0" />
+    </Style>
+    <Style x:Key="LabelPadCenter" BasedOn="{StaticResource LabelSmallCenter}" TargetType="Label">
+        <Setter Property="Padding" Value="5,0" />
+        <Setter Property="HorizontalTextAlignment" Value="Center" />
+    </Style>
+    <Style x:Key="LabelPad_HStart" BasedOn="{StaticResource LabelSmallCenter}" TargetType="Label">
+        <Setter Property="Padding" Value="5,0" />
+        <Setter Property="HorizontalTextAlignment" Value="Start" />
+    </Style>
 
-	<Style x:Key="LabelTitleName" TargetType="Label">
-		<Setter Property="FontSize" Value="Large" />
-		<Setter Property="FontAttributes" Value="Bold" />
-	</Style>
+    <Style x:Key="WarnFrame" TargetType="Frame">
+        <Setter Property="BorderColor" Value="{StaticResource OrangeRedAccent}" />
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray600}}" />
+    </Style>
 
-	<Style x:Key="LabelMicro_Hstart" TargetType="Label">
-		<Setter Property="FontSize" Value="Small" />
-		<Setter Property="HorizontalTextAlignment" Value="Start" />
-	</Style>
-
-	<Style x:Key="LabelReportButton" BasedOn="{StaticResource LabelSmall}" TargetType="Label">
-		<Setter Property="HorizontalOptions" Value="Center" />
-	</Style>
-
-	<Style x:Key="LabelMicro" TargetType="Label">
-		<Setter Property="FontSize" Value="Micro" />
-		<Setter Property="HorizontalTextAlignment" Value="Center" />
-	</Style>
-
-	<Style x:Key="LabelPad" BasedOn="{StaticResource LabelSmall}" TargetType="Label">
-		<Setter Property="Padding" Value="5,0" />
-	</Style>
-	<!--#endregion-->
+    <!--#endregion-->
 
 </ResourceDictionary>

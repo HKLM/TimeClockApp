@@ -1,13 +1,14 @@
-using TimeClockApp.Models;
-
 namespace TimeClockApp.Pages;
 
 [XamlCompilation(XamlCompilationOptions.Compile)]
 public partial class EditTimeCardHome : ContentPage
 {
-    public EditTimeCardHome()
+    protected readonly EditTimeCardHomeViewModel viewModel;
+
+    public EditTimeCardHome(EditTimeCardHomeViewModel ViewModel)
     {
         InitializeComponent();
+        BindingContext = viewModel = ViewModel;
     }
 
     protected override void OnAppearing()
@@ -22,7 +23,7 @@ public partial class EditTimeCardHome : ContentPage
 
     private async void ItemsListView_ItemSelected(object sender, SelectedItemChangedEventArgs e)
     {
-        if (e.SelectedItem is TimeCard item)
+        if (e?.SelectedItem is TimeCard item)
         {
             await Shell.Current.GoToAsync($"EditTimeCard?id={item.TimeCardId}");
             viewModel.OnAppearing();

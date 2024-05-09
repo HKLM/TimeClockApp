@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 #nullable enable
 
-namespace TimeClockApp.Models
+namespace TimeClockApp.Shared.Models
 {
     /// <summary>
     /// Phases are individual tasks, that as a whole, make up the project.

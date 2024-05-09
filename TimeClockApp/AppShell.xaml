@@ -1,74 +1,72 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Shell
-    x:Class="TimeClockApp.AppShell"
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:TimeClockApp.Pages"
-    FlyoutBehavior="Flyout" 
-	 FlyoutHeaderBehavior="CollapseOnScroll" 
-	 x:Name="HomeAppShell"
-	 FlyoutBackgroundColor="{AppThemeBinding Light={StaticResource FlyBackgroundLight}, Dark={StaticResource FlyBackgroundDark}}">
-	<Shell.FlyoutHeaderTemplate>
-		<DataTemplate>
-			<Grid BackgroundColor="{AppThemeBinding Light={StaticResource Tertiary}, Dark={StaticResource Tertiary}}"
+		x:Class="TimeClockApp.AppShell"
+		xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		xmlns:local="clr-namespace:TimeClockApp.Pages"
+		x:Name="HomeAppShell"
+		FlyoutBehavior="Flyout" 
+		FlyoutHeaderBehavior="CollapseOnScroll" 
+		FlyoutBackgroundColor="{AppThemeBinding Light={StaticResource FlyBackgroundLight}, Dark={StaticResource FlyBackgroundDark}}">
+    <Shell.FlyoutHeaderTemplate>
+        <DataTemplate>
+            <Grid BackgroundColor="{AppThemeBinding Light={StaticResource Tertiary}, Dark={StaticResource Tertiary}}"
 					VerticalOptions="Center"
 					ColumnDefinitions="50,*"
 					RowDefinitions="50">
-				<Image Source="appicon.png" HeightRequest="32" WidthRequest="32" Margin="10,0,0,0" />
-				<Label Text="TimeCard App"
+                <Image Source="clock_icon.png" HeightRequest="32" WidthRequest="32" Margin="10,0,0,0" />
+                <Label Text="TimeCard App"
 						TextColor="White"
 						FontAttributes="Bold"
-						FontSize="Title" Grid.Column="1"
+						FontSize="Title" 
+                        Grid.Column="1"
 						HorizontalTextAlignment="Start"
 						VerticalTextAlignment="Center"
 						Margin="10,0,0,0" />
-			</Grid>
-		</DataTemplate>
-	</Shell.FlyoutHeaderTemplate>
-	<Shell.FlyoutFooterTemplate>
-		<DataTemplate>
-			<StackLayout>
-				<Label Grid.Column="2" 
+            </Grid>
+        </DataTemplate>
+    </Shell.FlyoutHeaderTemplate>
+    <Shell.FlyoutFooterTemplate>
+        <DataTemplate>
+            <StackLayout>
+                <Label Grid.Column="2" 
 						 Text="{Binding AppVersion, Source={x:Reference HomeAppShell}}" 
 						 HorizontalOptions="Center" 
 						 FontSize="Micro"
 						 Padding="10" />
-			</StackLayout>
-		</DataTemplate>
-	</Shell.FlyoutFooterTemplate>
-	<ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate local:TimeCardPage}"
-        Route="TimeCardPage" Icon="home_work_outline.png" />
-	<FlyoutItem Title="Payroll" FlyoutDisplayOptions="AsSingleItem" Icon="paid_outline.png">
-		<ShellContent ContentTemplate="{DataTemplate local:ReportWeekPage}" Route="ReportWeekPage" />
-	</FlyoutItem>
-	<FlyoutItem Title="Financial" FlyoutDisplayOptions="AsSingleItem" Icon="work_twotone.png">
-		<Tab Title="Expences" Icon="receipt_outline.png">
-			<ShellContent ContentTemplate="{DataTemplate local:ExpensePage}" Route="ExpensePage" />
-		</Tab>
-		<Tab Title="Reports" Icon="work_twotone.png">
-			<ShellContent ContentTemplate="{DataTemplate local:ProjectHome}" Route="ProjectHome"  />
-		</Tab>
-	</FlyoutItem>
-	<FlyoutItem Title="TimeCard Manager" FlyoutDisplayOptions="AsSingleItem" Icon="edit_calendar_twotone.png">
-		<ShellContent ContentTemplate="{DataTemplate local:EditTimeCardHome}" Route="EditTimeCardHome"  />
-	</FlyoutItem>
-	<FlyoutItem Title="Tools" FlyoutDisplayOptions="AsSingleItem" Icon="handyman_outline.png">
-		<Tab Title="HR" Icon="manage_accounts.png">
-			<ShellContent ContentTemplate="{DataTemplate local:UserManagerPage}" Route="UserManagerPage" />
-		</Tab>
-		<Tab Title="Projects" Icon="work_twotone.png">
-			<ShellContent ContentTemplate="{DataTemplate local:EditProjectPage}" Route="EditProjectPage" />
-		</Tab>
-		<Tab Title="Phase" Icon="plumbing.png">
-			<ShellContent ContentTemplate="{DataTemplate local:EditPhasePage}" Route="EditPhasePage" />
-		</Tab>
-		<Tab Title="Setting" Icon="settings.png">
-			<ShellContent ContentTemplate="{DataTemplate local:SettingsPage}" Route="SettingsPage" />
-		</Tab>
-		<Tab Title="BackUp" Icon="backup.png">
-			<ShellContent ContentTemplate="{DataTemplate local:ExportPage}" Route="ExportPage" />
-		</Tab>
-	</FlyoutItem>
+            </StackLayout>
+        </DataTemplate>
+    </Shell.FlyoutFooterTemplate>
+    <ShellContent Title="Home" ContentTemplate="{DataTemplate local:TimeCardPage}" Route="TimeCardPage" Icon="home_work_outline.png" />
+    <FlyoutItem Title="Payroll" FlyoutDisplayOptions="AsSingleItem" Icon="paid_outline.png">
+        <ShellContent ContentTemplate="{DataTemplate local:PayrollDetailPage}" Route="PayrollDetailPage" />
+    </FlyoutItem>
+    <FlyoutItem Title="Payroll List" FlyoutDisplayOptions="AsSingleItem" Icon="paid_outline.png">
+        <ShellContent ContentTemplate="{DataTemplate local:PayrollPage}" Route="PayrollPage" />
+    </FlyoutItem>
+    <FlyoutItem Title="Financial" FlyoutDisplayOptions="AsSingleItem" Icon="work_twotone.png">
+        <Tab Title="Expences" Icon="receipt_outline.png">
+            <ShellContent ContentTemplate="{DataTemplate local:ExpensePage}" Route="ExpensePage" />
+        </Tab>
+    </FlyoutItem>
+    <FlyoutItem Title="TimeCard Manager" FlyoutDisplayOptions="AsSingleItem" Icon="edit_calendar_twotone.png">
+        <ShellContent ContentTemplate="{DataTemplate local:EditTimeCardHome}" Route="EditTimeCardHome" />
+    </FlyoutItem>
+    <FlyoutItem Title="Tools" FlyoutDisplayOptions="AsSingleItem" Icon="handyman_outline.png">
+        <Tab Title="HR" Icon="manage_accounts.png">
+            <ShellContent ContentTemplate="{DataTemplate local:UserManagerPage}" Route="UserManagerPage" />
+        </Tab>
+        <Tab Title="Projects" Icon="work_twotone.png">
+            <ShellContent ContentTemplate="{DataTemplate local:EditProjectPage}" Route="EditProjectPage" />
+        </Tab>
+        <Tab Title="Phase" Icon="plumbing.png">
+            <ShellContent ContentTemplate="{DataTemplate local:EditPhasePage}" Route="EditPhasePage" />
+        </Tab>
+        <Tab Title="Setting" Icon="settings.png">
+            <ShellContent ContentTemplate="{DataTemplate local:SettingsPage}" Route="SettingsPage" />
+        </Tab>
+        <Tab Title="BackUp" Icon="backup.png">
+            <ShellContent ContentTemplate="{DataTemplate local:ExportPage}" Route="ExportPage" />
+        </Tab>
+    </FlyoutItem>
 </Shell>

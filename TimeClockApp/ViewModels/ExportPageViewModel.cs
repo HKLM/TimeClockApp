@@ -1,27 +1,36 @@
 ﻿using CsvHelper;
 
+using TimeClockApp.FileHelper;
+
 namespace TimeClockApp.ViewModels
 {
     public partial class ExportPageViewModel : TimeStampViewModel
     {
         private readonly ExportDataService dataService = new();
-        private readonly FileHelperService fhs = new();
+        private readonly FileService fhs = new();
         internal string CSVFilePath { get; set; }
 
         [ObservableProperty]
         private string exportLog = string.Empty;
+
+        //TODO FIX when adding to data fails due to existing data at same rowId.
+        /// <summary>
+        /// During import of Data should the TimeCards and Expenses data be overwritten or only added to (with possible duplicates)
+        /// </summary>
         [ObservableProperty]
-        private bool isBusy = false;
+        private bool overwriteData = true;
+
+        [ObservableProperty]
+        private bool warningBoxVisible = false;
 
         private enum SQLTables
         {
             TimeCard = 0,
             Employee = 1,
-            Wages = 2,
-            Project = 3,
-            Phase = 4,
-            Config = 5,
-            Expense = 6
+            Project = 2,
+            Phase = 3,
+            Config = 4,
+            Expense = 5
         }
 
         public ExportPageViewModel()
@@ -33,15 +42,17 @@ namespace TimeClockApp.ViewModels
         public void OnAppearing()
         {
             ExportLog = string.Empty;
+            Loading = false;
         }
 
         [RelayCommand]
         private async Task ImportData()
         {
-            IsBusy = true;
+            WarningBoxVisible = false;
+            Loading = true;
+            HasError = false;
             try
             {
-
                 ExportLog = "Preparing for Import ... \n";
 
                 FilePickerFileType customFileType = new(new Dictionary<DevicePlatform, IEnumerable<string>>
@@ -65,8 +76,6 @@ namespace TimeClockApp.ViewModels
                 if (fileCopyName == String.Empty)
                     fileCopyName = Path.Combine(fhs.GetDownloadPath(), "TimeCardApp.zip");
 
-                //TODO - popup question box. Do you want to import this data? Existing data will be overwritten and can not be undone.
-
                 //  Create a location for our data
                 string UnZipPath = fhs.GetLocalFilePath("TimeClockAppUNZIP");
 
@@ -81,11 +90,11 @@ namespace TimeClockApp.ViewModels
 
                 //TODO - add some sort of version check to ensure the files we are importing are even compatible with the current version
 
-                dataModel = Utilities.ExportUtilties.UnzipArchive(fileCopyName, UnZipPath);
+                dataModel = Utilities.ExportUtilities.UnzipArchive(fileCopyName, UnZipPath);
                 if (dataModel.IsAnyTrue())
                 {
                     ExportLog += "Done!...\n";
-                    ExportLog += dataService.ImportData(dataModel, ExportLog);
+                    ExportLog += dataService.ImportData(dataModel, ExportLog, OverwriteData);
                     int icd = dataModel.DeleteCachedFile();
                     ExportLog += "\nCleaned up " + icd + " temp files\n";
                 }
@@ -93,7 +102,7 @@ namespace TimeClockApp.ViewModels
                 {
                     ExportLog += "No valid files found for import!\nABORTING\n";
                     dataModel.DeleteCachedFile();
-                    IsBusy = false;
+                    Loading = false;
                     return;
                 }
 
@@ -101,22 +110,23 @@ namespace TimeClockApp.ViewModels
             }
             catch (Exception ex)
             {
+                HasError = true;
                 Debug.WriteLine("\nEXCEPTION ERROR\n" + ex.Message + "\n" + ex.InnerException);
                 await dataService.ShowPopupErrorAsync("EXCEPTION ERROR\n" + ex.Message + "\n" + ex.InnerException, "ABORTING DUE TO ERROR");
             }
             finally
             {
-                IsBusy = false;
+                Loading = false;
             }
         }
 
         [RelayCommand]
         private async Task ExportData()
         {
-            IsBusy = true;
+            Loading = true;
+            HasError = false;
             try
             {
-
                 ExportLog = "Preparing for export ... \n";
 
                 //  Create a location for our data
@@ -141,25 +151,26 @@ namespace TimeClockApp.ViewModels
 
                 //  Zip everything and present a share dialog to the user
                 ExportLog += "Zipping ... \n";
-                await taskA.ContinueWith(async antecedent => await Utilities.ExportUtilties.CompressAndExportFolder(antecedent.Result)).Unwrap();
+                await taskA.ContinueWith(async antecedent => await Utilities.ExportUtilities.CompressAndExportFolder((await antecedent))).Unwrap();
 
                 ExportLog += "Done!\n";
             }
             catch (Exception ex)
             {
+                HasError = true;
                 Debug.WriteLine(ex);
                 await dataService.ShowPopupErrorAsync("EXCEPTION ERROR\n" + ex.Message + "\n" + ex.InnerException, "ABORTING DUE TO ERROR");
             }
             finally
             {
-                IsBusy = false;
+                Loading = false;
             }
         }
 
         private async Task<string> MakeCSVFilesAsync()
         {
-            List<Task> tableTaskList = new();
-            for (int i = 0; i < 7; i++)
+            List<Task> tableTaskList = [];
+            for (int i = 0; i < Enum.GetNames(typeof(SQLTables)).Length; i++)
             {
                 SQLTables sQL = (SQLTables)i;
                 ExportLog += "Exporting " + sQL.ToString() + " table\n";
@@ -193,16 +204,6 @@ namespace TimeClockApp.ViewModels
                     {
                         csv.Context.RegisterClassMap<EmployeeMap>();
                         await csv.WriteRecordsAsync(emp);
-                        await csv.FlushAsync();
-                    }
-                    return;
-                case SQLTables.Wages:
-                    List<Wages> wg = dataService.BackupGetWages();
-                    await using (StreamWriter writer = new(file))
-                    await using (CsvWriter csv = new(writer, CultureInfo.InvariantCulture))
-                    {
-                        csv.Context.RegisterClassMap<WagesMap>();
-                        await csv.WriteRecordsAsync(wg);
                         await csv.FlushAsync();
                     }
                     return;
@@ -257,40 +258,50 @@ namespace TimeClockApp.ViewModels
         [RelayCommand]
         private async Task OnBackupDBRequest()
         {
-            IsBusy = true;
-
-            ExportLog = "START BACKUP DATABASE: \n";
-
-            string dbFileName = "database.db3";
-            string file = Path.Combine(Microsoft.Maui.Storage.FileSystem.CacheDirectory, dbFileName);
-            if (File.Exists(file))
+            Loading = true;
+            HasError = false;
+            try
             {
-                ExportLog += "File Exists, Deleting filename: " + file + "\n";
-                File.Delete(file);
+                ExportLog = "START BACKUP DATABASE: \n";
+
+                string dbFileName = "database-bk.db3";
+                string file = Path.Combine(Microsoft.Maui.Storage.FileSystem.CacheDirectory, dbFileName);
+                if (File.Exists(file))
+                {
+                    ExportLog += "File Exists, Deleting filename: " + file + "\n";
+                    File.Delete(file);
+                }
+                ExportLog += "Begin backing up...\n";
+
+                await dataService.BackupDatabase(file);
+
+                // Copy file to public accessable download folder, outside of app sandbox
+                string filePublic = Path.Combine(fhs.GetDownloadPath(), dbFileName);
+                if (File.Exists(filePublic))
+                {
+                    File.Delete(filePublic);
+                }
+                byte[] bytes = await File.ReadAllBytesAsync(file);
+                ExportLog += "Copy backup database file to: " + filePublic + "\n";
+                await File.WriteAllBytesAsync(filePublic, bytes);
+
+                ExportLog += "Back up complete, start share file...\n";
+                await Share.RequestAsync(new ShareFileRequest
+                {
+                    Title = "TimeClock App SQLite3 Database",
+                    File = new ShareFile(filePublic),
+                });
+
+                ExportLog += "FINISHED\n";
             }
-            ExportLog += "Begin backing up...\n";
-
-            dataService.BackupDatabase(file);
-
-            // Copy file to public accessable download folder, outside of app sandbox
-            string filePublic = Path.Combine(fhs.GetDownloadPath(), dbFileName);
-            if (File.Exists(filePublic))
+            catch
             {
-                File.Delete(filePublic);
+                HasError = true;
             }
-            byte[] bytes = await File.ReadAllBytesAsync(file);
-            ExportLog += "Copy backup database file to: " + filePublic + "\n";
-            await File.WriteAllBytesAsync(filePublic, bytes);
-
-            ExportLog += "Back up complete, start share file...\n";
-            await Share.RequestAsync(new ShareFileRequest
+            finally
             {
-                Title = "TimeClock App SQLite3 Database",
-                File = new ShareFile(filePublic),
-            });
-
-            ExportLog += "FINISHED\n";
-            IsBusy = false;
+                Loading = false;
+            }
         }
 
         [RelayCommand]
@@ -299,17 +310,16 @@ namespace TimeClockApp.ViewModels
             HelpInfoBoxVisible = !HelpInfoBoxVisible;
         }
 
-        protected override void Dispose(bool disposing)
+        [RelayCommand]
+        private void OnToggleWarningBox()
         {
-            if (disposing)
-            {
-                // TODO: dispose managed state (managed objects)
-                dataService.Dispose();
-            }
+            WarningBoxVisible = !WarningBoxVisible;
+        }
 
-            // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-            // TODO: set large fields to null
-            base.Dispose();
+        [RelayCommand]
+        private void OnCloseWarningBox()
+        {
+            WarningBoxVisible = false;
         }
     }
 }

@@ -4,15 +4,16 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
+using TimeClockApp.FileHelper;
+
 namespace TimeClockApp.Services
 {
-    public class ExportDataService : SqliteDataStore
+    //TODO Make class content async
+    public class ExportDataService : SQLiteDataStore
     {
         public List<TimeCard> BackupGetTimeCard() => Context.TimeCard
              .IgnoreAutoIncludes().ToList();
         public List<Employee> BackupGetEmployee() => Context.Employee
-            .IgnoreAutoIncludes().ToList();
-        public List<Wages> BackupGetWages() => Context.Wages
             .IgnoreAutoIncludes().ToList();
         public List<Project> BackupGetProject() => Context.Project
             .IgnoreAutoIncludes().ToList();
@@ -23,7 +24,7 @@ namespace TimeClockApp.Services
         public List<Expense> BackupGetExpense() => Context.Expense
             .IgnoreAutoIncludes().ToList();
 
-        #region READCSV
+#region READCSV
         public List<TimeCard> ReadCSVTimeCards(string csvFile)
         {
             List<TimeCard> records = new();
@@ -69,18 +70,6 @@ namespace TimeClockApp.Services
                 //    };
                 //    records.Add(record);
                 //}
-            }
-            return records;
-        }
-
-        public List<Wages> ReadCSVWages(string csvFile)
-        {
-            List<Wages> records = new();
-            using (var reader = new StreamReader(csvFile))
-            using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
-            {
-                csv.Context.RegisterClassMap<WagesMap>();
-                records = csv.GetRecords<Wages>().ToList();
             }
             return records;
         }
@@ -131,23 +120,43 @@ namespace TimeClockApp.Services
             }
             return records;
         }
-        #endregion READCSV
+#endregion READCSV
 
-        public void BackupDatabase(string savePath)
+        public async Task BackupDatabase(string savePath = null)
         {
-            SqliteConnection cn = new(App.SQLiteDBPath);
             try
             {
-                cn.BackupDatabase(new SqliteConnection($"Filename={savePath}"));
+                System.Diagnostics.Debug.WriteLine("BEGIN BACKUP OF SQLITE DATABASE", "Backup");
+                savePath ??= $"{SQLiteSetting.SQLiteDBPath}.bk";
+                System.Diagnostics.Debug.WriteLine("Back file name: " + savePath + "\n", "Backup");
+                if (File.Exists(savePath))
+                {
+                    System.Diagnostics.Debug.WriteLine("Existing backup file found. Deleting old file.\n", "Backup");
+                    File.Delete(savePath);
+                }
+                System.Diagnostics.Debug.WriteLine("Opening SQLiteConnection and begin backing up...\n", "Backup");
+                using (SqliteConnection source = new($"Data Source = {SQLiteSetting.SQLiteDBPath};"))
+                using (SqliteConnection target = new($"Data Source = {savePath};"))
+                {
+                    await source.OpenAsync();
+                    await target.OpenAsync();
+                    source.BackupDatabase(target);
+                    System.Diagnostics.Debug.WriteLine("Successfully completed SQLite file backup.\n", "Backup");
+                }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException + "\n");
+                System.Diagnostics.Debug.WriteLine("BACKUP NOT COMPLETED!!\n", "Backup");
+                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException + "\n", "Backup");
                 ShowPopupError(ex.Message + "\n" + ex.InnerException, "ABORTING DUE TO ERROR");
+            }
+            finally
+            {
+                System.Diagnostics.Debug.WriteLine("BACKUP COMPLETE.\n", "Backup");
             }
         }
 
-        public string ImportData(ImportDataModel dataModel, string ExportLog)
+        public string ImportData(ImportDataModel dataModel, string ExportLog, bool overWriteData)
         {
             if (dataModel.IsAnyTrue())
             {
@@ -164,7 +173,7 @@ namespace TimeClockApp.Services
                             dataModel.ImTimeCard = ReadCSVTimeCards(dataModel.FileTimeCard);
                             for (int i = 0; i < dataModel.ImTimeCard.Count; i++)
                             {
-                                if (ImportTimeCard(dataModel.ImTimeCard[i]))
+                                if (ImportTimeCard(dataModel.ImTimeCard[i], overWriteData))
                                     dataModel.ReadyToSave++;
                             }
                         }
@@ -175,16 +184,6 @@ namespace TimeClockApp.Services
                             for (int i = 0; i < dataModel.ImEmployee.Count; i++)
                             {
                                 if (ImportEmployee(dataModel.ImEmployee[i]))
-                                    dataModel.ReadyToSave++;
-                            }
-                        }
-                        if (dataModel.bWages)
-                        {
-                            ExportLog += "Importing Wages\n";
-                            dataModel.ImWages = ReadCSVWages(dataModel.FileWages);
-                            for (int i = 0; i < dataModel.ImWages.Count; i++)
-                            {
-                                if (ImportWages(dataModel.ImWages[i]))
                                     dataModel.ReadyToSave++;
                             }
                         }
@@ -224,7 +223,7 @@ namespace TimeClockApp.Services
                             dataModel.ImExpense = ReadCSVExpense(dataModel.FileExpense);
                             for (int i = 0; i < dataModel.ImExpense.Count; i++)
                             {
-                                if (ImportExpense(dataModel.ImExpense[i]))
+                                if (ImportExpense(dataModel.ImExpense[i], overWriteData))
                                     dataModel.ReadyToSave++;
                             }
                         }
@@ -245,7 +244,7 @@ namespace TimeClockApp.Services
                     {
                         //To prevent saving in the finally block of this try-catch
                         dataModel.ReadyToSave = 0;
-                        System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException + "\nUNDOING CHANGES\n");
+                        System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException + "\nUNDOING CHANGES\n", "Import");
 
                         transaction.RollbackToSavepoint("optimistic-update");
 
@@ -256,8 +255,8 @@ namespace TimeClockApp.Services
                         if (dataModel.ReadyToSave > 0)
                         {
                             transaction.Commit();
-                            ExportLog += "Commited Data to Database!\n";
-                            ShowPopupError("Commited Data to Database", "COMPLETED");
+                            ExportLog += "Committed Data to Database!\n";
+                            ShowPopupError("Committed Data to Database.\n\nRestart the application to see updated changes.", "COMPLETED");
                         }
                     }
                 }
@@ -269,20 +268,19 @@ namespace TimeClockApp.Services
             return ExportLog;
         }
 
-        #region INSERT DATA TO DB
-        public bool ImportTimeCard(TimeCard card)
+#region INSERT DATA TO DB
+        public bool ImportTimeCard(TimeCard card, bool overWriteData)
         {
             try
             {
                 TimeCard t = Context.TimeCard.Find(card.TimeCardId);
-                if (t != null)
+                if (t != null && overWriteData)
                 {
                     TimeCard updateCard = Context.TimeCard.IgnoreAutoIncludes().FirstOrDefault(x => x.TimeCardId == card.TimeCardId);
 
                     updateCard.EmployeeId = card.EmployeeId;
                     updateCard.ProjectId = card.ProjectId;
                     updateCard.PhaseId = card.PhaseId;
-                    updateCard.WagesId = card.WagesId ?? null;
                     updateCard.TimeCard_EmployeeName = card.TimeCard_EmployeeName;
                     updateCard.TimeCard_Status = card.TimeCard_Status;
                     updateCard.TimeCard_DateTime = card.TimeCard_DateTime;
@@ -292,8 +290,8 @@ namespace TimeClockApp.Services
                     updateCard.TimeCard_WorkHours = card.TimeCard_WorkHours;
                     updateCard.TimeCard_EmployeePayRate = card.TimeCard_EmployeePayRate;
                     updateCard.TimeCard_bReadOnly = card.TimeCard_bReadOnly;
-                    updateCard.ProjectName = card.ProjectName ?? null;
-                    updateCard.PhaseTitle = card.PhaseTitle ?? null;
+                    updateCard.ProjectName = card.ProjectName ?? string.Empty;
+                    updateCard.PhaseTitle = card.PhaseTitle ?? string.Empty;
                     Context.Update(updateCard);
                     return true;
                 }
@@ -305,7 +303,7 @@ namespace TimeClockApp.Services
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException + "\n");
+                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException + "\n", "Import");
                 ShowPopupError(ex.Message + "\n" + ex.InnerException, "ABORTING DUE TO ERROR");
             }
             return false;
@@ -334,46 +332,12 @@ namespace TimeClockApp.Services
             }
             catch (InvalidDataException x)
             {
-                System.Diagnostics.Debug.WriteLine(x.Message + "\n" + x.InnerException + "\n");
+                System.Diagnostics.Debug.WriteLine(x.Message + "\n" + x.InnerException + "\n", "Import");
                 ShowPopupError(x.Message + "\n" + x.InnerException, "ABORTING DUE TO InvalidDataException");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException + "\n");
-                ShowPopupError(ex.Message + "\n" + ex.InnerException, "ABORTING DUE TO ERROR");
-            }
-            return false;
-        }
-
-        public bool ImportWages(Wages card)
-        {
-            try
-            {
-                Wages t = Context.Wages.Find(card.WagesId);
-                if (t != null)
-                {
-                    Wages updateCard = Context.Wages.IgnoreAutoIncludes().FirstOrDefault(x => x.WagesId == card.WagesId);
-                    updateCard.RegPay = card.RegPay;
-                    updateCard.OT_Pay = card.OT_Pay;
-                    updateCard.OT2_Pay = card.OT2_Pay;
-                    updateCard.RegularHours = card.RegularHours;
-                    updateCard.OTHours = card.OTHours;
-                    updateCard.OT2Hours = card.OT2Hours;
-                    updateCard.TimeCardId = card.TimeCardId;
-                    updateCard.TotalHours = card.TotalHours;
-                    updateCard.TotalWages = card.TotalWages;
-                    Context.Update<Wages>(updateCard);
-                    return true;
-                }
-                else
-                {
-                    Context.Add<Wages>(card);
-                    return true;
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException + "\n");
+                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException + "\n", "Import");
                 ShowPopupError(ex.Message + "\n" + ex.InnerException, "ABORTING DUE TO ERROR");
             }
             return false;
@@ -401,7 +365,7 @@ namespace TimeClockApp.Services
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException + "\n");
+                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException + "\n", "Import");
                 ShowPopupError(ex.Message + "\n" + ex.InnerException, "ABORTING DUE TO ERROR");
             }
             return false;
@@ -427,7 +391,7 @@ namespace TimeClockApp.Services
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException + "\n");
+                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException + "\n", "Import");
                 ShowPopupError(ex.Message + "\n" + ex.InnerException, "ABORTING DUE TO ERROR");
             }
             return false;
@@ -456,18 +420,18 @@ namespace TimeClockApp.Services
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException + "\n");
+                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException + "\n", "Import");
                 ShowPopupError(ex.Message + "\n" + ex.InnerException, "ABORTING DUE TO ERROR");
             }
             return false;
         }
 
-        public bool ImportExpense(Expense card)
+        public bool ImportExpense(Expense card, bool overWriteData)
         {
             try
             {
                 Expense t = Context.Expense.Find(card.ExpenseId);
-                if (t != null)
+                if (t != null && overWriteData)
                 {
                     Expense updateCard = Context.Expense.IgnoreAutoIncludes().FirstOrDefault(x => x.ExpenseId == card.ExpenseId);
                     updateCard.ProjectId = card.ProjectId;
@@ -490,11 +454,11 @@ namespace TimeClockApp.Services
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException + "\n");
+                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException + "\n", "Import");
                 ShowPopupError(ex.Message + "\n" + ex.InnerException, "ABORTING DUE TO ERROR");
             }
             return false;
         }
-        #endregion
+#endregion
     }
 }

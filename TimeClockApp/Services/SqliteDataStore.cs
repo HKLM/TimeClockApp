@@ -1,12 +1,12 @@
 ﻿namespace TimeClockApp.Services
 {
-    public class SqliteDataStore : IDisposable
+    public class SQLiteDataStore
     {
-        private protected static readonly DatabackendContext Context = new();
+        private protected static readonly DataBackendContext Context = new();
 
-        public SqliteDataStore() { }
+        public SQLiteDataStore() { }
 
-        #region POPUP
+#region POPUP
 
         /// <summary>
         /// Writes error message to debug log and then shows alert popup to the user, displaying the error message.
@@ -29,12 +29,7 @@
             return App.AlertSvc.ShowAlertAsync(alertTitle, errorTxt);
         }
 
-        #endregion POPUP
-
-        public void Dispose()
-        {
-            ((IDisposable)Context).Dispose();
-        }
+#endregion POPUP
 
         /// <summary>
         /// Gets the INT value of the Config item
@@ -45,7 +40,7 @@
         internal int GetConfigInt(int keyId, int defaultValue = 1)
         {
             Config C = Context.Config.Find(keyId);
-            return C.IntValue.HasValue ? (int)C.IntValue.Value : defaultValue;
+            return C?.IntValue ?? defaultValue;
         }
 
         /// <summary>
@@ -56,9 +51,7 @@
         internal string GetConfigString(int keyId)
         {
             Config C = Context.Config.Find(keyId);
-            if (C != null && C.StringValue != null && C.StringValue != "")
-                return C.StringValue;
-            return null;
+            return C?.StringValue ?? string.Empty;
         }
     }
 }

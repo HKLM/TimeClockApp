@@ -1,12 +1,11 @@
 ﻿//#define TIMESTAMP
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 using CsvHelper.Configuration;
 
-//#nullable enable
-
-namespace TimeClockApp.Models
+namespace TimeClockApp.Shared.Models
 {
     /// <summary>ShiftStatus enum
     /// </summary>
@@ -72,31 +71,10 @@ namespace TimeClockApp.Models
 #endif
     {
         public TimeCard() { }
-        public TimeCard(string employeeName)
-        {
-            TimeCardDataStore dataStore = new();
-            Employee employee = dataStore.GetEmployeeByName(employeeName);
-            if (employee != null)
-            {
-                EmployeeId = employee.EmployeeId;
-                TimeCard_EmployeeName = employeeName ?? throw new ArgumentNullException(nameof(employeeName));
-                TimeCard_EmployeePayRate = employee.Employee_PayRate;
-                Employee = employee ?? throw new ArgumentNullException(nameof(employee));
-                TimeCard_DateTime = DateTime.Now;
-                TimeCard_Date = DateOnly.FromDateTime(DateTime.Now);
-                TimeCard_Status = ShiftStatus.NA;
-                ProjectId = 1;
-                ProjectName = ".None";
-                PhaseId = 1;
-                PhaseTitle = ".Misc";
-                TimeCard_bReadOnly = false;
-            }
-            else
-                throw new ArgumentNullException(nameof(employee));
-        }
 
         public TimeCard(Employee employee)
         {
+            ArgumentNullException.ThrowIfNull(employee);
             EmployeeId = employee.EmployeeId;
             TimeCard_EmployeeName = employee.Employee_Name ?? throw new ArgumentNullException(nameof(employee.Employee_Name));
             TimeCard_EmployeePayRate = employee.Employee_PayRate;
@@ -113,6 +91,7 @@ namespace TimeClockApp.Models
 
         public TimeCard(Employee employee, int projectId, int phaseId)
         {
+            ArgumentNullException.ThrowIfNull(employee);
             EmployeeId = employee.EmployeeId;
             TimeCard_EmployeeName = employee.Employee_Name ?? throw new ArgumentNullException(nameof(employee.Employee_Name));
             TimeCard_EmployeePayRate = employee.Employee_PayRate;
@@ -121,12 +100,16 @@ namespace TimeClockApp.Models
             TimeCard_Date = DateOnly.FromDateTime(DateTime.Now);
             TimeCard_Status = ShiftStatus.NA;
             ProjectId = projectId;
-            ProjectName = EditProjectService.GetProjectNameFromId(projectId);
+            //TODDO
+            ProjectName = ".None";
+            //ProjectName = EditProjectService.GetProjectNameFromId(projectId);
             PhaseId = phaseId;
-            PhaseTitle = EditPhaseService.GetPhaseTitleFromId(phaseId);
+            //TODDO
+            PhaseTitle = ".Misc";
+            //PhaseTitle = EditPhaseService.GetPhaseTitleFromId(phaseId);
             TimeCard_bReadOnly = false;
         }
-
+/*
         public TimeCard(int employeeId, int projectId, int phaseId, string timeCard_EmployeeName, ShiftStatus timeCard_Status, DateTime timeCard_DateTime, DateOnly timeCard_Date, TimeOnly timeCard_StartTime, double timeCard_EmployeePayRate, bool timeCard_bReadOnly, TimeOnly timeCard_EndTime)
         {
             EmployeeId = employeeId;
@@ -143,14 +126,13 @@ namespace TimeClockApp.Models
             TimeCard_EmployeePayRate = timeCard_EmployeePayRate;
             TimeCard_bReadOnly = timeCard_bReadOnly;
         }
-
+*/
         [Key]
         public int TimeCardId { get; set; }
         public int EmployeeId { get; set; }
         public int ProjectId { get; set; }
         public int PhaseId { get; set; }
 
-        public int? WagesId { get; set; }
         /// <summary>
         /// Copied from the associated Employee entity at the time this TimeCard is created.
         /// </summary>
@@ -238,7 +220,9 @@ namespace TimeClockApp.Models
             get
             {
                 if (TimeCard_Status == ShiftStatus.NA || TimeCard_Status == ShiftStatus.Deleted)
+                {
                     return TimeSpan.Zero;
+                }
                 else
                 {
                     if (TimeCard_EndTime == new TimeOnly(0, 0))
@@ -280,21 +264,17 @@ namespace TimeClockApp.Models
         /// <summary>
         /// Saved Project Name at the time this card was made.
         /// </summary>
-        public string ProjectName { get; set; } = null;
+        public string ProjectName { get; set; }
 
         /// <summary>
         /// Saved Project Title at the time this card was made.
         /// </summary>
-        public string PhaseTitle { get; set; } = null;
+        public string PhaseTitle { get; set; }
 
         //Navigation Entities
         public virtual Employee Employee { get; set; }
         public virtual Project Project { get; set; }
         public virtual Phase Phase { get; set; }
-
-#nullable enable
-        public virtual Wages? Wages { get; set; }
-#nullable disable
 
         public override string ToString()
         {
@@ -312,7 +292,6 @@ namespace TimeClockApp.Models
             rv += "ProjectName: " + ProjectName + Environment.NewLine;
             rv += "PhaseId:     " + PhaseId + Environment.NewLine;
             rv += "PhaseTitle:  " + PhaseTitle + Environment.NewLine;
-            rv += "WagesId:     " + WagesId.GetValueOrDefault(0).ToString() + Environment.NewLine;
             rv += "bReadOnly:  [" + TimeCard_bReadOnly.ToString() + "]" + Environment.NewLine;
             rv += "------------------------------------------------------" + Environment.NewLine;
             return rv;
@@ -328,7 +307,6 @@ namespace TimeClockApp.Models
             Map(m => m.EmployeeId);
             Map(m => m.ProjectId);
             Map(m => m.PhaseId);
-            Map(m => m.WagesId).Optional();
             Map(m => m.TimeCard_EmployeeName);
             Map(m => m.TimeCard_Status);
             Map(m => m.TimeCard_DateTime);

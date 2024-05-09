@@ -8,13 +8,14 @@ public partial class TimeCardPage : ContentPage
     public TimeCardPage(TimeCardPageViewModel ViewModel)
     {
         InitializeComponent();
-        BindingContext = viewModel = ViewModel;
+        viewModel = ViewModel;
+        BindingContext = viewModel;
     }
 
-    protected override void OnAppearing()
+    protected override async void OnAppearing()
     {
         base.OnAppearing();
-        viewModel.OnAppearing();
+        await viewModel.OnAppearing();
     }
 
     private async void Swipeitemaction_Clicked(object sender, EventArgs e)
@@ -25,7 +26,6 @@ public partial class TimeCardPage : ContentPage
             if (int.TryParse(swipeItem.CommandParameter.ToString(), out int i))
             {
                 await Shell.Current.GoToAsync($"ChangeStartTime?id={i}");
-                await viewModel.OnAppearing();
             }
         }
     }
@@ -38,7 +38,6 @@ public partial class TimeCardPage : ContentPage
             if (int.TryParse(swipeItem.CommandParameter.ToString(), out int i))
             {
                 await Shell.Current.GoToAsync($"EditTimeCard?id={i}");
-                await viewModel.OnAppearing();
             }
         }
     }
@@ -46,6 +45,5 @@ public partial class TimeCardPage : ContentPage
     private async void TeamPageToolbarButton_Clicked(object sender, EventArgs e)
     {
         await Shell.Current.GoToAsync($"TeamEmployeesPage");
-        await viewModel.OnAppearing();
     }
 }

@@ -35,8 +35,7 @@
             return Application.Current.MainPage.DisplayAlert(title, message, accept, cancel);
         }
 
-
-        #region  "'Fire and forget' calls"
+#region  "'Fire and forget' calls"
 
         /// <summary>
         /// "Fire and forget". Method returns BEFORE showing alert.
@@ -44,11 +43,9 @@
         /// </summary>
         public void ShowAlert(string title, string message, string cancel = "OK")
         {
-#pragma warning disable AsyncFixer03 // Fire-and-forget async-void methods or delegates
             Application.Current.MainPage.Dispatcher.Dispatch(async () =>
                 await ShowAlertAsync(title, message, cancel)
             );
-#pragma warning restore AsyncFixer03 // Fire-and-forget async-void methods or delegates
         }
 
         /// <summary>
@@ -57,14 +54,12 @@
         /// <param name="callback">Action to perform afterwards.</param>
         public void ShowConfirmation(string title, string message, Action<bool> callback, string accept = "Yes", string cancel = "No")
         {
-#pragma warning disable AsyncFixer03 // Fire-and-forget async-void methods or delegates
             Application.Current.MainPage.Dispatcher.Dispatch(async () =>
             {
                 bool answer = await ShowConfirmationAsync(title, message, accept, cancel);
                 callback(answer);
             });
-#pragma warning restore AsyncFixer03 // Fire-and-forget async-void methods or delegates
         }
-        #endregion
+#endregion
     }
 }

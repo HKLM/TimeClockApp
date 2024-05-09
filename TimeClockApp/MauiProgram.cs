@@ -1,4 +1,6 @@
-﻿[assembly: XamlCompilation(XamlCompilationOptions.Compile)]
+﻿using TimeClockApp.FileHelper;
+
+[assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 namespace TimeClockApp;
 
 public static class MauiProgram
@@ -14,34 +16,36 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
             });
+        builder.Services.AddTransient<DataBackendContext>((services) => new DataBackendContext(SQLiteSetting.SQLiteDBPath));
         builder.Services.AddSingleton<IAlertService, AlertService>();
-
-        builder.Services.AddSingleton<TimeCardPageViewModel>();
+        builder.Services.AddSingleton<TimeCardService>();
+        builder.Services.AddTransient<TimeCardPageViewModel>();
         builder.Services.AddSingleton<TimeCardPage>();
-        builder.Services.AddTransient<TimeCardService>();
 
-        builder.Services.AddSingleton<ReportWeekViewModel>();
-        builder.Services.AddSingleton<ReportWeekPage>();
-        builder.Services.AddTransient<ReportDataService>();
-
-        builder.Services.AddSingleton<ProjectHomeViewModel>();
-        builder.Services.AddSingleton<ProjectHome>();
-        builder.Services.AddTransient<ProjectDetailService>();
-
-        builder.Services.AddSingleton<EditTimeCardViewModel>();
+        builder.Services.AddSingleton<EditTimeCardService>();
+        builder.Services.AddTransient<EditTimeCardViewModel>();
         builder.Services.AddSingleton<EditTimeCard>();
-        builder.Services.AddTransient<EditTimeCardService>();
 
-        builder.Services.AddSingleton<ChangeStartTimeViewModel>();
+        builder.Services.AddTransient<ChangeStartTimeViewModel>();
         builder.Services.AddSingleton<ChangeStartTime>();
 
-        builder.Services.AddSingleton<ExpenseViewModel>();
-        builder.Services.AddSingleton<ExpensePage>();
-        builder.Services.AddTransient<ExpenseService>();
+        builder.Services.AddSingleton<PayrollService>();
+        builder.Services.AddTransient<PayrollPageViewModel>();
+        builder.Services.AddTransient<PayrollPage>();
 
-        builder.Services.AddSingleton<TeamEmployeesViewModel>();
+        builder.Services.AddTransient<PayrollDetailViewModel>();
+        builder.Services.AddTransient<PayrollDetailPage>();
+
+        builder.Services.AddSingleton<ExpenseService>();
+        builder.Services.AddTransient<ExpenseViewModel>();
+        builder.Services.AddSingleton<ExpensePage>();
+
+        builder.Services.AddSingleton<UserManagerService>();
+        builder.Services.AddTransient<TeamEmployeesViewModel>();
         builder.Services.AddSingleton<TeamEmployeesPage>();
-        builder.Services.AddTransient<UserManagerService>();
+
+        builder.Services.AddTransient<EditTimeCardHomeViewModel>();
+        builder.Services.AddSingleton<EditTimeCardHome>();
 
         return builder.Build();
     }

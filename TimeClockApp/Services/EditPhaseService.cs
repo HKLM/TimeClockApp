@@ -35,7 +35,7 @@ namespace TimeClockApp.Services
                 Phase p = new(phaseName);
 
                 Context.Add<Phase>(p);
-                return (Context.SaveChanges() > 0);
+                return Context.SaveChanges() > 0;
             }
             catch (Exception ex)
             {
@@ -46,7 +46,7 @@ namespace TimeClockApp.Services
 
         public bool UpdatePhase(string name, int id)
         {
-            if (id < 2 || name == null || name == "" || Context.Phase.Any(x => x.PhaseTitle.Contains(name)))
+            if (id < 2 || name == null || name?.Length == 0 || Context.Phase.Any(x => x.PhaseTitle.Contains(name)))
                 return false;
             try
             {
@@ -55,7 +55,7 @@ namespace TimeClockApp.Services
                 {
                     item.PhaseTitle = name;
                     Context.Update<Phase>(item);
-                    return (Context.SaveChanges() > 0);
+                    return Context.SaveChanges() > 0;
                 }
             }
             catch (Exception ex)
@@ -72,7 +72,7 @@ namespace TimeClockApp.Services
             try
             {
                 Context.Remove<Phase>(item);
-                return (await Context.SaveChangesAsync() > 0);
+                return await Context.SaveChangesAsync() > 0;
             }
             catch (Exception ex)
             {

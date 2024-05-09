@@ -4,11 +4,11 @@ using CommunityToolkit.Maui.Core.Extensions;
 
 using Microsoft.EntityFrameworkCore;
 
-using TimeClockApp.Helpers;
+using TimeClockApp.Shared.Helpers;
 
 namespace TimeClockApp.Services
 {
-    public class TimeCardDataStore : SqliteDataStore
+    public class TimeCardDataStore : SQLiteDataStore
     {
         /// <summary>
         /// returns the first previous Saturday before the <paramref name="day"/>
@@ -48,36 +48,17 @@ namespace TimeClockApp.Services
                 .ToObservableCollection();
         }
 
-        public async Task<ObservableCollection<Project>> GetProjectsListAsync()
-        {
-            return new ObservableCollection<Project>(await Context.Project
-                .Where(item => item.Status < ProjectStatus.Completed)
-                .OrderBy(e => e.Name)
-                .ToListAsync());
-        }
-
-        public ObservableCollection<Project> GetAllProjectsList(bool bShowAll)
-        {
-            if (bShowAll)
-                return Context.Project
-                        .Where(item => item.Status != ProjectStatus.Deleted)
-                        .OrderBy(e => e.Name)
-                        .ToObservableCollection();
-            else
-                return Context.Project
-                        .Where(item => item.Status < ProjectStatus.Completed)
-                        .OrderBy(e => e.Name)
-                        .ToObservableCollection();
-        }
+        public ObservableCollection<Project> GetAllProjectsList(bool bShowAll) => 
+            (bShowAll) ? Context.Project
+                                    .Where(item => item.Status != ProjectStatus.Deleted)
+                                    .OrderBy(e => e.Name)
+                                    .ToObservableCollection()
+                                : Context.Project
+                                    .Where(item => item.Status < ProjectStatus.Completed)
+                                    .OrderBy(e => e.Name)
+                                    .ToObservableCollection();
 
         public ObservableCollection<Phase> GetPhaseList() => Context.Phase.ToObservableCollection();
-
-        public async Task<ObservableCollection<Phase>> GetPhaseListAsync()
-        {
-            return new ObservableCollection<Phase>(await Context.Phase
-                .OrderBy(e => e.PhaseTitle)
-                .ToListAsync());
-        }
 
         public ObservableCollection<Employee> GetAllEmployees(bool includeNotEmployed = false)
         {
@@ -111,11 +92,6 @@ namespace TimeClockApp.Services
                 .ToObservableCollection();
         }
 
-        public Employee GetEmployeeByName(string name) => Context.Employee
-            .AsNoTracking()
-            .Where(e => e.Employee_Name == name)
-            .First();
-
         public TimeCard GetTimeCard(int timeCardID) => Context.TimeCard.Find(timeCardID);
 
         /// <summary>
@@ -124,7 +100,7 @@ namespace TimeClockApp.Services
         /// <param name="timeCardId">Id of time card to check</param>
         /// <param name="isAdmin">if IsAdmin is set true, override the ReadOnly flag and allow edits. Defaults to false</param>
         /// <returns></returns>
-        internal bool IsTimeCardReadOnly(int timeCardId, bool isAdmin = false) => isAdmin ? false : GetTimeCard(timeCardId).TimeCard_bReadOnly;
+        internal bool IsTimeCardReadOnly(int timeCardId, bool isAdmin = false) => !isAdmin && GetTimeCard(timeCardId).TimeCard_bReadOnly;
 
         internal async Task<bool> ValidateClockOutAsync(TimeCard timeCard)
         {
@@ -134,11 +110,20 @@ namespace TimeClockApp.Services
             TimeOnly clockNowRndTime = TimeHelper.RoundTimeOnly(new TimeOnly(DateTime.Now.Hour, DateTime.Now.Minute));
             DateOnly dateNow = DateOnly.FromDateTime(DateTime.Now);
             int dateCheck = timeCard.TimeCard_Date.CompareTo(dateNow);
-            //timecard is in the past
             if (dateCheck < 0)
             {
-                TimeOnly timeEndVar = timeCard.TimeCard_EndTime == new TimeOnly() ? TimeOnly.FromDateTime(DateTime.Now) : timeCard.TimeCard_EndTime;
-                return ValidatingClockOutTimes(timeCard.TimeCard_StartTime, timeEndVar);
+                System.Diagnostics.Debug.WriteLine("ERROR! Card Time needs to be checked before saving. Most likely this card was ClockedIn on a prior date and not clockedOut on said date.");
+                await Shell.Current.GoToAsync($"EditTimeCard?id={timeCard.TimeCardId}&e=1");
+                return false;
+            }
+            else if (timeCard.TimeCard_StartTime > TimeOnly.FromDateTime(DateTime.Now))
+            {
+                if (CheckIfTimeIsCloseToNow(clockNowRndTime, timeCard.TimeCard_StartTime))
+                    return true;
+
+                System.Diagnostics.Debug.WriteLine("ERROR! Card Time start time is greater than the current time.");
+                await Shell.Current.GoToAsync($"EditTimeCard?id={timeCard.TimeCardId}&e=2");
+                return false;
             }
             else if (dateCheck == 0)
             {
@@ -164,10 +149,9 @@ namespace TimeClockApp.Services
                 }
                 else if (dateCheck == 0)
                 {
-                    if (ValidatingClockOutTimes(timeCard.TimeCard_StartTime, TimeOnly.FromDateTime(DateTime.Now)))
-                        return true;
-                    else
-                        return CheckIfTimeIsCloseToNow(clockNowRndTime, timeCard.TimeCard_StartTime);
+                    bool b = CheckIfTimeIsCloseToNow(clockNowRndTime, timeCard.TimeCard_StartTime);
+                    bool vb = ValidatingClockOutTimes(timeCard.TimeCard_StartTime, TimeOnly.FromDateTime(DateTime.Now));
+                    return b && vb;
                 }
                 return false;
             }
@@ -175,148 +159,13 @@ namespace TimeClockApp.Services
             return true;
         }
 
-        private bool ValidatingClockOutTimes(TimeOnly startTime, TimeOnly endtime) => endtime.CompareTo(startTime) >= 0;
+        private bool ValidatingClockOutTimes(TimeOnly startTime, TimeOnly endTime) => endTime.CompareTo(startTime) >= 0;
 
-        private bool CheckIfTimeIsCloseToNow(TimeOnly clockNowRndTime, TimeOnly timestart)
+        private bool CheckIfTimeIsCloseToNow(TimeOnly clockNowRndTime, TimeOnly timeStart)
         {
-            TimeSpan timechk = clockNowRndTime - timestart;
-            TimeSpan chkThreshold = new(0, 5, 0);
-            return timechk < chkThreshold;
-        }
-
-        internal void CalculatePay(TimeCard t)
-        {
-            if (t == null || t.TimeCardId == 0 || t.TimeCard_Status != ShiftStatus.ClockedOut || t.TimeCard_bReadOnly)
-                return;
-
-            Wages w;
-            bool bNew = false;
-            if (t.WagesId.HasValue && t.WagesId.Value != 0)
-            {
-                w = Context.Wages.Find(t.WagesId);
-                if (w == null)
-                {
-                    w = new(t.TimeCardId);
-                    bNew = true;
-                }
-            }
-            else
-            {
-                w = new(t.TimeCardId);
-                bNew = true;
-            }
-
-            //Round to nearest 15 min
-            TimeSpan ts = t.TimeCard_EndTime - t.TimeCard_StartTime;
-            int min = (int)ts.Minutes;
-
-            min += min % 15 < 15 - min % 15 ? -min % 15 : 15 - min % 15;
-            ts = new TimeSpan(ts.Hours, min, 0) - new TimeSpan((int)ts.Days, 0, 0, 0);
-
-            if (!bNew)
-                w.Reset();
-
-            w.TotalHours = ts.TotalHours;
-            w.RegularHours = w.TotalHours;
-            if (w.TotalHours > 8)
-            {
-                w.RegularHours = 8;
-                w.OTHours = w.TotalHours - 8;
-                if (w.OTHours > 2)
-                {
-                    w.OT2Hours = w.OTHours - 2;
-                    w.OTHours = 2;
-                }
-            }
-            double payRate = t.TimeCard_EmployeePayRate;
-            w.RegPay = w.RegularHours * payRate;
-            if (w.OTHours > 0)
-            {
-                w.OT_Pay = w.OTHours * (payRate * 1.5);
-                if (w.OT2Hours > 0)
-                    w.OT2_Pay = w.OT2Hours * (payRate * 2);
-            }
-            w.TotalWages = w.RegPay + w.OT_Pay + w.OT2_Pay;
-
-            if (bNew)
-            {
-                Context.Add<Wages>(w);
-                t.Wages = w;
-                Context.Update<TimeCard>(t);
-            }
-            else
-            {
-                Context.Update<Wages>(w);
-            }
-            Context.SaveChanges();
-        }
-
-        internal async Task<bool> CalculatePayAsync(TimeCard t)
-        {
-            if (t == null || t.TimeCardId == 0 || t.TimeCard_Status != ShiftStatus.ClockedOut || t.TimeCard_bReadOnly)
-                return false;
-
-            Wages w;
-            bool bNew = false;
-            if (t.WagesId.HasValue && t.WagesId.Value != 0)
-            {
-                w = Context.Wages.Find(t.WagesId);
-                if (w == null)
-                {
-                    w = new(t.TimeCardId);
-                    bNew = true;
-                }
-            }
-            else
-            {
-                w = new(t.TimeCardId);
-                bNew = true;
-            }
-
-            //Round to nearest 15 min
-            TimeSpan ts = t.TimeCard_EndTime - t.TimeCard_StartTime;
-            int min = (int)ts.Minutes;
-
-            min += min % 15 < 15 - min % 15 ? -min % 15 : 15 - min % 15;
-            ts = new TimeSpan(ts.Hours, min, 0) - new TimeSpan((int)ts.Days, 0, 0, 0);
-
-            if (!bNew)
-                w.Reset();
-
-            w.TotalHours = ts.TotalHours;
-            w.RegularHours = w.TotalHours;
-            if (w.TotalHours > 8)
-            {
-                w.RegularHours = 8;
-                w.OTHours = w.TotalHours - 8;
-                if (w.OTHours > 2)
-                {
-                    w.OT2Hours = w.OTHours - 2;
-                    w.OTHours = 2;
-                }
-            }
-            double payRate = t.TimeCard_EmployeePayRate;
-            w.RegPay = w.RegularHours * payRate;
-            if (w.OTHours > 0)
-            {
-                w.OT_Pay = w.OTHours * (payRate * 1.5);
-                if (w.OT2Hours > 0)
-                    w.OT2_Pay = w.OT2Hours * (payRate * 2);
-            }
-            w.TotalWages = w.RegPay + w.OT_Pay + w.OT2_Pay;
-
-            if (bNew)
-            {
-                Context.Add<Wages>(w);
-                t.Wages = w;
-                Context.Update<TimeCard>(t);
-            }
-            else
-            {
-                Context.Update<Wages>(w);
-            }
-            Task<int> saved = Context.SaveChangesAsync();
-            return await saved != 0;
+            TimeSpan timeChk = clockNowRndTime - timeStart;
+            TimeSpan chkThreshold = new(0, 15, 0);
+            return timeChk < chkThreshold;
         }
 
         public int GetCurrentProject()
@@ -364,5 +213,53 @@ namespace TimeClockApp.Services
                 App.CurrentPhaseId = phaseId;
             }
         }
+
+        public Employee GetEmployee(int employeeID) => Context.Employee.Find(employeeID);
+
+        public List<TimeCard> GetTimeCardsForPayPeriod(int employeeId, DateOnly start, DateOnly end, bool showPaid = true) => showPaid
+                ? GetListPaidTimeCardsForPayPeriod(employeeId, start, end)
+                : GetListUnpaidTimeCardsForPayPeriod(employeeId);
+
+        private List<TimeCard> GetListUnpaidTimeCardsForPayPeriod(int employeeId)
+        {
+            return Context.TimeCard
+                .TagWithCallSite()
+                    .Where(item => item.EmployeeId == employeeId
+                        && (item.TimeCard_Status == ShiftStatus.ClockedOut
+                        || item.TimeCard_Status == ShiftStatus.ClockedIn))
+                    .OrderBy(item => item.TimeCard_Date)
+                    .ToList();
+        }
+        private List<TimeCard> GetListPaidTimeCardsForPayPeriod(int employeeId, DateOnly start, DateOnly end)
+        {
+            return Context.TimeCard
+                .TagWithCallSite()
+                    .Where(item => item.EmployeeId == employeeId
+                        && item.TimeCard_Date >= start
+                        && item.TimeCard_Date <= end
+                        && item.TimeCard_Status < ShiftStatus.Deleted)
+                    .OrderBy(item => item.TimeCard_Date)
+                    .ToList();
+        }
+
+        public async Task<List<TimeCard>> GetTimeCardsForPayPeriodAsync(int employeeId, DateOnly start, DateOnly end, bool showPaid = true) => showPaid
+                ? await Task.Run(() => GetListPaidTimeCardsForPayPeriodAsync(employeeId, start, end))
+                : await Task.Run(() => GetListUnpaidTimeCardsForPayPeriodAsync(employeeId));
+
+        private async Task<List<TimeCard>> GetListUnpaidTimeCardsForPayPeriodAsync(int employeeId) =>
+                await Context.TimeCard.TagWithCallSite()
+                    .Where(item => item.EmployeeId == employeeId
+                        && (item.TimeCard_Status == ShiftStatus.ClockedOut
+                        || item.TimeCard_Status == ShiftStatus.ClockedIn))
+                    .OrderBy(item => item.TimeCard_Date)
+                    .ToListAsync();
+        private async Task<List<TimeCard>> GetListPaidTimeCardsForPayPeriodAsync(int employeeId, DateOnly start, DateOnly end) =>
+                await Context.TimeCard.TagWithCallSite()
+                    .Where(item => item.EmployeeId == employeeId
+                        && item.TimeCard_Date >= start
+                        && item.TimeCard_Date <= end
+                        && item.TimeCard_Status < ShiftStatus.Deleted)
+                    .OrderBy(item => item.TimeCard_Date)
+                    .ToListAsync();
     }
 }

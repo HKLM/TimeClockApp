@@ -3,7 +3,7 @@ namespace TimeClockApp.Pages;
 [XamlCompilation(XamlCompilationOptions.Compile)]
 public partial class EditTimeCard : ContentPage
 {
-   protected readonly EditTimeCardViewModel viewModel;
+    protected readonly EditTimeCardViewModel viewModel;
 
     public EditTimeCard(EditTimeCardViewModel ViewModel)
     {

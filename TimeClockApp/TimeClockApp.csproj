@@ -1,60 +1,62 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0-android</TargetFrameworks>
-    <!--<TargetFrameworks>net8.0-ios;net8.0-android;net8.0-maccatalyst</TargetFrameworks>-->
-    <!--<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows')) and '$(MSBuildRuntimeType)' == 'Full'">$(TargetFrameworks);net8.0-windows10.0.19041</TargetFrameworks>-->
+	 <TargetFramework>net9.0-android</TargetFramework>
+	 <OutputType Condition="'$(TargetFramework)' != 'net9.0'">Exe</OutputType>
 
-    <!-- Uncomment to also build the tizen app. You will need to install tizen by following this: https://github.com/Samsung/Tizen.NET -->
-    <!-- <TargetFrameworks>$(TargetFrameworks);net8.0-tizen</TargetFrameworks> -->
-    <OutputType>Exe</OutputType>
+	  <!--<TargetFrameworks>net9.0-android</TargetFrameworks>
+	<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net9.0-windows10.0.19041.0</TargetFrameworks>
+	<OutputType>Exe</OutputType>-->
     <RootNamespace>TimeClockApp</RootNamespace>
     <UseMaui>true</UseMaui>
     <SingleProject>true</SingleProject>
+	<LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
 
     <!-- Display name -->
     <ApplicationTitle>Time Clock</ApplicationTitle>
 
     <!-- App Identifier -->
-    <ApplicationId>com.hklm.timeclockapp</ApplicationId>
+    <ApplicationId>com.alexanderbuilder.timeclockapp</ApplicationId>
     <ApplicationIdGuid>AA699F0D-F30D-4094-AAEC-745B07309A2B</ApplicationIdGuid>
 
     <!-- Versions -->
-    <ApplicationDisplayVersion>1.1</ApplicationDisplayVersion>
+    <ApplicationDisplayVersion>1.4</ApplicationDisplayVersion>
     <ApplicationVersion>2</ApplicationVersion>
+	<AssemblyVersion>1.4</AssemblyVersion>
+	<FileVersion>1.4</FileVersion>
+	<Version>1.4</Version>  
 
-    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">14.2</SupportedOSPlatformVersion>
-    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">14.0</SupportedOSPlatformVersion>
-    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">30.0</SupportedOSPlatformVersion>
-    <!--<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
-    <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>-->
-    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
-    <Copyright>2022 (c) Brian Alexander</Copyright>
+	<!--<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">30.0</SupportedOSPlatformVersion>-->
+	<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">30.0</SupportedOSPlatformVersion>
+	<Configurations>Debug;Release;DebugMigrator</Configurations>
+	<!--<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
+	<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>-->
+  </PropertyGroup>
+  <PropertyGroup>
+	<Copyright>2024 (c) Brian Alexander</Copyright>
     <ErrorReport>none</ErrorReport>
     <Title>TimeClock App</Title>
     <Authors>Brian Alexander</Authors>
-    <Company>hklm</Company>
+    <Company>Alexander Builder</Company>
     <Description>Employee TimeCard app to track amount of time employees has worked and for reporting weekly hours for payroll.</Description>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <SourceRevisionId>build$([System.DateTime]::Now.ToString("yy.M.d:HH.mm"))</SourceRevisionId>
+    <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
+    <AnalysisLevel>preview</AnalysisLevel>
+	<TargetPlatformAndroid>True</TargetPlatformAndroid>
   </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-android|AnyCPU'">
-    <DefineConstants>$(DefineConstants)</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-android|AnyCPU'">
-    <DefineConstants>$(DefineConstants)</DefineConstants>
-    <AndroidLinkTool>r8</AndroidLinkTool>
-    <RunAOTCompilation>true</RunAOTCompilation>
-    <AndroidEnableProfiledAot>False</AndroidEnableProfiledAot>
-    <EnableLLVM>True</EnableLLVM>
-    <PublishTrimmed>True</PublishTrimmed>
-  </PropertyGroup>
-
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+      <EmbedAssembliesIntoApk>True</EmbedAssembliesIntoApk>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugMigrator|AnyCPU'">
+      <EmbedAssembliesIntoApk>True</EmbedAssembliesIntoApk>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+      <AndroidEnableProfiledAot>False</AndroidEnableProfiledAot>
+      <AndroidLinkTool>r8</AndroidLinkTool>
+      <EnableLLVM>True</EnableLLVM>
+    </PropertyGroup>
+	
   <ItemGroup>
     <!-- Analyze the whole library, even if attributed with "IsTrimmable" -->
     <TrimmerRootAssembly Include="TimeClockApp" RootMode="All" />
@@ -64,12 +66,11 @@
     <!-- App Icon -->
     <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" />
 
-    <!-- Splash Screen -->
+	<!-- Splash Screen -->
     <Folder Include="Resources\Splash\" />
 
     <!-- Images -->
     <MauiImage Include="Resources\Images\*" />
-    <!--<MauiImage Include="Resources\Images\save.svg" TintColor="#A9A9A9" />-->
 
     <!-- Custom Fonts -->
     <MauiFont Include="Resources\Fonts\*" />
@@ -83,11 +84,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommunityToolkit.Maui" Version="5.1.0" />
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.0" />
-    <PackageReference Include="CsvHelper" Version="30.0.1" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0-preview.3.23174.2" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.0-preview.3.23174.2" />
+    <PackageReference Include="CommunityToolkit.Maui" Version="9.0.0" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+    <PackageReference Include="CsvHelper" Version="32.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0-preview.3.24172.4" />
+	<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+	<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TimeClockApp.FileHelper\TimeClockApp.FileHelper.csproj" />
+    <ProjectReference Include="..\TimeClockApp.Shared\TimeClockApp.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -115,10 +122,10 @@
     <MauiXaml Update="Pages\ExportPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </MauiXaml>
-    <MauiXaml Update="Pages\ProjectHome.xaml">
+    <MauiXaml Update="Pages\PayrollDetailPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </MauiXaml>
-    <MauiXaml Update="Pages\ReportWeekPage.xaml">
+    <MauiXaml Update="Pages\PayrollPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </MauiXaml>
     <MauiXaml Update="Pages\SettingsPage.xaml">

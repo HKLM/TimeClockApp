@@ -8,23 +8,23 @@
         private Expense expenseItem = new();
 
         [ObservableProperty]
-        private ObservableCollection<Expense> expenseList = new();
+        private ObservableCollection<Expense> expenseList = [];
 
         [ObservableProperty]
-        private ObservableCollection<Project> projectList = new();
+        private ObservableCollection<Project> projectList = [];
         [ObservableProperty]
         private Project selectedProject = new();
-        partial void OnSelectedProjectChanged(global::TimeClockApp.Models.Project value)
+        partial void OnSelectedProjectChanged(global::TimeClockApp.Shared.Models.Project value)
         {
             if (value != null && dataService != null && value.ProjectId != 0)
                 ExpenseList = dataService.GetAllExpenses(value.ProjectId);
         }
 
         [ObservableProperty]
-        private ObservableCollection<Phase> phaseList = new();
+        private ObservableCollection<Phase> phaseList = [];
         [ObservableProperty]
         private Phase selectedPhase;
-        partial void OnSelectedPhaseChanging(global::TimeClockApp.Models.Phase value)
+        partial void OnSelectedPhaseChanging(global::TimeClockApp.Shared.Models.Phase value)
         {
             if (value != null && SelectedPhase != null && SelectedPhase.PhaseId != value.PhaseId)
                 dataService.SaveCurrentPhase(value.PhaseId);
@@ -36,11 +36,11 @@
 
         [ObservableProperty]
         private DateOnly expenseDate;
-        #region "DatePicker Min/Max Bindings"
+#region "DatePicker Min/Max Bindings"
         public DateTime PickerMinDate { get; set; }
-        private DateTime pickerMaxDate = DateTime.Now;
+        private readonly DateTime pickerMaxDate = DateTime.Now;
         public DateTime PickerMaxDate { get => pickerMaxDate; }
-        #endregion
+#endregion
 
         [ObservableProperty]
         private Double amount;
@@ -68,19 +68,19 @@
         private void Refresh()
         {
             RefreshProjectPhases();
-            if (SelectedProject != null && SelectedProject.ProjectId > 0)
+            if (SelectedProject?.ProjectId > 0)
                 ExpenseList = dataService.GetAllExpenses(SelectedProject.ProjectId, ShowRecent);
         }
 
         private void RefreshProjectPhases()
         {
             //Only get data from DB once, unless it has been notified that it has changed
-            ProjectList ??= new();
-            if (ProjectList.Any() == false || App.NoticeProjectHasChanged == true)
+            ProjectList ??= [];
+            if (!ProjectList.Any() || App.NoticeProjectHasChanged)
                 ProjectList = dataService.GetProjectsList();
 
-            PhaseList ??= new();
-            if (PhaseList.Any() == false || App.NoticePhaseHasChanged == true)
+            PhaseList ??= [];
+            if (!PhaseList.Any() || App.NoticePhaseHasChanged)
                 PhaseList = dataService.GetPhaseList();
 
             if (SelectedProject == null || SelectedProject.ProjectId == 0)
@@ -96,7 +96,7 @@
             IsRefreshingList = true;
             try
             {
-                if (SelectedProject != null && SelectedProject.ProjectId > 0)
+                if (SelectedProject?.ProjectId > 0)
                     ExpenseList = dataService.GetAllExpenses(SelectedProject.ProjectId, ShowRecent);
             }
             catch (Exception ex)
@@ -144,7 +144,7 @@
             IsRefreshingList = true;
             try
             {
-                if (ExpenseList != null && ExpenseList.Any())
+                if (ExpenseList?.Any() == true)
                     if (dataService.ArchiveExpense(ExpenseList))
                         ExpenseList = dataService.GetAllExpenses(SelectedProject.ProjectId, ShowRecent);
             }
@@ -176,19 +176,6 @@
         private void OnToggleHelpInfoBox()
         {
             HelpInfoBoxVisible = !HelpInfoBoxVisible;
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                // TODO: dispose managed state (managed objects)
-                dataService.Dispose();
-            }
-
-            // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-            // TODO: set large fields to null
-            base.Dispose();
         }
     }
 }
