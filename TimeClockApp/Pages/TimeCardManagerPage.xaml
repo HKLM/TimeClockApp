@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="TimeClockApp.Pages.TimeCardManagerPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converter="clr-namespace:TimeClockApp.Converters"
+             xmlns:models="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
+             x:Name="TimeCardHomePage"
+             Title="TimeCard Manager"
+             x:DataType="vm:TimeCardManagerViewModel">
+    <ContentPage.Behaviors>
+        <toolkit:EventToCommandBehavior Command="{Binding InitCommand}" EventName="Loaded" />
+    </ContentPage.Behaviors>
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converter:DateOnlyWithYearConverter x:Key="dateOnlyConverter" />
+            <converter:TimeOnlyConverter x:Key="timeOnlyConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
+    </ContentPage.ToolbarItems>
+    <ScrollView>
+        <StackLayout>
+            <Frame
+                x:Name="helpbox"
+                Padding="8"
+                CornerRadius="10" HorizontalOptions="FillAndExpand"
+                IsVisible="{Binding HelpInfoBoxVisible}"
+                VerticalOptions="Center">
+                <Label LineBreakMode="WordWrap" Style="{StaticResource LabelSmall}" 
+                       Text="TimeCard Manager. &#10;&#10;View all time cards. Then by selecting a time card you can view more details or edit that card." />
+            </Frame>
+            <Grid ColumnDefinitions="150,120,*" ColumnSpacing="10" RowDefinitions="*">
+                <Label
+                    Grid.Column="1"
+                    Style="{StaticResource LabelSmall}"
+                    Text="# of items:" VerticalTextAlignment="Center" />
+                <Picker
+                    Grid.Column="2"
+                    HorizontalOptions="Start" HorizontalTextAlignment="Center"
+                    SelectedItem="{Binding SelectedNumberOfResults}"
+                    WidthRequest="45">
+                    <Picker.ItemsSource>
+                        <x:Array Type="{x:Type x:Int32}">
+                            <x:Int32>10</x:Int32>
+                            <x:Int32>20</x:Int32>
+                            <x:Int32>30</x:Int32>
+                            <x:Int32>50</x:Int32>
+                            <x:Int32>100</x:Int32>
+                            <x:Int32>200</x:Int32>
+                        </x:Array>
+                    </Picker.ItemsSource>
+                </Picker>
+                <Button
+                    x:DataType="vm:TimeCardManagerViewModel"
+                    Command="{Binding RefreshAllCardsCommand}"
+                    HorizontalOptions="Fill" Text="Refresh" />
+            </Grid>
+            <Frame Padding="8" CornerRadius="10" HasShadow="True">
+                <ListView
+                    x:Name="ItemsListView"
+                    ItemSelected="ItemsListView_ItemSelected"
+                    ItemsSource="{Binding TimeCards}"
+                    SelectionMode="Single">
+                    <ListView.Header>
+                        <Grid ColumnDefinitions="*,*,*,*,*" ColumnSpacing="4" RowDefinitions="*">
+                            <Label FontAttributes="Bold" Style="{StaticResource LabelMicro}" Text="Date" />
+                            <Label
+                                Grid.Column="1"
+                                FontAttributes="Bold" LineBreakMode="WordWrap" MaxLines="2"
+                                Style="{StaticResource LabelMicro}">
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span FontAttributes="Bold" Text="Project Name" />
+                                        <Span Text="&#10;" />
+                                        <Span FontAttributes="Bold" Text="Phase Title" />
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
+                            <Label
+                                Grid.Column="2"
+                                FontAttributes="Bold" LineBreakMode="WordWrap" MaxLines="2"
+                                Style="{StaticResource LabelMicro}"
+                                Text="Employee Name" />
+                            <Label Grid.Column="3" FontAttributes="Bold" Style="{StaticResource LabelMicro}">
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span FontAttributes="Bold" Text="Start Time" />
+                                        <Span FontAttributes="Bold" Text="&#10;- " />
+                                        <Span FontAttributes="Bold" Text="End Time" />
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
+                            <Label
+                                Grid.Column="4"
+                                FontAttributes="Bold"
+                                Style="{StaticResource LabelMicro}"
+                                Text="Hours" />
+                        </Grid>
+                    </ListView.Header>
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="models:TimeCard">
+                            <ViewCell>
+                                <Grid ColumnDefinitions="*,*,*,*,*" ColumnSpacing="4" RowDefinitions="auto">
+                                    <Label Style="{StaticResource LabelMicro}" Text="{Binding TimeCard_Date, Converter={StaticResource dateOnlyConverter}, StringFormat='{0:MMM d ddd yyyy}'}" />
+                                    <Label
+                                        Grid.Column="1"
+                                        LineBreakMode="WordWrap" MaxLines="2"
+                                        Style="{StaticResource LabelMicro}">
+                                        <Label.FormattedText>
+                                            <FormattedString>
+                                                <Span Text="{Binding ProjectName}" />
+                                                <Span Text="&#10;" />
+                                                <Span Text="{Binding PhaseTitle}" />
+                                            </FormattedString>
+                                        </Label.FormattedText>
+                                    </Label>
+                                    <Label
+                                        Grid.Column="2"
+                                        LineBreakMode="WordWrap" MaxLines="2"
+                                        Style="{StaticResource LabelMicro}"
+                                        Text="{Binding TimeCard_EmployeeName}" />
+                                    <Label Grid.Column="3" Style="{StaticResource LabelMicro}">
+                                        <Label.FormattedText>
+                                            <FormattedString>
+                                                <Span Text="{Binding TimeCard_StartTime, Converter={StaticResource timeOnlyConverter}}" />
+                                                <Span Text="&#10;- " />
+                                                <Span Text="{Binding TimeCard_EndTime, Converter={StaticResource timeOnlyConverter}}" />
+                                            </FormattedString>
+                                        </Label.FormattedText>
+                                    </Label>
+                                    <Label Grid.Column="4" Style="{StaticResource LabelMicro}" Text="{Binding TimeCard_Duration, StringFormat='{}{0:hh\\:mm}'}" />
+                                </Grid>
+                            </ViewCell>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Frame>
+            <AbsoluteLayout ZIndex="10">
+                <ActivityIndicator IsRunning="{Binding Loading}"
+                                   AbsoluteLayout.LayoutFlags="PositionProportional"
+                                   AbsoluteLayout.LayoutBounds="0.5,0.5"
+                                   ZIndex="10" />
+            </AbsoluteLayout>
+        </StackLayout>
+    </ScrollView>
+</ContentPage>

@@ -1,6 +1,6 @@
 ﻿namespace TimeClockApp.ViewModels
 {
-    public abstract class BaseViewModel : ObservableValidator
+    public abstract class BaseViewModel : ObservableObject
     {   
     }
 }

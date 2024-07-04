@@ -1,7 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-
 using CsvHelper.Configuration;
-
 using Microsoft.EntityFrameworkCore;
 
 #nullable enable
@@ -34,13 +32,15 @@ namespace TimeClockApp.Shared.Models
 
         public virtual ICollection<TimeCard> TimeCards { get; set; } = new HashSet<TimeCard>();
 
+#if DEBUG
         public override string ToString()
         {
-            string rv = Environment.NewLine + "--------------[  PhaseId: " + PhaseId + "  ]---------------------" + Environment.NewLine;
+            string rv = "\n--------------[  PhaseId: " + PhaseId + "  ]---------------------\n";
             rv += "PhaseTitle:  " + PhaseTitle + Environment.NewLine;
-            rv += "------------------------------------------------------" + Environment.NewLine;
+            rv += "------------------------------------------------------\n";
             return rv;
         }
+#endif
     }
 
     public sealed class PhaseMap : ClassMap<Phase>

@@ -1,11 +1,8 @@
 ﻿using System.Data;
-
-using CommunityToolkit.Maui.Core.Extensions;
-
 using Microsoft.EntityFrameworkCore;
-
 using TimeClockApp.Shared.Helpers;
 
+#nullable enable
 namespace TimeClockApp.Services
 {
     public class EditTimeCardService : TimeCardDataStore
@@ -17,39 +14,22 @@ namespace TimeClockApp.Services
                     && item.TimeCard_Status != ShiftStatus.Deleted)
                 .FirstAsync();
 
-        public TimeCard GetTimeCardByID(int cardId) =>
+        public TimeCard? GetTimeCardByID(int cardId) =>
             Context.TimeCard
                 .Include(item => item.Employee)
                 .Where(item => item.TimeCardId == cardId
                     && item.TimeCard_Status != ShiftStatus.Deleted)
                 .FirstOrDefault();
 
-        public ObservableCollection<TimeCard> GetTimeCardsForEmployee(int employeeId, bool bShowPaid = false)
+        public async Task<List<TimeCard>> GetTimeCards(int NumResults)
         {
-            ShiftStatus s;
-            if (bShowPaid)
-            {
-                s = ShiftStatus.Deleted;
-                return Context.TimeCard
-                    .AsNoTracking()
-                    .Where(item => item.EmployeeId == employeeId
-                        && item.TimeCard_Status != s)
-                    .OrderByDescending(item => item.TimeCard_DateTime)
-                    .ToObservableCollection();
-            }
-            else
-            {
-                s = ShiftStatus.Paid;
-                return Context.TimeCard
-                    .AsNoTracking()
-                    .Where(item => item.EmployeeId == employeeId
-                        && item.TimeCard_Status < s
-                        && !item.TimeCard_bReadOnly)
-                    .OrderByDescending(item => item.TimeCard_DateTime)
-                    .ToObservableCollection();
-            }
+            return await Context.TimeCard
+                .AsNoTracking()
+                .Where(item => item.TimeCard_Status != ShiftStatus.Deleted)
+                .OrderByDescending(item => item.TimeCard_DateTime)
+                .Take(NumResults)
+                .ToListAsync();
         }
-#nullable enable
 
         public bool UpdateTimeCard(TimeCard newTimeCard, bool isAdmin = false, bool bChangedDate = false)
         {
@@ -81,8 +61,7 @@ namespace TimeClockApp.Services
                 }
 
                 Context.Update<TimeCard>(origTimeCard);
- #nullable restore
-               if (Context.SaveChanges() > 0)
+                if (Context.SaveChanges() > 0)
                 {
                     return true;
                 }

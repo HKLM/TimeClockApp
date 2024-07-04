@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-
 using CsvHelper.Configuration;
-
 using Microsoft.EntityFrameworkCore;
+
+//#nullable enable
 
 namespace TimeClockApp.Shared.Models
 {
@@ -65,18 +65,29 @@ namespace TimeClockApp.Shared.Models
         [System.ComponentModel.DataAnnotations.Schema.Column(TypeName = "DateOnly")]
         public DateOnly ProjectDate { get; set; }
 
+        /// <summary>
+        /// Date of project creation.
+        /// </summary>
+        /// <remarks>Used mainly for filtering out items that come after this projects date</remarks>
+        //[System.ComponentModel.DataAnnotations.Schema.Column(TypeName = "DateOnly")]
+        //public DateOnly? ProjectDateEnd { get; set; } = null;
+
         public virtual ICollection<TimeCard> TimeCards { get; set; }
         public virtual ICollection<Expense> Expenses { get; set; }
 
+#if DEBUG
         public override string ToString()
         {
-            string rv = Environment.NewLine + "--------------[  ProjectId: " + ProjectId + "  ]---------------------" + Environment.NewLine;
-            rv += "Name:         " + Name + Environment.NewLine;
-            rv += "Status:       " + Status.ToString() + Environment.NewLine;
-            rv += "ProjectDate:  " + ProjectDate.ToShortDateString() + Environment.NewLine;
-            rv += "------------------------------------------------------" + Environment.NewLine;
+            //string x = ProjectDateEnd.HasValue ? ProjectDateEnd.Value.ToShortDateString() : "null";
+            string rv = "\n--------------[  ProjectId: " + ProjectId + "  ]---------------------\n";
+            rv += "Name:           " + Name + Environment.NewLine;
+            rv += "Status:         " + Status.ToString() + Environment.NewLine;
+            rv += "ProjectDate:    " + ProjectDate.ToShortDateString() + Environment.NewLine;
+            //rv += "ProjectDateEnd: " + x + Environment.NewLine;
+            rv += "------------------------------------------------------\n";
             return rv;
         }
+#endif
     }
 
     public sealed class ProjectMap : ClassMap<Project>
@@ -88,6 +99,7 @@ namespace TimeClockApp.Shared.Models
             Map(m => m.Name);
             Map(m => m.Status);
             Map(m => m.ProjectDate);
+            //Map(m => m.ProjectDateEnd).Optional();
         }
     }
 }

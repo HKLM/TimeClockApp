@@ -31,8 +31,7 @@
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
-                configService.ShowPopupError(ex.Message + "\n" + ex.InnerException, "ERROR");
+                System.Diagnostics.Trace.WriteLine(ex.Message + "\n" + ex.InnerException);
             }
         }
 
@@ -48,8 +47,7 @@
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
-                configService.ShowPopupError(ex.Message + "\n" + ex.InnerException, "ERROR");
+                System.Diagnostics.Trace.WriteLine(ex.Message + "\n" + ex.InnerException);
             }
         }
 

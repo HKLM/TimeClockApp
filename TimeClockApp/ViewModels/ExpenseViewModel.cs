@@ -103,6 +103,7 @@
             {
                 System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
                 IsRefreshingList = false;
+                //TODO remove this
                 await App.AlertSvc.ShowAlertAsync("ERROR", ex.Message + "\n" + ex.InnerException);
             }
             IsRefreshingList = false;
@@ -133,8 +134,7 @@
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
-                await App.AlertSvc.ShowAlertAsync("ERROR", ex.Message + "\n" + ex.InnerException);
+                System.Diagnostics.Trace.WriteLine(ex.Message + "\n" + ex.InnerException);
             }
         }
 
@@ -150,9 +150,8 @@
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
+                System.Diagnostics.Trace.WriteLine(ex.Message + "\n" + ex.InnerException);
                 IsRefreshingList = false;
-                App.AlertSvc.ShowAlert("ERROR", ex.Message + "\n" + ex.InnerException);
             }
             IsRefreshingList = false;
         }
@@ -167,8 +166,8 @@
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
-                App.AlertSvc.ShowAlert("ERROR", ex.Message + "\n" + ex.InnerException);
+                System.Diagnostics.Trace.WriteLine(ex.Message + "\n" + ex.InnerException);
+                //App.AlertSvc.ShowAlert("ERROR", ex.Message + "\n" + ex.InnerException);
             }
         }
 

@@ -15,7 +15,7 @@
         /// <param name="alertTitle">Pop up window title</param>
         public void ShowPopupError(string errorTxt, string alertTitle = "ERROR")
         {
-            System.Diagnostics.Debug.WriteLine(errorTxt, alertTitle);
+            System.Diagnostics.Trace.WriteLine(errorTxt, alertTitle);
             App.AlertSvc.ShowAlertAsync(alertTitle, errorTxt);
         }
         /// <summary>
@@ -25,7 +25,7 @@
         /// <param name="alertTitle">Pop up window title</param>
         public Task ShowPopupErrorAsync(string errorTxt, string alertTitle = "ERROR")
         {
-            System.Diagnostics.Debug.WriteLine(errorTxt, alertTitle);
+            System.Diagnostics.Trace.WriteLine(errorTxt, alertTitle);
             return App.AlertSvc.ShowAlertAsync(alertTitle, errorTxt);
         }
 

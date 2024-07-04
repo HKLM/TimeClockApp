@@ -1,4 +1,6 @@
-﻿namespace TimeClockApp;
+﻿using TimeClockApp.Shared;
+
+namespace TimeClockApp;
 
 [XamlCompilation(XamlCompilationOptions.Compile)]
 public partial class App : Microsoft.Maui.Controls.Application
@@ -10,7 +12,7 @@ public partial class App : Microsoft.Maui.Controls.Application
     {
         InitializeComponent();
 
-        FileHelper.SQLiteSetting.SQLiteDBPath = FileHelper.SQLiteSetting.GetSQLiteDBPath();
+        SQLiteSetting.SQLiteDBPath = SQLiteSetting.GetSQLiteDBPath();
         FirstRun = true;
         Services = provider;
         AlertSvc = Services.GetService<IAlertService>();

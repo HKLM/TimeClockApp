@@ -2,7 +2,7 @@
 {
     public partial class EditProjectViewModel : TimeStampViewModel
     {
-        protected EditProjectService projectService;
+        protected readonly EditProjectService projectService;
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(EnableSaveButton))]
         private int projectId = 0;
@@ -91,7 +91,7 @@
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
+                System.Diagnostics.Trace.WriteLine(ex.Message + "\n" + ex.InnerException);
             }
         }
 
@@ -116,7 +116,7 @@
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
+                System.Diagnostics.Trace.WriteLine(ex.Message + "\n" + ex.InnerException);
             }
         }
 
@@ -140,7 +140,7 @@
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
+                System.Diagnostics.Trace.WriteLine(ex.Message + "\n" + ex.InnerException);
             }
         }
 

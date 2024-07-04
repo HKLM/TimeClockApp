@@ -4,7 +4,7 @@
     {
         public bool AddNewEmployee(string employeeName, double payRate, string jobTitle)
         {
-            if (employeeName == null || Context.Employee.Any(x => x.Employee_Name.Contains(employeeName)))
+            if (string.IsNullOrEmpty(employeeName) || Context.Employee.Any(x => x.Employee_Name == employeeName))
                 return false;
 
             try
@@ -35,7 +35,9 @@
             Employee item = GetEmployee(employeeId);
             if (item != null)
             {
-                item.Employee_Name = name;
+                if (!string.IsNullOrEmpty(name))
+                    item.Employee_Name = name;
+
                 item.Employee_PayRate = payRate;
                 item.Employee_Employed = employed;
 
@@ -52,6 +54,31 @@
             }
             return false;
         }
+
+        public bool UpdateEmployee(int employeeId, EmploymentStatus employed)
+        {
+            if (employeeId == 0)
+                return false;
+
+            Employee item = GetEmployee(employeeId);
+            if (item != null)
+            {
+                item.Employee_Employed = employed;
+
+                try
+                {
+                    Context.Update<Employee>(item);
+                    return (Context.SaveChanges() > 0);
+                }
+                catch (Exception e)
+                {
+                    System.Diagnostics.Debug.WriteLine(e.Message + "\n" + e.InnerException);
+                    //throw;
+                }
+            }
+            return false;
+        }
+
 
         public bool FireEmployee(int employeeId)
         {
@@ -77,25 +104,6 @@
             {
                 System.Diagnostics.Debug.WriteLine(e.Message + "\n" + e.InnerException);
                 //throw;
-            }
-            return false;
-        }
-
-        public bool UpdateEmploymentStatus(Employee theEmployee, EmploymentStatus employed)
-        {
-            if (theEmployee != null)
-            {
-                theEmployee.Employee_Employed = employed;
-                try
-                {
-                    Context.Update<Employee>(theEmployee);
-                    return (Context.SaveChanges() > 0);
-                }
-                catch (Exception e)
-                {
-                    System.Diagnostics.Debug.WriteLine(e.Message + "\n" + e.InnerException);
-                    //throw;
-                }
             }
             return false;
         }

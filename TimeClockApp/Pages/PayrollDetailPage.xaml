@@ -423,7 +423,7 @@
                 CornerRadius="10" 
                 HorizontalOptions="FillAndExpand">
                 <Grid
-                    ColumnDefinitions="60,*,*,*,*" ColumnSpacing="12" RowDefinitions="Auto,Auto,Auto,Auto"
+                    ColumnDefinitions="60,*,*,*,*" ColumnSpacing="12" RowDefinitions="Auto,Auto,Auto,Auto,Auto"
                     RowSpacing="10">
                     <Label Grid.Column="1" FontSize="Small" Text="Reg" />
                     <Label Grid.Column="2" FontSize="Small" Text="OT" />
@@ -432,6 +432,7 @@
                     <Label Grid.Row="1" FontSize="Micro" Text="Total HR" />
                     <Label Grid.Row="2" FontSize="Micro" Text="Unpaid HR" />
                     <Label Grid.Row="3" FontSize="Micro" Text="Wages" />
+                    <Label Grid.Row="4" FontSize="Micro" Text="Estimated WC" />
 
                     <Label
                         Grid.Row="1" Grid.Column="1"
@@ -481,6 +482,10 @@
                         Grid.Row="3" Grid.Column="4"
                         FontSize="Small" FontAttributes="Bold"
                         Text="{Binding TotalOwedGrossPay, StringFormat='{0:C}'}" />
+                    <Label
+                        Grid.Row="4" Grid.Column="4"
+                        FontSize="Small"
+                        Text="{Binding TotalEstimatedWC, StringFormat='{0:C}'}" />
                 </Grid>
             </Frame>
         </VerticalStackLayout>

@@ -13,18 +13,19 @@ using Microsoft.EntityFrameworkCore;
 #if DEBUG
 using Microsoft.Extensions.Logging;
 #endif
-using TimeClockApp.FileHelper;
 
 namespace TimeClockApp.Shared.Models
 {
-    [RequiresUnreferencedCode("Calls DynamicBehavior.")]
-    public partial class DataBackendContext : DbContext
+    public class DataBackendContext : DbContext
     {
         public static bool Initialized { get; protected set; }
-
         public static bool FirstRun { get; private set; } = true;
         public static void SetFirstRun(bool IsFirstRun) => FirstRun = IsFirstRun;
 
+        [RequiresUnreferencedCode(
+    "EF Core isn't fully compatible with trimming, and running the application may generate unexpected runtime failures. "
+    + "Some specific coding pattern are usually required to make trimming work properly, see https://aka.ms/efcore-docs-trimming for "
+    + "more details.")]
         public DataBackendContext()
         {
 #if MIGRATION
@@ -35,26 +36,18 @@ namespace TimeClockApp.Shared.Models
             Initialize();
         }
 
-        [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
-        public DataBackendContext(string _DbFilePath)
-        {
-            SQLiteSetting.SQLiteDBPath = _DbFilePath;
-            Initialize();
-        }
-
         private void Initialize()
         {
             if (!Initialized)
             {
                 try
                 {
-#if NEW_DATABASE
+#if NEW_DATABASE && DEBUG
                     this.Database.EnsureDeleted();
 #endif
-#if SAVECREATESQL
+#if SAVECREATESQL && DEBUG
                     FileService fhs = new();
                     string sqltxt = Path.Combine(fhs.GetDownloadPath(), "CreateDB.sql");
-                    //string sqltxt = fhs.GetDBPath("CreateDB.sql");
 
                     string sql = this.Database.GenerateCreateScript();
                     File.WriteAllText(sqltxt, sql);
@@ -62,11 +55,6 @@ namespace TimeClockApp.Shared.Models
                     SQLitePCL.Batteries_V2.Init();
                     Database.Migrate();
                     CreateDBTrigger();
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException, "DB");
-                    //throw;
                 }
                 finally
                 {
@@ -83,9 +71,9 @@ namespace TimeClockApp.Shared.Models
             {
                 const int z = 2;
                 Config c = this.Config.Find(z);
-                if (string.IsNullOrEmpty(c.StringValue))
+                if (string.IsNullOrEmpty(c?.StringValue))
                 {
-                    c.StringValue = DateOnly.FromDateTime(DateTime.Now).ToShortDateString();
+                    c!.StringValue = DateOnly.FromDateTime(DateTime.Now).ToShortDateString();
                     this.Config.Update(c);
 
                     i = this.SaveChanges();
@@ -104,13 +92,11 @@ namespace TimeClockApp.Shared.Models
                 }
                 catch (SqliteException ex)
                 {
-                    System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
-                    App.AlertSvc.ShowAlert("SQLiteException", "Error in creating Database trigger.\n" + ex.Message + "\n" + ex.InnerException);
+                    System.Diagnostics.Trace.WriteLine(ex.Message + "\n" + ex.InnerException);
                 }
                 catch (Exception e)
                 {
-                    System.Diagnostics.Debug.WriteLine(e.Message + "\n" + e.InnerException);
-                    App.AlertSvc.ShowAlert("Exception", "Error in creating Database trigger.\n" + e.Message + "\n" + e.InnerException);
+                    System.Diagnostics.Trace.WriteLine(e.Message + "\n" + e.InnerException);
                 }
             }
 #endif
@@ -147,7 +133,7 @@ namespace TimeClockApp.Shared.Models
             }
 #endif
 
-#region ForeignKeys
+            #region ForeignKeys
 
             modelBuilder.Entity<TimeCard>()
                 .HasOne(t => t.Employee)
@@ -169,15 +155,9 @@ namespace TimeClockApp.Shared.Models
                 .WithMany(t => t.Expenses)
                 .HasForeignKey(t => t.ProjectId);
 
-            modelBuilder.Entity<TimeSheet>()
-                .HasOne(t => t.Employee)
-                .WithMany(t => t.TimeSheets)
-                .HasForeignKey(t => t.EmployeeId)
-                .IsRequired(false);
+            #endregion ForeignKeys
 
-#endregion ForeignKeys
-
-#region DefaultValues
+            #region DefaultValues
 
             modelBuilder.Entity<Employee>()
                 .Property(b => b.Employee_Employed)
@@ -198,29 +178,25 @@ namespace TimeClockApp.Shared.Models
                 .Property(e => e.IsRecent)
                 .HasDefaultValue(true);
 
-#endregion DefaultValues
+            #endregion DefaultValues
 
-#region Indexs
+            #region Indexs
 
             modelBuilder.Entity<TimeCard>()
-                 .HasIndex(b => new { b.EmployeeId, b.TimeCard_Status, b.TimeCard_Date, b.TimeCard_bReadOnly})
+                 .HasIndex(b => new { b.EmployeeId, b.TimeCard_Status, b.TimeCard_Date, b.TimeCard_bReadOnly })
                  .HasDatabaseName("IX_TimeCardEmpStatDateRead");
 
             modelBuilder.Entity<TimeCard>()
                 .Property(t => t.TimeCard_WorkHours)
                 .HasComputedColumnSql("round((strftime('%s', [TimeCard_EndTime]) - strftime('%s', [TimeCard_StartTime])) / 3600.0, 2)", stored: true);
 
-            modelBuilder.Entity<TimeSheet>()
-                 .HasIndex(b => new { b.EmployeeId, b.Status, b.PayPeriodWeekNum })
-                 .HasDatabaseName("IX_TimeSheetEmpStatWeek");
-
-#endregion Indexs
+            #endregion Indexs
 
             modelBuilder.Entity<Config>().HasData(new Config
             {
                 ConfigId = 1,
                 Name = "Company",
-                StringValue = "Company Name",
+                StringValue = "Alexander Builder",
                 Hint = "The business entity name"
             },
             new Config
@@ -247,7 +223,7 @@ namespace TimeClockApp.Shared.Models
             {
                 ConfigId = 5,
                 Name = "WorkCompRate",
-                IntValue = 21,
+                StringValue = "0.171118",
                 Hint = "Worker Comp Rate per $100 remuneration"
             },
             new Config
@@ -280,35 +256,37 @@ namespace TimeClockApp.Shared.Models
                 ConfigId = 10,
                 Name = "DaysInPayPeriod",
                 IntValue = 7,
-                Hint = "Number of Days in a Pay Period (7,14,etc)"
+                Hint = "Number of Days in a Pay Period (weekly=7,biweekly=14,etc) (Default 7)"
             },
             new Config
             {
                 ConfigId = 11,
                 Name = "PayDayOfWeek",
                 IntValue = 5,
-                Hint = "Day of week that is the end of the pay period (0=Sunday...3=Wednesday...5=Friday,6=Saturday)"
+                Hint = "Day of week that is the end of the pay period (0=Sunday...3=Wednesday...5=Friday,6=Saturday)(Default 5)"
             });
 
-			modelBuilder.Entity<Employee>().HasData(new Employee
-			{
-				EmployeeId = 1,
-				Employee_Name = "John Doe",
-				Employee_PayRate = 20.00,
-				JobTitle = "Job Title",
-				Employee_Employed = EmploymentStatus.Employed
-			},
-			new Employee
-			{
-				EmployeeId = 2,
-				Employee_Name = "Jane Doe",
-				Employee_PayRate = 25.00,
-				JobTitle = "Job Title",
-				Employee_Employed = EmploymentStatus.Employed
-			});
+            modelBuilder.Entity<Employee>().HasData(new Employee
+            {
+                EmployeeId = 1,
+                Employee_Name = "John Doe",
+                Employee_PayRate = 20.00,
+                JobTitle = "Job Title",
+                Employee_Employed = EmploymentStatus.Employed
+            },
+            new Employee
+            {
+                EmployeeId = 2,
+                Employee_Name = "Jane Doe",
+                Employee_PayRate = 25.00,
+                JobTitle = "Job Title",
+                Employee_Employed = EmploymentStatus.Employed
 
+            });
+
+            string[] projectNames = new string[] { ".None", "Sample" };
             DateOnly date = DateOnly.FromDateTime(DateTime.Now);
-            string[] projectNames = new string[] {".None","Sample" };
+
             for (int i = 0; i < projectNames.Length; i++)
             {
                 modelBuilder.Entity<Project>().HasData(new Project
@@ -321,7 +299,7 @@ namespace TimeClockApp.Shared.Models
             }
 
             string[] phaseTitles = new string[] { ".Misc", "Phase 1", "Phase 2", "Phase 3", "Office Work" };
-			Array.Sort(phaseTitles);
+
             for (int i = 0; i < phaseTitles.Length; i++)
             {
                 modelBuilder.Entity<Phase>().HasData(new Phase

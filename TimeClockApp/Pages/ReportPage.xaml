@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="TimeClockApp.Pages.ReportPage" 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
+    xmlns:controls="clr-namespace:TimeClockApp.Controls"
+    xmlns:converter="clr-namespace:TimeClockApp.Converters" 
+    xmlns:models="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit" 
+    xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
+    Title="Report Page" 
+    x:DataType="vm:ReportPageViewModel">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
+    </ContentPage.ToolbarItems>
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converter:DateOnlyToDateTimeConverter x:Key="dateOnlyToDateTimeConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <ScrollView>
+        <VerticalStackLayout>
+            <Frame
+                x:Name="helpbox" 
+                Padding="8"
+                CornerRadius="10" 
+                HorizontalOptions="FillAndExpand"
+                IsVisible="{Binding HelpInfoBoxVisible}"
+                VerticalOptions="Center">
+                <Label
+                    LineBreakMode="WordWrap"
+                    Style="{StaticResource LabelSmall}"
+                    Text="Report of the overall cost of projects. &#10;&#10;Report of total labor (hours worked, wages paid etc) per Project. &#10;&#10;Can filter by Project, Phase, per Employee and or by Date range" />
+            </Frame>
+            <Frame>
+                <Grid
+                    ColumnDefinitions="Auto,*" 
+                    ColumnSpacing="3"
+                    RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" 
+                    RowSpacing="3">
+                    <Label
+                        HorizontalOptions="Start" 
+                        Text="Project: "
+                        VerticalTextAlignment="Center" />
+                    <CheckBox 
+                        Grid.Column="1" 
+                        IsChecked="{Binding UseProjectFilter, Mode=TwoWay}" />
+                    <Picker
+                        Grid.Row="1" Grid.ColumnSpan="2"
+                        HorizontalOptions="Fill"
+                        IsEnabled="{Binding UseProjectFilter}"
+                        ItemDisplayBinding="{Binding Name}"
+                        ItemsSource="{Binding ProjectList}"
+                        SelectedItem="{Binding SelectedProject, Mode=TwoWay}" />
+                    <Label
+                        Grid.Row="2" 
+                        HorizontalOptions="Start"
+                        Text="Phase: " 
+                        VerticalTextAlignment="Center" />
+                    <CheckBox
+                        Grid.Row="2" 
+                        Grid.Column="1"
+                        IsChecked="{Binding UsePhaseFilter, Mode=TwoWay}" />
+                    <Picker
+                        Grid.Row="3" 
+                        Grid.ColumnSpan="2"
+                        HorizontalOptions="Fill"
+                        IsEnabled="{Binding UsePhaseFilter}"
+                        ItemDisplayBinding="{Binding PhaseTitle}"
+                        ItemsSource="{Binding PhaseList}"
+                        SelectedItem="{Binding SelectedPhase, Mode=TwoWay}" />
+                    <Label
+                        Grid.Row="4" 
+                        HorizontalOptions="Start"
+                        Text="Employee: " 
+                        VerticalTextAlignment="Center" />
+                    <CheckBox
+                        Grid.Row="4" 
+                        Grid.Column="1"
+                        IsChecked="{Binding UseEmployeeFilter, Mode=TwoWay}" />
+                    <Picker
+                        Grid.Row="5" 
+                        Grid.ColumnSpan="2"
+                        HorizontalOptions="Fill"
+                        IsEnabled="{Binding UseEmployeeFilter}"
+                        ItemDisplayBinding="{Binding Employee_Name}"
+                        ItemsSource="{Binding EmployeeList}"
+                        SelectedItem="{Binding SelectedEmployee, Mode=TwoWay}" />
+                    <Label
+                        Grid.Row="6"
+                        Style="{StaticResource LabelSmallCenter}"
+                        Text="Fiilter by Dates: " 
+                        VerticalTextAlignment="Center" />
+                    <CheckBox
+                        Grid.Row="6" 
+                        Grid.Column="1"
+                        IsChecked="{Binding UseDateFilter, Mode=TwoWay}" />
+                    <Label
+                        Grid.Row="7"
+                        IsEnabled="{Binding UseDateFilter}"
+                        Style="{StaticResource LabelSmallCenter}"
+                        Text="Begin Date: " 
+                        VerticalTextAlignment="Center" />
+                    <DatePicker
+                        Grid.Row="7" 
+                        Grid.Column="1"
+                        Date="{Binding StartDate, Converter={StaticResource dateOnlyToDateTimeConverter}, Mode=TwoWay}"
+                        IsEnabled="{Binding UseDateFilter}"
+                        MaximumDate="{Binding PickerMaxDate}"
+                        MinimumDate="{Binding PickerMinDate}" />
+                    <Label
+                        Grid.Row="8"
+                        IsEnabled="{Binding UseDateFilter}"
+                        Style="{StaticResource LabelSmallCenter}"
+                        Text="End Date: " 
+                        VerticalTextAlignment="Center" />
+                    <DatePicker
+                        Grid.Row="8" 
+                        Grid.Column="1"
+                        Date="{Binding EndDate, Converter={StaticResource dateOnlyToDateTimeConverter}, Mode=TwoWay}"
+                        IsEnabled="{Binding UseDateFilter}"
+                        MaximumDate="{Binding PickerMaxDate}"
+                        MinimumDate="{Binding PickerMinDate}" />
+                    <Button
+                        Grid.Row="9" 
+                        Grid.Column="1"
+                        Command="{Binding MakeReportCommand}"
+                        Text="Run Report" />
+                </Grid>
+            </Frame>
+            <Frame Margin="0,20,0,0">
+                <Grid
+                    ColumnDefinitions="Auto, *" 
+                    ColumnSpacing="35"
+                    RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+                    <Label
+                        Grid.ColumnSpan="2" 
+                        FontAttributes="Bold"
+                        FontSize="Medium" 
+                        HorizontalTextAlignment="Center"
+                        Text="Project Totals" />
+                    <Label 
+                        Grid.Row="1"
+                        FontAttributes="Bold"                        
+                        Style="{StaticResource LabelSmallCenter}"
+                        Text="Total Wages" />
+                    <Label
+                        Grid.Row="1" 
+                        Grid.Column="1"
+                        Style="{StaticResource LabelSmallCenter}"
+                        FontAttributes="Bold"
+                        Text="{Binding TotalGrossPay, StringFormat='{0:C}'}" />
+                    <Label 
+                        Grid.Row="2"
+                        Style="{StaticResource LabelSmallCenter}"
+                        Text="Estimated WC" />
+                    <Label
+                        Grid.Row="2" 
+                        Grid.Column="1"
+                        Style="{StaticResource LabelSmallCenter}"
+                        Text="{Binding TotalEstimatedWC, StringFormat='{0:C}'}" />
+                    <Label 
+                        Grid.Row="3"
+                        FontAttributes="Bold"                        
+                        Style="{StaticResource LabelSmallCenter}"
+                        Text="Total Labor Burden" />
+                    <Label
+                        Grid.Row="3" 
+                        Grid.Column="1"
+                        Style="{StaticResource LabelSmallCenter}"
+                        FontAttributes="Bold"
+                        Text="{Binding TotalLaborBurden, StringFormat='{0:C}'}" />
+
+                    <Label 
+                        Grid.Row="4" 
+                        Style="{StaticResource LabelSmallCenter}"
+                        Text="Total Hours" />
+                    <Label
+                        Grid.Row="4" 
+                        Grid.Column="1"
+                        Style="{StaticResource LabelSmallCenter}"
+                        Text="{Binding TotalWorkHours, StringFormat='{0:F2}'}" />
+                    <Label 
+                        Grid.Row="5" 
+                        Style="{StaticResource LabelSmallCenter}"
+                        Text="Total OT" />
+                    <Label
+                        Grid.Row="5" 
+                        Grid.Column="1"
+                        Style="{StaticResource LabelSmallCenter}"
+                        Text="{Binding TotalOTHours, StringFormat='{0:F2}'}" />
+                    <Label 
+                        Grid.Row="6" 
+                        Style="{StaticResource LabelSmallCenter}"
+                        Text="Total OT2" />
+                    <Label
+                        Grid.Row="6" 
+                        Grid.Column="1"
+                        Style="{StaticResource LabelSmallCenter}"
+                        Text="{Binding TotalOT2Hours, StringFormat='{0:F2}'}" />
+                </Grid>
+            </Frame>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

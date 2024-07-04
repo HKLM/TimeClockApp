@@ -41,7 +41,8 @@ namespace TimeClockApp.ViewModels
             {
                 RefreshProjectPhases();
                 List<TimeCard> t = await cardService.GetLastTimeCardForAllEmployeesAsync();
-                TimeCards = t.ToObservableCollection();
+                if (t?.Count > 0)
+                    TimeCards = t.ToObservableCollection();
             }
             catch
             {
@@ -57,7 +58,8 @@ namespace TimeClockApp.ViewModels
         {
             RefreshProjectPhases();
             List<TimeCard> t = await cardService.GetLastTimeCardForAllEmployeesAsync();
-            TimeCards = t.ToObservableCollection();
+            if (t?.Count > 0)
+                TimeCards = t.ToObservableCollection();
         }
 
 #nullable enable
@@ -69,7 +71,8 @@ namespace TimeClockApp.ViewModels
             if (await clockIn)
             {
                 List<TimeCard> t = await cardService.GetLastTimeCardForAllEmployeesAsync();
-                TimeCards = t.ToObservableCollection();
+                if (t?.Count > 0)
+                    TimeCards = t.ToObservableCollection();
             }
         }
 
@@ -81,7 +84,8 @@ namespace TimeClockApp.ViewModels
             if (await clockOut)
             {
                 List<TimeCard> t = await cardService.GetLastTimeCardForAllEmployeesAsync();
-                TimeCards = t.ToObservableCollection();
+                if (t?.Count > 0)
+                    TimeCards = t.ToObservableCollection();
             }
         }
 #nullable restore
@@ -120,7 +124,8 @@ namespace TimeClockApp.ViewModels
             if (i > 0)
             {
                 List<TimeCard> t = await cardService.GetLastTimeCardForAllEmployeesAsync();
-                TimeCards = t.ToObservableCollection();
+                if (t?.Count > 0)
+                    TimeCards = t.ToObservableCollection();
             }
         }
 
@@ -142,7 +147,8 @@ namespace TimeClockApp.ViewModels
             if (i > 0)
             {
                 List<TimeCard> t = await cardService.GetLastTimeCardForAllEmployeesAsync();
-                TimeCards = t.ToObservableCollection();
+                if (t?.Count > 0)
+                    TimeCards = t.ToObservableCollection();
             }
         }
 

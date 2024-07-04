@@ -1,6 +1,4 @@
-﻿using TimeClockApp.FileHelper;
-
-[assembly: XamlCompilation(XamlCompilationOptions.Compile)]
+﻿[assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 namespace TimeClockApp;
 
 public static class MauiProgram
@@ -16,7 +14,8 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
             });
-        builder.Services.AddTransient<DataBackendContext>((services) => new DataBackendContext(SQLiteSetting.SQLiteDBPath));
+        builder.Services.AddTransient<DataBackendContext>((services) => new());
+
         builder.Services.AddSingleton<IAlertService, AlertService>();
         builder.Services.AddSingleton<TimeCardService>();
         builder.Services.AddTransient<TimeCardPageViewModel>();
@@ -44,9 +43,12 @@ public static class MauiProgram
         builder.Services.AddTransient<TeamEmployeesViewModel>();
         builder.Services.AddSingleton<TeamEmployeesPage>();
 
-        builder.Services.AddTransient<EditTimeCardHomeViewModel>();
-        builder.Services.AddSingleton<EditTimeCardHome>();
+        builder.Services.AddTransient<TimeCardManagerViewModel>();
+        builder.Services.AddSingleton<TimeCardManagerPage>();
 
+        builder.Services.AddSingleton<ReportPageService>();
+        builder.Services.AddTransient<ReportPageViewModel>();
+        builder.Services.AddSingleton<ReportPage>();
         return builder.Build();
     }
 }

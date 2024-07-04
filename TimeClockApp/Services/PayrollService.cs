@@ -7,7 +7,21 @@ namespace TimeClockApp.Services
 {
     public partial class PayrollService : TimeCardService
     {
-        [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+        /// <summary>
+        /// Gets the WorkersCompensation rate value.
+        /// </summary>
+        /// <returns></returns>
+        public double GetWCRate()
+        {
+            int i = 5;
+            Config? c = Context.Config.Find(i);
+            if (c != null && double.TryParse(c?.StringValue, out double wc))
+                return wc;
+            else
+                return 0;
+        }
+
+        [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
         public async Task<TimeSheet> GetPayrollTimeSheetForEmployeeAsync(int employeeId, DateOnly start, DateOnly end, string employeeName, TimeSheet? sheet = null, bool showPaid = true)
         {
             if (sheet == null)
@@ -15,18 +29,16 @@ namespace TimeClockApp.Services
                 sheet = new TimeSheet(employeeId, start, end, employeeName);
             }
             else
+            {
                 sheet.Reset();
+            }
 
             sheet.TimeCards = await GetTimeCardsForPayPeriodAsync(employeeId, start, end, showPaid);
-
             if (sheet.TimeCards.Count == 0)
                 return sheet;
 
             double pay = 0;
-            TimeCardDayTotal dayHours = new();
-
-            IQueryable<IGrouping<int, TimeCard>> tg = sheet.TimeCards.GroupBy(x => x.TimeCard_Date.Day).AsQueryable();
-
+            IQueryable<IGrouping<DateOnly, TimeCard>> tg = sheet.TimeCards.GroupBy(x => x.TimeCard_Date).AsQueryable();
             foreach (var g in tg)
             {
                 double x = 0;
@@ -47,7 +59,7 @@ namespace TimeClockApp.Services
                 //TODO fix
                 pay = g.Select(x => x.TimeCard_EmployeePayRate).First();
                 //dont include any cards ClockedIn. They wreak havoc on the calculations.
-                dayHours = new TimeCardDayTotal(g
+                TimeCardDayTotal dayHours = new TimeCardDayTotal(g
                     .Where(x => x.TimeCard_Status == ShiftStatus.ClockedOut
                     || x.TimeCard_Status == ShiftStatus.Paid)
                     .Sum(x => x.TimeCard_WorkHours));
@@ -57,8 +69,9 @@ namespace TimeClockApp.Services
                 sheet.TotalOT2Hours += dayHours.TotalOT2Hours;
 
                 // Calculate unpaid hours
-                double d = g.Where(x => x.TimeCard_Status == ShiftStatus.ClockedOut)
-                                                                                    .Sum(x => x.TimeCard_WorkHours);
+                double d = g.Where(x => 
+                                x.TimeCard_Status == ShiftStatus.ClockedOut)
+                                .Sum(x => x.TimeCard_WorkHours);
                 if (d > 0)
                 {
                     TimeCardDayTotal unpaidDayHours = new(d);
@@ -84,6 +97,7 @@ namespace TimeClockApp.Services
             return sheet;
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
         public TimeSheet GetPayrollTimeSheetForEmployee(int employeeId, DateOnly start, DateOnly end, string employeeName, TimeSheet? sheet = null, bool showPaid = true)
         {
             if (sheet == null)
@@ -100,10 +114,7 @@ namespace TimeClockApp.Services
                 return sheet;
 
             double pay = 0;
-            TimeCardDayTotal dayHours = new();
-
-            IQueryable<IGrouping<int, TimeCard>> tg = sheet.TimeCards.GroupBy(x => x.TimeCard_Date.Day).AsQueryable();
-
+            IQueryable<IGrouping<DateOnly, TimeCard>> tg = sheet.TimeCards.GroupBy(x => x.TimeCard_Date).AsQueryable();
             foreach (var g in tg)
             {
                 double x = 0;
@@ -124,7 +135,7 @@ namespace TimeClockApp.Services
                 //TODO fix
                 pay = g.Select(x => x.TimeCard_EmployeePayRate).First();
                 //dont include any cards ClockedIn. They wreak havoc on the calculations.
-                dayHours = new TimeCardDayTotal(g
+                TimeCardDayTotal dayHours = new TimeCardDayTotal(g
                     .Where(x => x.TimeCard_Status == ShiftStatus.ClockedOut
                     || x.TimeCard_Status == ShiftStatus.Paid)
                     .Sum(x => x.TimeCard_WorkHours));
@@ -134,8 +145,9 @@ namespace TimeClockApp.Services
                 sheet.TotalOT2Hours += dayHours.TotalOT2Hours;
 
                 // Calculate unpaid hours
-                double d = g.Where(x => x.TimeCard_Status == ShiftStatus.ClockedOut)
-                                                                                    .Sum(x => x.TimeCard_WorkHours);
+                double d = g.Where(x => 
+                            x.TimeCard_Status == ShiftStatus.ClockedOut)
+                            .Sum(x => x.TimeCard_WorkHours);
                 if (d > 0)
                 {
                     TimeCardDayTotal unpaidDayHours = new(d);

@@ -1,20 +1,18 @@
 ﻿namespace TimeClockApp.ViewModels
 {
-    [QueryProperty("IdExpense", "id")]
-    public partial class EditExpensePageViewModel : TimeStampViewModel
+    public partial class EditExpensePageViewModel : TimeStampViewModel, IQueryAttributable
     {
-        protected ExpenseService dataService;
-        public string IdExpense
+        protected readonly ExpenseService dataService;
+
+        public void ApplyQueryAttributes(IDictionary<string, object> query)
         {
-            set
+            if (query.ContainsKey("id"))
             {
-                if (value != null && int.TryParse(Uri.UnescapeDataString(value), out int i))
-                {
-                    if (i > 0)
-                        ExpenseId = i;
-                }
+                if (Int32.TryParse(query["id"].ToString(), out int i))
+                { ExpenseId = i; }
             }
         }
+
         [ObservableProperty]
         private int expenseId = 0;
         partial void OnExpenseIdChanged(int value)
@@ -42,11 +40,11 @@
 
         [ObservableProperty]
         private DateOnly expenseDate;
-        #region "DatePicker Min/Max Bindings"
+#region "DatePicker Min/Max Bindings"
         public DateTime PickerMinDate { get; set; }
         private readonly DateTime pickerMaxDate = DateTime.Now;
         public DateTime PickerMaxDate { get => pickerMaxDate; }
-        #endregion
+#endregion
         [ObservableProperty]
         private Double amount;
         [ObservableProperty]
@@ -122,8 +120,7 @@
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
-                await App.AlertSvc.ShowAlertAsync("Exception", ex.Message + "\n" + ex.InnerException);
+                System.Diagnostics.Trace.WriteLine(ex.Message + "\n" + ex.InnerException);
             }
         }
 
@@ -148,8 +145,7 @@
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
-                await App.AlertSvc.ShowAlertAsync("Exception", ex.Message + "\n" + ex.InnerException);
+                System.Diagnostics.Trace.WriteLine(ex.Message + "\n" + ex.InnerException);
             }
         }
 

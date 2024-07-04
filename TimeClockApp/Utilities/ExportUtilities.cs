@@ -1,6 +1,5 @@
 ﻿using System.IO.Compression;
-
-using TimeClockApp.FileHelper;
+using TimeClockApp.Shared;
 
 namespace TimeClockApp.Utilities
 {
@@ -21,7 +20,7 @@ namespace TimeClockApp.Utilities
             catch (Exception ex)
             {
                 // Log things and move on, don't want to fail just because of a left over lock or something
-                System.Diagnostics.Debug.WriteLine(ex);
+                System.Diagnostics.Trace.WriteLine(ex);
             }
 
             // Get a timestamped filename
@@ -86,7 +85,7 @@ namespace TimeClockApp.Utilities
             catch (Exception ex)
             {
                 string ExportLog = "\nEXCEPTION ERROR\n" + ex.Message + "\n" + ex.InnerException;
-                Debug.WriteLine(ExportLog);
+                Trace.WriteLine(ExportLog);
                 SQLiteDataStore dataService = new();
                 dataService.ShowPopupError(ExportLog, "ABORTING DUE TO ERROR");
             }

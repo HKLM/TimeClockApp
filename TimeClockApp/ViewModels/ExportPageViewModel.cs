@@ -1,6 +1,5 @@
 ﻿using CsvHelper;
-
-using TimeClockApp.FileHelper;
+using TimeClockApp.Shared;
 
 namespace TimeClockApp.ViewModels
 {
@@ -111,8 +110,8 @@ namespace TimeClockApp.ViewModels
             catch (Exception ex)
             {
                 HasError = true;
-                Debug.WriteLine("\nEXCEPTION ERROR\n" + ex.Message + "\n" + ex.InnerException);
-                await dataService.ShowPopupErrorAsync("EXCEPTION ERROR\n" + ex.Message + "\n" + ex.InnerException, "ABORTING DUE TO ERROR");
+                Trace.WriteLine("\nEXCEPTION ERROR\n" + ex.Message + "\n" + ex.InnerException);
+                //await dataService.ShowPopupErrorAsync("EXCEPTION ERROR\n" + ex.Message + "\n" + ex.InnerException, "ABORTING DUE TO ERROR");
             }
             finally
             {
@@ -158,8 +157,8 @@ namespace TimeClockApp.ViewModels
             catch (Exception ex)
             {
                 HasError = true;
-                Debug.WriteLine(ex);
-                await dataService.ShowPopupErrorAsync("EXCEPTION ERROR\n" + ex.Message + "\n" + ex.InnerException, "ABORTING DUE TO ERROR");
+                Trace.WriteLine(ex);
+                //await dataService.ShowPopupErrorAsync("EXCEPTION ERROR\n" + ex.Message + "\n" + ex.InnerException, "ABORTING DUE TO ERROR");
             }
             finally
             {

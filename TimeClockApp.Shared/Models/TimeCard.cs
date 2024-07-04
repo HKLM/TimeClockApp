@@ -2,7 +2,6 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-
 using CsvHelper.Configuration;
 
 namespace TimeClockApp.Shared.Models
@@ -65,9 +64,9 @@ namespace TimeClockApp.Shared.Models
     /// Start a new TimeCard upon end of the break time or add a breaktime column
     /// </remarks>
 #if TIMESTAMP
-    public partial class TimeCard : BaseEntity
+    public class TimeCard : BaseEntity
 #else
-    public partial class TimeCard
+    public class TimeCard
 #endif
     {
         public TimeCard() { }
@@ -109,24 +108,7 @@ namespace TimeClockApp.Shared.Models
             //PhaseTitle = EditPhaseService.GetPhaseTitleFromId(phaseId);
             TimeCard_bReadOnly = false;
         }
-/*
-        public TimeCard(int employeeId, int projectId, int phaseId, string timeCard_EmployeeName, ShiftStatus timeCard_Status, DateTime timeCard_DateTime, DateOnly timeCard_Date, TimeOnly timeCard_StartTime, double timeCard_EmployeePayRate, bool timeCard_bReadOnly, TimeOnly timeCard_EndTime)
-        {
-            EmployeeId = employeeId;
-            ProjectId = projectId;
-            ProjectName = EditProjectService.GetProjectNameFromId(projectId);
-            PhaseId = phaseId;
-            PhaseTitle = EditPhaseService.GetPhaseTitleFromId(phaseId);
-            TimeCard_EmployeeName = timeCard_EmployeeName ?? throw new ArgumentNullException(nameof(timeCard_EmployeeName));
-            TimeCard_Status = timeCard_Status;
-            TimeCard_DateTime = timeCard_DateTime;
-            TimeCard_Date = timeCard_Date;
-            TimeCard_StartTime = timeCard_StartTime;
-            TimeCard_EndTime = timeCard_EndTime;
-            TimeCard_EmployeePayRate = timeCard_EmployeePayRate;
-            TimeCard_bReadOnly = timeCard_bReadOnly;
-        }
-*/
+
         [Key]
         public int TimeCardId { get; set; }
         public int EmployeeId { get; set; }
@@ -276,26 +258,28 @@ namespace TimeClockApp.Shared.Models
         public virtual Project Project { get; set; }
         public virtual Phase Phase { get; set; }
 
+#if DEBUG
         public override string ToString()
         {
-            string rv = Environment.NewLine + "--------------[  TimeCardId: " + TimeCardId + "  ]---------------------" + Environment.NewLine;
+            string rv = "\n--------------[  TimeCardId: " + TimeCardId + "  ]---------------------\n";
             rv += "EmployeeId:  " + EmployeeId + Environment.NewLine;
             rv += "EmployeeName:" + TimeCard_EmployeeName + Environment.NewLine;
             rv += "Status:      " + TimeCard_Status.ToString() + Environment.NewLine;
             rv += "DateTime:    " + TimeCard_DateTime.ToShortDateString() + Environment.NewLine;
             rv += "Date:        " + TimeCard_Date.ToShortDateString() + Environment.NewLine;
-            rv += "StartTime:  [" + TimeCard_StartTime.ToShortTimeString() + "]" + Environment.NewLine;
-            rv += "EndTime:    [" + TimeCard_EndTime.ToShortTimeString() + "]" + Environment.NewLine;
+            rv += "StartTime:  [" + TimeCard_StartTime.ToShortTimeString() + "]\n";
+            rv += "EndTime:    [" + TimeCard_EndTime.ToShortTimeString() + "]\n";
             rv += "WorkHours:   " + TimeCard_WorkHours + Environment.NewLine;
             rv += "PayRate:     " + TimeCard_EmployeePayRate.ToString("C", System.Globalization.CultureInfo.CurrentCulture) + Environment.NewLine;
             rv += "ProjectId:   " + ProjectId + Environment.NewLine;
             rv += "ProjectName: " + ProjectName + Environment.NewLine;
             rv += "PhaseId:     " + PhaseId + Environment.NewLine;
             rv += "PhaseTitle:  " + PhaseTitle + Environment.NewLine;
-            rv += "bReadOnly:  [" + TimeCard_bReadOnly.ToString() + "]" + Environment.NewLine;
-            rv += "------------------------------------------------------" + Environment.NewLine;
+            rv += "bReadOnly:  [" + TimeCard_bReadOnly.ToString() + "]\n";
+            rv += "------------------------------------------------------\n";
             return rv;
         }
+#endif
     }
 
     public sealed class TimeCardMap : ClassMap<TimeCard>

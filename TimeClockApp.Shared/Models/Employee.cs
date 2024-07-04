@@ -1,8 +1,6 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-
 using CsvHelper.Configuration;
-
 using Microsoft.EntityFrameworkCore;
 
 namespace TimeClockApp.Shared.Models
@@ -90,16 +88,18 @@ namespace TimeClockApp.Shared.Models
         public virtual ICollection<TimeCard> TimeCards { get; set; } = new List<TimeCard>();
         public virtual ICollection<TimeSheet> TimeSheets { get; set;  } = new List<TimeSheet>();
 
+#if DEBUG
         public override string ToString()
         {
-            string rv = Environment.NewLine + "--------------[  EmployeeId: " + EmployeeId + "  ]---------------------" + Environment.NewLine;
+            string rv = "\n--------------[  EmployeeId: " + EmployeeId + "  ]---------------------\n";
             rv += "Employee_Name:     " + Employee_Name + Environment.NewLine;
             rv += "Employee_PayRate:  " + Employee_PayRate.ToString("C", System.Globalization.CultureInfo.CurrentCulture) + Environment.NewLine;
             rv += "Employee_Employed: " + Employee_Employed.ToString() + Environment.NewLine;
             rv += "JobTitle:          " + JobTitle + Environment.NewLine;
-            rv += "------------------------------------------------------" + Environment.NewLine;
+            rv += "------------------------------------------------------\n";
             return rv;
         }
+#endif
     }
 
     public sealed class EmployeeMap : ClassMap<Employee>

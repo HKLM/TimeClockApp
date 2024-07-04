@@ -49,8 +49,11 @@
             <ShellContent ContentTemplate="{DataTemplate local:ExpensePage}" Route="ExpensePage" />
         </Tab>
     </FlyoutItem>
+    <FlyoutItem Title="Reports" FlyoutDisplayOptions="AsSingleItem" Icon="assignment.png">
+        <ShellContent ContentTemplate="{DataTemplate local:ReportPage}" Route="ReportPage" />
+    </FlyoutItem>
     <FlyoutItem Title="TimeCard Manager" FlyoutDisplayOptions="AsSingleItem" Icon="edit_calendar_twotone.png">
-        <ShellContent ContentTemplate="{DataTemplate local:EditTimeCardHome}" Route="EditTimeCardHome" />
+        <ShellContent ContentTemplate="{DataTemplate local:TimeCardManagerPage}" Route="TimeCardManagerPage" />
     </FlyoutItem>
     <FlyoutItem Title="Tools" FlyoutDisplayOptions="AsSingleItem" Icon="handyman_outline.png">
         <Tab Title="HR" Icon="manage_accounts.png">

@@ -1,9 +1,6 @@
 ﻿using System.Data;
-
 using CommunityToolkit.Maui.Core.Extensions;
-
 using Microsoft.EntityFrameworkCore;
-
 using TimeClockApp.Shared.Helpers;
 
 namespace TimeClockApp.Services
@@ -77,6 +74,12 @@ namespace TimeClockApp.Services
                 .OrderBy(e => e.Employee_Name)
                 .ToListAsync());
         }
+
+        public ObservableCollection<Employee> GetEmployees() => Context.Employee
+                .Where(e => e.Employee_Employed == EmploymentStatus.Employed)
+                .OrderBy(e => e.Employee_Name)
+                .ToObservableCollection();
+
 
         public async Task<ObservableCollection<Employee>> GetEmployeesAsync() => new ObservableCollection<Employee>(await Context.Employee
                 .Where(e => e.Employee_Employed == EmploymentStatus.Employed)

@@ -24,44 +24,32 @@
         [RelayCommand]
         private void SetTeamActive(Employee? employee)
         {
-            try
+            if (employee?.EmployeeId > 0)
             {
-                if (employee?.EmployeeId > 0)
+                if (employeeService.UpdateEmployee(employee.EmployeeId, EmploymentStatus.Employed))
                 {
-                    if (employeeService.UpdateEmploymentStatus(employee, EmploymentStatus.Employed))
-                    {
-                        App.NoticeUserHasChanged = true;
-                        RefreshEmployeeList();
-                        App.AlertSvc.ShowAlert("NOTICE", "Saved " + employee.Employee_Name);
-                    }
+                    App.NoticeUserHasChanged = true;
+                    RefreshEmployeeList();
+                    App.AlertSvc.ShowAlert("NOTICE", "Saved " + employee.Employee_Name);
                 }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
-                App.AlertSvc.ShowAlert("ERROR", ex.Message + "\n" + ex.InnerException);
+                else
+                    App.AlertSvc.ShowAlert("ERROR", "Something went wrong. Data not saved.");
             }
         }
 
         [RelayCommand]
         private void SetTeamNotActive(Employee? employee)
         {
-            try
+            if (employee?.EmployeeId > 0)
             {
-                if (employee?.EmployeeId > 0)
+                if (employeeService.UpdateEmployee(employee.EmployeeId, EmploymentStatus.Inactive))
                 {
-                    if (employeeService.UpdateEmploymentStatus(employee, EmploymentStatus.Inactive))
-                    {
-                        App.NoticeUserHasChanged = true;
-                        RefreshEmployeeList();
-                        App.AlertSvc.ShowAlert("NOTICE", "Saved " + employee.Employee_Name);
-                    }
+                    App.NoticeUserHasChanged = true;
+                    RefreshEmployeeList();
+                    App.AlertSvc.ShowAlert("NOTICE", "Saved " + employee.Employee_Name);
                 }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
-                App.AlertSvc.ShowAlert("ERROR", ex.Message + "\n" + ex.InnerException);
+                else
+                    App.AlertSvc.ShowAlert("ERROR", "Something went wrong. Data not saved.");
             }
         }
 

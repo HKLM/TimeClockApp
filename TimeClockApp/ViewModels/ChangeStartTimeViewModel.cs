@@ -2,20 +2,16 @@
 
 namespace TimeClockApp.ViewModels
 {
-    [QueryProperty("IdTimeCard", "id")]
-    public partial class ChangeStartTimeViewModel(EditTimeCardService service) : TimeStampViewModel
+    public partial class ChangeStartTimeViewModel(EditTimeCardService service) : TimeStampViewModel, IQueryAttributable
     {
         protected readonly EditTimeCardService cardService = service;
-        public string IdTimeCard
+
+        public void ApplyQueryAttributes(IDictionary<string, object> query)
         {
-            set
+            if (query.ContainsKey("id"))
             {
-                if (value != null
-                    && int.TryParse(Uri.UnescapeDataString(value), out int i))
-                {
-                    if (i > 0)
-                        TimeCardID = i;
-                }
+                if (Int32.TryParse(query["id"].ToString(), out int i))
+                { TimeCardID = i; }
             }
         }
 

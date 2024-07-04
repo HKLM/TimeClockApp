@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-
 using TimeClockApp.Shared.Helpers;
 
 namespace TimeClockApp.Shared.Models
@@ -13,7 +12,7 @@ namespace TimeClockApp.Shared.Models
         Deleted = 3
     }
 
-    public partial class TimeSheet
+    public class TimeSheet
     {
         public TimeSheet() { }
 
@@ -50,7 +49,7 @@ namespace TimeClockApp.Shared.Models
         [Column(TypeName = "double")]
         public double TotalOT2Hours { get; set; }
 
-        #region UnPaid Hours
+ #region UnPaid Hours
         [Column(TypeName = "double")]
         public double UnPaidTotalWorkHours { get; set; }
         [Column(TypeName = "double")]
@@ -60,7 +59,7 @@ namespace TimeClockApp.Shared.Models
         [Column(TypeName = "double")]
         public double UnPaidTotalOT2Hours { get; set; }
 
-        #endregion
+#endregion
         [Column(TypeName = "double")]
         public double RegTotalPay { get; set; }
         [Column(TypeName = "double")]
@@ -70,7 +69,7 @@ namespace TimeClockApp.Shared.Models
         [Column(TypeName = "double")]
         public double TotalGrossPay { get; set; }
 
-        #region UnPaid Wages
+#region UnPaid Wages
         [Column(TypeName = "double")]
         public double UnPaidRegTotalPay { get; set; }
         [Column(TypeName = "double")]
@@ -79,10 +78,11 @@ namespace TimeClockApp.Shared.Models
         public double UnPaidTotalOT2Pay { get; set; }
         [Column(TypeName = "double")]
         public double TotalOwedGrossPay { get; set; }
-        #endregion
+#endregion
 
         //[NotMapped]
         public string TimeCard_EmployeeName { get; set; }
+
 #nullable enable
         public virtual IList<TimeCard> TimeCards { get; set; } = new List<TimeCard>();
 

@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-
 using CsvHelper.Configuration;
 
 namespace TimeClockApp.Shared.Models
@@ -102,6 +101,7 @@ namespace TimeClockApp.Shared.Models
         public virtual Project Project { get; set; }
         public virtual Phase Phase { get; set; }
 
+#if DEBUG
         public override string ToString()
         {
             string rv = "\n--------------[  ExpenseId: " + ExpenseId + "  ]---------------------\n";
@@ -117,6 +117,7 @@ namespace TimeClockApp.Shared.Models
             rv += "------------------------------------------------------\n";
             return rv;
         }
+#endif
     }
 
     public sealed class ExpenseMap : ClassMap<Expense>
@@ -130,7 +131,7 @@ namespace TimeClockApp.Shared.Models
             Map(m => m.ExpenseDate);
             Map(m => m.Memo).Optional();
             Map(m => m.Amount);
-            Map(m => m.Category).Name("Category", "Catagory").Default(ExpenseType.Materials);
+            Map(m => m.Category).Name("Category", "Category").Default(ExpenseType.Materials);
             Map(m => m.IsRecent);
             Map(m => m.ExpenseProject).Optional();
             Map(m => m.ExpensePhase).Optional();

@@ -1,102 +1,99 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
-	x:Class="TimeClockApp.Pages.EditPhasePage"
-	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-	xmlns:models="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
-	xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
-	Title="Phase List Manager"
-	x:DataType="vm:EditPhaseViewModel">
-	<ContentPage.BindingContext>
-		<vm:EditPhaseViewModel x:Name="viewModel" />
-	</ContentPage.BindingContext>
-	<ContentPage.ToolbarItems>
-		<ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
-	</ContentPage.ToolbarItems>
-	<ScrollView>
-		<StackLayout>
-			<Frame
-				x:Name="helpbox"
-				Padding="8"
-				CornerRadius="10"
-				HorizontalOptions="FillAndExpand"
-				IsVisible="{Binding HelpInfoBoxVisible}"
-				VerticalOptions="Center">
-				<!--  TODO  -->
-				<Label
-					LineBreakMode="WordWrap"
-					Style="{StaticResource LabelSmall}"
-					Text="Phase Editor Page. &#10;&#10;Phases are a way to seperate parts of the Project in to smaller groups. &#10;&#10;TODO" />
-			</Frame>
+    x:Class="TimeClockApp.Pages.EditPhasePage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:models="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
+    xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
+    Title="Phase List Manager"
+    x:DataType="vm:EditPhaseViewModel">
+    <ContentPage.BindingContext>
+        <vm:EditPhaseViewModel x:Name="viewModel" />
+    </ContentPage.BindingContext>
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
+    </ContentPage.ToolbarItems>
+    <ScrollView>
+        <StackLayout>
+            <Frame
+                x:Name="helpbox"
+                Padding="8"
+                CornerRadius="10"
+                HorizontalOptions="FillAndExpand"
+                IsVisible="{Binding HelpInfoBoxVisible}"
+                VerticalOptions="Center">
+                <!--  TODO  -->
+                <Label
+                    LineBreakMode="WordWrap"
+                    Style="{StaticResource LabelSmall}"
+                    Text="Phase Editor Page. &#10;&#10;Phases are a way to seperate parts of the Project in to smaller groups. &#10;&#10;TODO" />
+            </Frame>
 
-			<!--<ActivityIndicator IsRunning="{Binding IsBusy, Mode=TwoWay}" />-->
-			<Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,4,Auto,6,Auto" RowSpacing="15">
-				<Label
-					Text="Select Phase To Edit: "
-					VerticalOptions="Center"
-					VerticalTextAlignment="Center" />
-				<Picker
-					x:Name="PhasePicker"
-					Grid.Row="1"
-					HorizontalOptions="FillAndExpand"
-					ItemDisplayBinding="{Binding PhaseTitle}"
-					ItemsSource="{Binding PhaseList}"
-					SelectedItem="{Binding SelectedPhase, Mode=TwoWay}"
-					VerticalOptions="Center" />
-				<Label
-					Grid.Row="2"
-					HorizontalOptions="Start"
-					Text="PhaseId:"
-					VerticalTextAlignment="Center" />
-				<Label
-					Grid.Row="2"
-					HorizontalOptions="Center"
-					Text="{Binding PhaseId}"
-					VerticalTextAlignment="Center" />
-				<Label
-					Grid.Row="3"
-					Text="Phase Title: "
-					VerticalOptions="Center"
-					VerticalTextAlignment="Center" />
-				<Entry
-					x:Name="PhaseNameBox"
-					Grid.Row="4"
-					Keyboard="Text"
-					Text="{Binding PhaseTitle, Mode=TwoWay}" />
-				<Button
-					Grid.Row="5"
-					Command="{Binding SavePhaseEditCommand}"
-					Text="Save Change">
-					<Button.Triggers>
-						<DataTrigger
-							Binding="{Binding Source={x:Reference PhaseNameBox}, Path=Text.Length}"
-							TargetType="Button"
-							Value="0">
-							<Setter Property="IsEnabled" Value="False" />
-						</DataTrigger>
-					</Button.Triggers>
-				</Button>
-				<BoxView
-					Grid.Row="6"
-					HeightRequest="2"
-					HorizontalOptions="Fill" />
-				<Button
-					Grid.Row="7"
-					Command="{Binding SaveNewPhaseCommand}"
-					Text="Add New"
-					IsEnabled="{Binding EnableAddDelButtons}">
-				</Button>
-				<BoxView
-					Grid.Row="8"
-					HeightRequest="2"
-					HorizontalOptions="Fill" />
-				<Button
-					Grid.Row="9"
-					Command="{Binding DeletePhaseCommand}"
-					Text="Delete"
-					IsEnabled="{Binding EnableAddDelButtons}">
-				</Button>
-			</Grid>
-		</StackLayout>
-	</ScrollView>
+            <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,4,Auto,6,Auto" RowSpacing="15">
+                <Label
+                    Text="Select Phase To Edit: "
+                    VerticalOptions="Center"
+                    VerticalTextAlignment="Center" />
+                <Picker
+                    x:Name="PhasePicker"
+                    Grid.Row="1"
+                    HorizontalOptions="FillAndExpand"
+                    ItemDisplayBinding="{Binding PhaseTitle}"
+                    ItemsSource="{Binding PhaseList}"
+                    SelectedItem="{Binding SelectedPhase, Mode=TwoWay}"
+                    VerticalOptions="Center" />
+                <Label
+                    Grid.Row="2"
+                    HorizontalOptions="Start"
+                    Text="PhaseId:"
+                    VerticalTextAlignment="Center" />
+                <Label
+                    Grid.Row="2"
+                    HorizontalOptions="Center"
+                    Text="{Binding PhaseId}"
+                    VerticalTextAlignment="Center" />
+                <Label
+                    Grid.Row="3"
+                    Text="Phase Title: "
+                    VerticalOptions="Center"
+                    VerticalTextAlignment="Center" />
+                <Entry
+                    x:Name="PhaseNameBox"
+                    Grid.Row="4"
+                    Keyboard="Text"
+                    Text="{Binding PhaseTitle, Mode=TwoWay}" />
+                <Button
+                    Grid.Row="5"
+                    Command="{Binding SavePhaseEditCommand}"
+                    Text="Save Change">
+                    <Button.Triggers>
+                        <DataTrigger
+                            Binding="{Binding Source={x:Reference PhaseNameBox}, Path=Text.Length}"
+                            TargetType="Button"
+                            Value="0">
+                            <Setter Property="IsEnabled" Value="False" />
+                        </DataTrigger>
+                    </Button.Triggers>
+                </Button>
+                <BoxView
+                    Grid.Row="6"
+                    HeightRequest="2"
+                    HorizontalOptions="Fill" />
+                <Button
+                    Grid.Row="7"
+                    Command="{Binding SaveNewPhaseCommand}"
+                    IsEnabled="{Binding EnableAddDelButtons}"
+                    Text="Add New" />
+                <BoxView
+                    Grid.Row="8"
+                    HeightRequest="2"
+                    HorizontalOptions="Fill" />
+                <Button
+                    Grid.Row="9"
+                    Command="{Binding DeletePhaseCommand}"
+                    IsEnabled="{Binding EnableAddDelButtons}"
+                    Text="Delete" />
+            </Grid>
+        </StackLayout>
+    </ScrollView>
 </ContentPage>

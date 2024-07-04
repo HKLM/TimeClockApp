@@ -2,23 +2,9 @@
 
 namespace TimeClockApp.ViewModels
 {
-    [QueryProperty("IdTimeCard", "id")]
-    [QueryProperty("ErrorCode", "e")]
     public partial class EditTimeCardViewModel(EditTimeCardService service) : TimeStampViewModel, IQueryAttributable
     {
         protected readonly EditTimeCardService cardService = service;
-        public string IdTimeCard
-        {
-            set
-            {
-                if (value != null
-                    && int.TryParse(Uri.UnescapeDataString(value), out int i))
-                {
-                    if (i > 0)
-                        TimeCardID = i;
-                }
-            }
-        }
 
         [ObservableProperty]
         private int timeCardID = 0;
@@ -173,8 +159,7 @@ namespace TimeClockApp.ViewModels
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
-                await App.AlertSvc.ShowAlertAsync("Exception", ex.Message + "\n" + ex.InnerException);
+                System.Diagnostics.Trace.WriteLine(ex.Message + "\n" + ex.InnerException);
             }
         }
 

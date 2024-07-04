@@ -1,10 +1,8 @@
 ﻿using CsvHelper;
-
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-
-using TimeClockApp.FileHelper;
+using TimeClockApp.Shared;
 
 namespace TimeClockApp.Services
 {
@@ -45,31 +43,6 @@ namespace TimeClockApp.Services
             {
                 csv.Context.RegisterClassMap<EmployeeMap>();
                 records = csv.GetRecords<Employee>().ToList();
-
-                //Fix for import from older prior version
-                //csv.Read();
-                //csv.ReadHeader();
-                //while (csv.Read())
-                //{
-                //    EmploymentStatus es;
-                //    csv.TryGetField("Employee_Employed", 3, out string E);
-                //    if (E == "True")
-                //        es = EmploymentStatus.Employed;
-                //    else if (E == "False")
-                //        es = EmploymentStatus.NotEmployed;
-                //    else
-                //        es = (EmploymentStatus)Enum.ToObject(typeof(EmploymentStatus), System.Convert.ToInt32(E));
-
-                //    var record = new Employee
-                //    {
-                //        EmployeeId = csv.GetField<int>("EmployeeId"),
-                //        Employee_Name = csv.GetField("Employee_Name"),
-                //        Employee_PayRate = csv.GetField<double>("Employee_PayRate"),
-                //        Employee_Employed = es,
-                //        JobTitle = csv.GetField("JobTitle")
-                //    };
-                //    records.Add(record);
-                //}
             }
             return records;
         }
@@ -256,7 +229,7 @@ namespace TimeClockApp.Services
                         {
                             transaction.Commit();
                             ExportLog += "Committed Data to Database!\n";
-                            ShowPopupError("Committed Data to Database.\n\nRestart the application to see updated changes.", "COMPLETED");
+                            ShowPopupError("Committed Data to Database.", "COMPLETED");
                         }
                     }
                 }

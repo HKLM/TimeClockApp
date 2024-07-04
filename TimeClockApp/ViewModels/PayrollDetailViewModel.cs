@@ -2,12 +2,10 @@
 
 namespace TimeClockApp.ViewModels
 {
-    [QueryProperty("StartString", "start")]
-    [QueryProperty("EndString", "end")]
-    [QueryProperty("IdString", "id")]
     public partial class PayrollDetailViewModel(PayrollService service) : TimeStampViewModel, IQueryAttributable
     {
         protected readonly PayrollService payrollData = service;
+
         [ObservableProperty]
         private ObservableCollection<TimeCard> timeCards = new();
         [ObservableProperty]
@@ -30,6 +28,7 @@ namespace TimeClockApp.ViewModels
 
         public string PayPeriod => $"TimeCards for Pay Period {StartDate.ToShortDateString()} to {EndDate.ToShortDateString()}";
 
+
         [ObservableProperty]
         private double regTotalHours = 0;
         [ObservableProperty]
@@ -49,8 +48,18 @@ namespace TimeClockApp.ViewModels
         private double unPaidTotalWorkHours = 0;
         [ObservableProperty]
         private double totalGrossPay = 0.00;
+        partial void OnTotalGrossPayChanged(double value)
+        {
+            TotalEstimatedWC = value * WCRate;
+        }
+
         [ObservableProperty]
         private double totalOwedGrossPay = 0.00;
+
+        [ObservableProperty]
+        private double totalEstimatedWC = 0.00;
+
+        public double WCRate { get; set; } = 0.00;
 
         [ObservableProperty]
         private bool displayLandscapeMode = false;
@@ -98,6 +107,7 @@ namespace TimeClockApp.ViewModels
 
         public async Task OnAppearing()
         {
+            WCRate = payrollData.GetWCRate();
             await RefreshCardsAsync();
         }
 
@@ -182,6 +192,7 @@ namespace TimeClockApp.ViewModels
                 UnPaidTotalWorkHours = SheetTime.UnPaidTotalWorkHours;
                 TotalGrossPay = SheetTime.TotalGrossPay;
                 TotalOwedGrossPay = SheetTime.TotalOwedGrossPay;
+
             }
         }
 
@@ -307,8 +318,6 @@ namespace TimeClockApp.ViewModels
 
         private void ResetItems()
         {
-            //TimeCards.Clear();
-
             RegTotalHours = 0;
             TotalOTHours = 0;
             TotalOT2Hours = 0;

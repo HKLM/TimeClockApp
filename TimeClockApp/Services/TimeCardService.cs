@@ -1,7 +1,5 @@
 ﻿using System.Data;
-
 using Microsoft.EntityFrameworkCore;
-
 using TimeClockApp.Shared.Helpers;
 
 namespace TimeClockApp.Services

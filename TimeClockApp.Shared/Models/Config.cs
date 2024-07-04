@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-
 using CsvHelper.Configuration;
 
 #nullable enable
@@ -14,6 +13,7 @@ namespace TimeClockApp.Shared.Models
     {
         [Key]
         public int ConfigId { get; set; }
+
         /// <summary>
         /// String name to help identify what this row is for
         /// </summary>
@@ -37,16 +37,18 @@ namespace TimeClockApp.Shared.Models
         /// </summary>
         public string? Hint { get; set; }
 
+#if DEBUG
         public override string ToString()
         {
-            string rv = Environment.NewLine + "--------------[  ConfigId: " + ConfigId + "  ]---------------------" + Environment.NewLine;
+            string rv = "\n--------------[  ConfigId: " + ConfigId + "  ]---------------------\n";
             rv += "Name:        " + Name + Environment.NewLine;
             rv += "StringValue: " + StringValue + Environment.NewLine;
             rv += "IntValue:    " + IntValue?.ToString() + Environment.NewLine;
             rv += "Hint:        " + Hint + Environment.NewLine;
-            rv += "------------------------------------------------------" + Environment.NewLine;
+            rv += "------------------------------------------------------\n";
             return rv;
         }
+#endif
     }
 
     public sealed class ConfigMap : ClassMap<Config>

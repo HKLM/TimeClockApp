@@ -8,9 +8,7 @@
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"    
 	xmlns:vm="clr-namespace:TimeClockApp.ViewModels"	
 	x:Name="PagePayroll"
-	Title="Payroll Totals"
-    >
-
+	Title="Payroll Totals">
     <ContentPage.Behaviors>
         <toolkit:EventToCommandBehavior EventName="Loaded" Command="{Binding InitCommand}" />
     </ContentPage.Behaviors>
@@ -21,8 +19,7 @@
     </ContentPage.ToolbarItems>
     <ContentPage.Resources>
 
-        <DataTemplate x:Key="payrollListTemplate"
-                      >
+        <DataTemplate x:Key="payrollListTemplate">
             <SwipeView>
                 <SwipeView.LeftItems>
                     <SwipeItems>
@@ -43,7 +40,6 @@
 							Text="Mark Paid" />
                     </SwipeItems>
                 </SwipeView.RightItems>
-
 
                 <Frame Padding="8" CornerRadius="10" HorizontalOptions="FillAndExpand" VerticalOptions="Center">
                     <StackLayout>

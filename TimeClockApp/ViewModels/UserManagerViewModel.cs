@@ -2,7 +2,7 @@
 {
     public partial class UserManagerViewModel : TimeStampViewModel
     {
-        protected UserManagerService HRservice;
+        protected readonly UserManagerService HRService;
         [ObservableProperty]
         private int employeeId = 0;
         [ObservableProperty]
@@ -44,7 +44,7 @@
 
         public UserManagerViewModel()
         {
-            HRservice = new();
+            HRService = new();
         }
 
         public void OnAppearing()
@@ -58,7 +58,7 @@
             {
                 App.NoticeUserHasChanged = true;
             }
-            EmployeeList = HRservice.GetAllEmployees(true);
+            EmployeeList = HRService.GetAllEmployees(true);
         }
 
         private async Task RefreshEmployeesAsync(bool isUpdating)
@@ -67,7 +67,7 @@
             {
                 App.NoticeUserHasChanged = true;
             }
-            EmployeeList = await HRservice.GetAllEmployeesAsync(true);
+            EmployeeList = await HRService.GetAllEmployeesAsync(true);
         }
 
         [RelayCommand]
@@ -79,8 +79,7 @@
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
-                await App.AlertSvc.ShowAlertAsync("ERROR", ex.Message + "\n" + ex.InnerException);
+                System.Diagnostics.Trace.WriteLine(ex.Message + "\n" + ex.InnerException);
             }
         }
 
@@ -88,7 +87,7 @@
         {
             if (SelectedEmployee != null)
             {
-                Employee e = HRservice.GetEmployee(SelectedEmployee.EmployeeId);
+                Employee e = HRService.GetEmployee(SelectedEmployee.EmployeeId);
                 if (e != null)
                 {
                     EmployeeName = e.Employee_Name;
@@ -107,15 +106,14 @@
             {
                 if (EmployeeName != null && EmployeeName != "" && JobTitle != null && JobTitle != "")
                 {
-                    HRservice.AddNewEmployee(EmployeeName, PayRate, JobTitle);
+                    HRService.AddNewEmployee(EmployeeName, PayRate, JobTitle);
                     await RefreshEmployeesAsync(true);
                     await App.AlertSvc.ShowAlertAsync("NOTICE", "Added new employee " + EmployeeName);
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
-                await App.AlertSvc.ShowAlertAsync("ERROR", ex.Message + "\n" + ex.InnerException);
+                System.Diagnostics.Trace.WriteLine(ex.Message + "\n" + ex.InnerException);
             }
         }
 
@@ -127,7 +125,7 @@
                 if (SelectedEmployee != null)
                 {
                     string eName = SelectedEmployee.Employee_Name;
-                    HRservice.FireEmployee(SelectedEmployee.EmployeeId);
+                    HRService.FireEmployee(SelectedEmployee.EmployeeId);
                     await RefreshEmployeesAsync(true);
                     await App.AlertSvc.ShowAlertAsync("NOTICE", eName + " is Fired!");
                     RefreshInfo();
@@ -135,8 +133,7 @@
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
-                await App.AlertSvc.ShowAlertAsync("ERROR", ex.Message + "\n" + ex.InnerException);
+                System.Diagnostics.Trace.WriteLine(ex.Message + "\n" + ex.InnerException);
             }
         }
 
@@ -146,7 +143,7 @@
         {
             try
             {
-                if (EmployeeId > 0 && HRservice.UpdateEmployee(EmployeeId, EmployeeName, PayRate, IsEmployed))
+                if (EmployeeId > 0 && HRService.UpdateEmployee(EmployeeId, EmployeeName, PayRate, IsEmployed))
                 {
                     RefreshEmployees(true);
                     App.AlertSvc.ShowAlert("NOTICE", "Saved " + EmployeeName);
@@ -154,8 +151,7 @@
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
-                App.AlertSvc.ShowAlert("ERROR", ex.Message + "\n" + ex.InnerException);
+                System.Diagnostics.Trace.WriteLine(ex.Message + "\n" + ex.InnerException);
             }
         }
 
