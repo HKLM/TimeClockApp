@@ -3,8 +3,6 @@ using System.ComponentModel.DataAnnotations;
 using CsvHelper.Configuration;
 using Microsoft.EntityFrameworkCore;
 
-//#nullable enable
-
 namespace TimeClockApp.Shared.Models
 {
     public enum ProjectStatus
@@ -33,15 +31,15 @@ namespace TimeClockApp.Shared.Models
     {
         public Project()
         {
-            TimeCards = new HashSet<TimeCard>();
-            Expenses = new HashSet<Expense>();
             ProjectDate = DateOnly.FromDateTime(DateTime.Now);
             Status = ProjectStatus.Active;
+            TimeCards = new HashSet<TimeCard>();
+            Expenses = new HashSet<Expense>();
         }
 
-        public Project(string projectName)
+        public Project(string Name)
         {
-            Name = projectName;
+            this.Name = Name;
             ProjectDate = DateOnly.FromDateTime(DateTime.Now);
             Status = ProjectStatus.Active;
         }
@@ -50,7 +48,7 @@ namespace TimeClockApp.Shared.Models
         public int ProjectId { get; set; }
 
         [Required]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         /// <summary>
         /// Used to filter out older (archived, completed, deleted, etc) projects
@@ -73,7 +71,7 @@ namespace TimeClockApp.Shared.Models
         //public DateOnly? ProjectDateEnd { get; set; } = null;
 
         public virtual ICollection<TimeCard> TimeCards { get; set; }
-        public virtual ICollection<Expense> Expenses { get; set; }
+        public virtual ICollection<Expense> Expenses { get; set; } 
 
 #if DEBUG
         public override string ToString()

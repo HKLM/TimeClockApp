@@ -34,17 +34,17 @@ namespace TimeClockApp.Shared.Models
     public class Expense : BaseEntity
     {
         public Expense() { }
-        public Expense(int projectId, int phaseId, double amount, DateOnly expenseDate, string projectName = "", string phaseTitle = "", string memo = "", ExpenseType category = ExpenseType.Materials)
+        public Expense(int ProjectId, int PhaseId, double Amount, DateOnly ExpenseDate, string ExpenseProject = "", string ExpensePhase = "", string Memo = "", ExpenseType Category = ExpenseType.Materials)
         {
-            ProjectId = projectId;
-            PhaseId = phaseId;
-            Memo = memo;
-            Amount = amount;
-            Category = category;
-            ExpenseDate = expenseDate;
+            this.ProjectId = ProjectId;
+            this.PhaseId = PhaseId;
+            this.Memo = Memo;
+            this.Amount = Amount;
+            this.Category = Category;
+            this.ExpenseDate = ExpenseDate;
             IsRecent = true;
-            ExpenseProject = projectName?.Length == 0 ? null : projectName;
-            ExpensePhase = phaseTitle?.Length == 0 ? null : phaseTitle;
+            this.ExpenseProject = string.IsNullOrEmpty(ExpenseProject) ? string.Empty : ExpenseProject;
+            this.ExpensePhase = string.IsNullOrEmpty(ExpensePhase) ? string.Empty : ExpensePhase;
         }
 
         [Key]
@@ -71,7 +71,7 @@ namespace TimeClockApp.Shared.Models
         /// </summary>
         /// <remarks>Currently the only way to see this, is by editing the expense. This is not displayed
         /// any where else. TODO</remarks>
-        public string Memo { get; set; }
+        public string Memo { get; set; } = string.Empty;
 
         [Required]
         [System.ComponentModel.DataAnnotations.Schema.Column(TypeName = "double")]
@@ -91,14 +91,14 @@ namespace TimeClockApp.Shared.Models
         /// <summary>
         /// Saved Project Name at the time this expense was made.
         /// </summary>
-        public string ExpenseProject { get; set; }
+        public string ExpenseProject { get; set; } = string.Empty;
 
         /// <summary>
         /// Saved Project Title at the time this expense was made.
         /// </summary>
-        public string ExpensePhase { get; set; }
+        public string ExpensePhase { get; set; } = string.Empty;
 
-        public virtual Project Project { get; set; }
+        public virtual Project Project { get; set; } 
         public virtual Phase Phase { get; set; }
 
 #if DEBUG

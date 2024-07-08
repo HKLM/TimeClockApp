@@ -75,25 +75,16 @@ namespace TimeClockApp.Services
                 .ToListAsync());
         }
 
-        public ObservableCollection<Employee> GetEmployees() => Context.Employee
-                .Where(e => e.Employee_Employed == EmploymentStatus.Employed)
-                .OrderBy(e => e.Employee_Name)
-                .ToObservableCollection();
-
-
         public async Task<ObservableCollection<Employee>> GetEmployeesAsync() => new ObservableCollection<Employee>(await Context.Employee
                 .Where(e => e.Employee_Employed == EmploymentStatus.Employed)
                 .OrderBy(e => e.Employee_Name)
                 .ToListAsync());
 
-        public ObservableCollection<Employee> GetEmployeesGroupInStatus()
-        {
-            return Context.Employee
+        public async Task<List<Employee>> GetEmployeesGroupInStatusAsync() => await Context.Employee
                 .Where(e => e.Employee_Employed < EmploymentStatus.NotEmployed)
                 .OrderBy(e => e.Employee_Employed)
                 .ThenBy(e => e.Employee_Name)
-                .ToObservableCollection();
-        }
+                .ToListAsync();
 
         public TimeCard GetTimeCard(int timeCardID) => Context.TimeCard.Find(timeCardID);
 
@@ -226,7 +217,6 @@ namespace TimeClockApp.Services
         private List<TimeCard> GetListUnpaidTimeCardsForPayPeriod(int employeeId)
         {
             return Context.TimeCard
-                .TagWithCallSite()
                     .Where(item => item.EmployeeId == employeeId
                         && (item.TimeCard_Status == ShiftStatus.ClockedOut
                         || item.TimeCard_Status == ShiftStatus.ClockedIn))
@@ -236,7 +226,6 @@ namespace TimeClockApp.Services
         private List<TimeCard> GetListPaidTimeCardsForPayPeriod(int employeeId, DateOnly start, DateOnly end)
         {
             return Context.TimeCard
-                .TagWithCallSite()
                     .Where(item => item.EmployeeId == employeeId
                         && item.TimeCard_Date >= start
                         && item.TimeCard_Date <= end
@@ -250,14 +239,14 @@ namespace TimeClockApp.Services
                 : await Task.Run(() => GetListUnpaidTimeCardsForPayPeriodAsync(employeeId));
 
         private async Task<List<TimeCard>> GetListUnpaidTimeCardsForPayPeriodAsync(int employeeId) =>
-                await Context.TimeCard.TagWithCallSite()
+                await Context.TimeCard
                     .Where(item => item.EmployeeId == employeeId
                         && (item.TimeCard_Status == ShiftStatus.ClockedOut
                         || item.TimeCard_Status == ShiftStatus.ClockedIn))
                     .OrderBy(item => item.TimeCard_Date)
                     .ToListAsync();
         private async Task<List<TimeCard>> GetListPaidTimeCardsForPayPeriodAsync(int employeeId, DateOnly start, DateOnly end) =>
-                await Context.TimeCard.TagWithCallSite()
+                await Context.TimeCard
                     .Where(item => item.EmployeeId == employeeId
                         && item.TimeCard_Date >= start
                         && item.TimeCard_Date <= end

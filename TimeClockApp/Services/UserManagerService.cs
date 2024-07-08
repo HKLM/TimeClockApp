@@ -33,26 +33,15 @@
                 return false;
 
             Employee item = GetEmployee(employeeId);
-            if (item != null)
-            {
-                if (!string.IsNullOrEmpty(name))
-                    item.Employee_Name = name;
+            if (item == null) return false;
 
-                item.Employee_PayRate = payRate;
-                item.Employee_Employed = employed;
+            if (!string.IsNullOrEmpty(name))
+                item.Employee_Name = name;
 
-                try
-                {
-                    Context.Update<Employee>(item);
-                    return (Context.SaveChanges() > 0);
-                }
-                catch (Exception e)
-                {
-                    System.Diagnostics.Debug.WriteLine(e.Message + "\n" + e.InnerException);
-                    //throw;
-                }
-            }
-            return false;
+            item.Employee_PayRate = payRate;
+            item.Employee_Employed = employed;
+            Context.Update<Employee>(item);
+            return (Context.SaveChanges() > 0);
         }
 
         public bool UpdateEmployee(int employeeId, EmploymentStatus employed)
@@ -61,49 +50,25 @@
                 return false;
 
             Employee item = GetEmployee(employeeId);
-            if (item != null)
-            {
-                item.Employee_Employed = employed;
+            if (item == null) return false;
 
-                try
-                {
-                    Context.Update<Employee>(item);
-                    return (Context.SaveChanges() > 0);
-                }
-                catch (Exception e)
-                {
-                    System.Diagnostics.Debug.WriteLine(e.Message + "\n" + e.InnerException);
-                    //throw;
-                }
-            }
-            return false;
+            item.Employee_Employed = employed;
+            Context.Update<Employee>(item);
+            return (Context.SaveChanges() > 0);
         }
-
 
         public bool FireEmployee(int employeeId)
         {
             if (employeeId == 0)
                 return false;
 
-            try
+            if (Context.Employee.Count() > 1)
             {
-                if (Context.Employee.Count() > 1)
-                {
-                    Employee item = GetEmployee(employeeId);
-                    if (item != null)
-                    {
-                        item.Employee_Employed = EmploymentStatus.NotEmployed;
-                        Context.Update<Employee>(item);
-                        return (Context.SaveChanges() > 0);
-                    }
-                }
-                else
-                    ShowPopupError("There must be atleast one employee.", "ERROR");
+                return UpdateEmployee(employeeId, EmploymentStatus.NotEmployed);
             }
-            catch (Exception e)
+            else
             {
-                System.Diagnostics.Debug.WriteLine(e.Message + "\n" + e.InnerException);
-                //throw;
+                ShowPopupError("There must be atleast one employee.", "ERROR");
             }
             return false;
         }

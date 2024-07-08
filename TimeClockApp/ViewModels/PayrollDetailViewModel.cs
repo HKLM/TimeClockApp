@@ -179,7 +179,7 @@ namespace TimeClockApp.ViewModels
             SheetTime = await payrollData.GetPayrollTimeSheetForEmployeeAsync(SelectedFilter.EmployeeId, DateOnly.FromDateTime(StartDate), DateOnly.FromDateTime(EndDate), SelectedFilter.Employee_Name, SheetTime, bShowPaid);
             if (SheetTime?.TimeCards.Any() == true)
             {
-                IList<TimeCard> t = SheetTime.TimeCards;
+                List<TimeCard> t = SheetTime.TimeCards.ToList();
                 TimeCards = t.ToObservableCollection();
 
                 RegTotalHours = SheetTime.RegTotalHours;
@@ -211,7 +211,7 @@ namespace TimeClockApp.ViewModels
             SheetTime = payrollData.GetPayrollTimeSheetForEmployee(SelectedFilter.EmployeeId, DateOnly.FromDateTime(StartDate), DateOnly.FromDateTime(EndDate), SelectedFilter.Employee_Name, SheetTime, bShowPaid);
             if (SheetTime?.TimeCards.Any() == true)
             {
-                IList<TimeCard> t = SheetTime.TimeCards;
+                IList<TimeCard> t = SheetTime.TimeCards.ToList();
                 TimeCards = t.ToObservableCollection();
 
                 RegTotalHours = SheetTime.RegTotalHours;

@@ -2,8 +2,6 @@
 using CsvHelper.Configuration;
 using Microsoft.EntityFrameworkCore;
 
-#nullable enable
-
 namespace TimeClockApp.Shared.Models
 {
     /// <summary>
@@ -13,15 +11,15 @@ namespace TimeClockApp.Shared.Models
     public class Phase
     {
         public Phase() { }
-        public Phase(string phaseTitle)
+        public Phase(string PhaseTitle)
         {
-            PhaseTitle = phaseTitle;
+            this.PhaseTitle = PhaseTitle;
         }
 
-        public Phase(int phaseId, string phaseTitle)
+        public Phase(int PhaseId, string PhaseTitle)
         {
-            PhaseId = phaseId;
-            PhaseTitle = phaseTitle;
+            this.PhaseId = PhaseId;
+            this.PhaseTitle = PhaseTitle;
         }
 
         [Key]

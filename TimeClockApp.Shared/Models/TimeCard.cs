@@ -31,7 +31,7 @@ namespace TimeClockApp.Shared.Models
     /// <item>
     /// <term>3</term>
     /// <description>
-    /// Paid (TimeCard has been paid to employee)
+    /// Paid (TimeCard has been paid to Employee)
     /// </description>
     /// </item>
     /// <item>
@@ -57,7 +57,7 @@ namespace TimeClockApp.Shared.Models
     }
 
     /// <summary>
-    /// Record of single continuous amount of time, the employee worked in a single day.
+    /// Record of single continuous amount of time, the Employee worked in a single day.
     /// </summary>
     /// <remarks>
     /// TODO -If breaks are not paid time, end current TimeCard at the beginning of break.
@@ -71,13 +71,13 @@ namespace TimeClockApp.Shared.Models
     {
         public TimeCard() { }
 
-        public TimeCard(Employee employee)
+        public TimeCard(Employee Employee)
         {
-            ArgumentNullException.ThrowIfNull(employee);
-            EmployeeId = employee.EmployeeId;
-            TimeCard_EmployeeName = employee.Employee_Name ?? throw new ArgumentNullException(nameof(employee.Employee_Name));
-            TimeCard_EmployeePayRate = employee.Employee_PayRate;
-            Employee = employee ?? throw new ArgumentNullException(nameof(employee));
+            ArgumentNullException.ThrowIfNull(Employee);
+            EmployeeId = Employee.EmployeeId;
+            TimeCard_EmployeeName = Employee.Employee_Name ?? throw new ArgumentNullException(nameof(Employee.Employee_Name));
+            TimeCard_EmployeePayRate = Employee.Employee_PayRate;
+            this.Employee = Employee ?? throw new ArgumentNullException(nameof(Employee));
             TimeCard_DateTime = DateTime.Now;
             TimeCard_Date = DateOnly.FromDateTime(DateTime.Now);
             TimeCard_Status = ShiftStatus.NA;
@@ -88,24 +88,20 @@ namespace TimeClockApp.Shared.Models
             TimeCard_bReadOnly = false;
         }
 
-        public TimeCard(Employee employee, int projectId, int phaseId)
+        public TimeCard(Employee Employee, int ProjectId, int PhaseId, string ProjectName, string PhaseTitle)
         {
-            ArgumentNullException.ThrowIfNull(employee);
-            EmployeeId = employee.EmployeeId;
-            TimeCard_EmployeeName = employee.Employee_Name ?? throw new ArgumentNullException(nameof(employee.Employee_Name));
-            TimeCard_EmployeePayRate = employee.Employee_PayRate;
-            Employee = employee ?? throw new ArgumentNullException(nameof(employee));
+            ArgumentNullException.ThrowIfNull(Employee);
+            EmployeeId = Employee.EmployeeId;
+            TimeCard_EmployeeName = Employee.Employee_Name ?? throw new ArgumentNullException(nameof(Employee.Employee_Name));
+            TimeCard_EmployeePayRate = Employee.Employee_PayRate;
+            this.Employee = Employee ?? throw new ArgumentNullException(nameof(Employee));
             TimeCard_DateTime = DateTime.Now;
             TimeCard_Date = DateOnly.FromDateTime(DateTime.Now);
             TimeCard_Status = ShiftStatus.NA;
-            ProjectId = projectId;
-            //TODDO
-            ProjectName = ".None";
-            //ProjectName = EditProjectService.GetProjectNameFromId(projectId);
-            PhaseId = phaseId;
-            //TODDO
-            PhaseTitle = ".Misc";
-            //PhaseTitle = EditPhaseService.GetPhaseTitleFromId(phaseId);
+            this.ProjectId = ProjectId;
+            this.ProjectName = string.IsNullOrEmpty(ProjectName) ? ".None" : ProjectName;
+            this.PhaseId = PhaseId;
+            this.PhaseTitle = string.IsNullOrEmpty(PhaseTitle) ? ".Misc" : PhaseTitle;
             TimeCard_bReadOnly = false;
         }
 
@@ -119,7 +115,7 @@ namespace TimeClockApp.Shared.Models
         /// Copied from the associated Employee entity at the time this TimeCard is created.
         /// </summary>
         [Required]
-        public string TimeCard_EmployeeName { get; set; }
+        public string TimeCard_EmployeeName { get; set; } = string.Empty;
 
         /// <summary>ShiftStatus enum
         /// </summary>
@@ -146,7 +142,7 @@ namespace TimeClockApp.Shared.Models
         /// <item>
         /// <term>3</term>
         /// <description>
-        /// Paid (TimeCard has been paid to employee)
+        /// Paid (TimeCard has been paid to Employee)
         /// </description>
         /// </item>
         /// <item>
@@ -181,13 +177,13 @@ namespace TimeClockApp.Shared.Models
         public DateOnly TimeCard_Date { get; set; }
 
         /// <summary>
-        /// Time employee begins their shift
+        /// Time Employee begins their shift
         /// </summary>
         [Column(TypeName = "time")]
         public TimeOnly TimeCard_StartTime { get; set; }
 
         /// <summary>
-        /// Time the employee clocks out of their shift.
+        /// Time the Employee clocks out of their shift.
         /// </summary>
         /// <remarks>
         /// Time entry must be for the same day. If working up to and past midnight 12AM,
@@ -231,7 +227,7 @@ namespace TimeClockApp.Shared.Models
         public double TotalWorkHours { get; set; }
 
         /// <summary>
-        /// The employee's payrate, at the time of this TimeCard
+        /// The Employee's payrate, at the time of this TimeCard
         /// </summary>
         [Required]
         [Column(TypeName = "double")]
@@ -246,12 +242,12 @@ namespace TimeClockApp.Shared.Models
         /// <summary>
         /// Saved Project Name at the time this card was made.
         /// </summary>
-        public string ProjectName { get; set; }
+        public string ProjectName { get; set; } = string.Empty;
 
         /// <summary>
         /// Saved Project Title at the time this card was made.
         /// </summary>
-        public string PhaseTitle { get; set; }
+        public string PhaseTitle { get; set; } = string.Empty;
 
         //Navigation Entities
         public virtual Employee Employee { get; set; }

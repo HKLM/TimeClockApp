@@ -16,13 +16,13 @@ namespace TimeClockApp.Shared.Models
     {
         public TimeSheet() { }
 
-        public TimeSheet(int employeeId, DateOnly payPeriodStart, DateOnly payPeriodEnd, string employeeName)
+        public TimeSheet(int EmployeeId, DateOnly PayPeriodBegin, DateOnly PayPeriodEnd, string TimeCard_EmployeeName)
         {
-            EmployeeId = employeeId;
-            TimeCard_EmployeeName = employeeName;
-            PayPeriodWeekNum = TimeHelper.GetWeekNumber(payPeriodStart);
-            PayPeriodBegin = payPeriodStart;
-            PayPeriodEnd = payPeriodEnd;
+            this.EmployeeId = EmployeeId;
+            this.TimeCard_EmployeeName = TimeCard_EmployeeName;
+            PayPeriodWeekNum = TimeHelper.GetWeekNumber(PayPeriodBegin);
+            this.PayPeriodBegin = PayPeriodBegin;
+            this.PayPeriodEnd = PayPeriodEnd;
         }
 
         [Key]
@@ -78,18 +78,18 @@ namespace TimeClockApp.Shared.Models
         public double UnPaidTotalOT2Pay { get; set; }
         [Column(TypeName = "double")]
         public double TotalOwedGrossPay { get; set; }
-#endregion
+        #endregion
 
         //[NotMapped]
-        public string TimeCard_EmployeeName { get; set; }
+        public string TimeCard_EmployeeName { get; set; } = string.Empty;
 
 #nullable enable
-        public virtual IList<TimeCard> TimeCards { get; set; } = new List<TimeCard>();
+        public virtual IList<TimeCard> TimeCards { get; set; } = [];
 
         [NotMapped]
-        public virtual IList<TimeCard?> UnpaidTimeCards { get; set; } = new List<TimeCard?>();
+        public virtual IList<TimeCard?> UnpaidTimeCards { get; set; } = [];
         [NotMapped]
-        public virtual IList<TimeCard?> PaidTimeCards { get; set; } = new List<TimeCard?>();
+        public virtual IList<TimeCard?> PaidTimeCards { get; set; } = [];
 
         /// <summary>
         /// Determines if this TimeSheet can be edited. Paid sheets can not be altered.
@@ -100,34 +100,37 @@ namespace TimeClockApp.Shared.Models
         public void Reset()
         {
             // Do not allow changing a paid TimeSheet
-            if (this.Status == SheetStatus.Paid)
+            if (Status == SheetStatus.Paid)
                 return;
 
-            this.TotalWorkHours = 0;
-            this.RegTotalHours = 0;
-            this.TotalOTHours = 0;
-            this.TotalOT2Hours = 0;
+            TotalWorkHours = 0;
+            RegTotalHours = 0;
+            TotalOTHours = 0;
+            TotalOT2Hours = 0;
 
-            this.UnPaidTotalWorkHours = 0;
-            this.UnPaidRegTotalHours = 0;
-            this.UnPaidTotalOTHours = 0;
-            this.UnPaidTotalOT2Hours = 0;
+            UnPaidTotalWorkHours = 0;
+            UnPaidRegTotalHours = 0;
+            UnPaidTotalOTHours = 0;
+            UnPaidTotalOT2Hours = 0;
 
-            this.RegTotalPay = 0;
-            this.TotalOTPay = 0;
-            this.TotalOT2Pay = 0;
-            this.TotalGrossPay = 0;
+            RegTotalPay = 0;
+            TotalOTPay = 0;
+            TotalOT2Pay = 0;
+            TotalGrossPay = 0;
 
-            this.UnPaidRegTotalPay = 0;
-            this.UnPaidTotalOTPay = 0;
-            this.UnPaidTotalOT2Pay = 0;
-            this.TotalOwedGrossPay = 0;
+            UnPaidRegTotalPay = 0;
+            UnPaidTotalOTPay = 0;
+            UnPaidTotalOT2Pay = 0;
+            TotalOwedGrossPay = 0;
 
-            this.TimeCards?.Clear();
-            this.UnpaidTimeCards?.Clear();
-            this.PaidTimeCards?.Clear();
+            if (TimeCards != null)
+                TimeCards?.Clear();
+
+            if (UnpaidTimeCards != null)
+                UnpaidTimeCards?.Clear();
+
+            if (PaidTimeCards != null)
+                PaidTimeCards?.Clear();
         }
-
-        public virtual Employee Employee { get; private set; }
     }
 }

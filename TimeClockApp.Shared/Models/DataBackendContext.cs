@@ -14,6 +14,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 #endif
 
+#nullable enable 
+
 namespace TimeClockApp.Shared.Models
 {
     public class DataBackendContext : DbContext
@@ -26,6 +28,8 @@ namespace TimeClockApp.Shared.Models
     "EF Core isn't fully compatible with trimming, and running the application may generate unexpected runtime failures. "
     + "Some specific coding pattern are usually required to make trimming work properly, see https://aka.ms/efcore-docs-trimming for "
     + "more details.")]
+    //    [RequiresDynamicCode(
+    //"EF Core isn't fully compatible with NativeAOT, and running the application may generate unexpected runtime failures.")]
         public DataBackendContext()
         {
 #if MIGRATION
@@ -54,7 +58,9 @@ namespace TimeClockApp.Shared.Models
 #endif
                     SQLitePCL.Batteries_V2.Init();
                     Database.Migrate();
+#if TRIGGER
                     CreateDBTrigger();
+#endif
                 }
                 finally
                 {
@@ -64,22 +70,22 @@ namespace TimeClockApp.Shared.Models
             }
         }
 
+#if TRIGGER
         private int CreateDBTrigger()
         {
             int i = 0;
-            if (this.Config != null)
-            {
-                const int z = 2;
-                Config c = this.Config.Find(z);
-                if (string.IsNullOrEmpty(c?.StringValue))
-                {
-                    c!.StringValue = DateOnly.FromDateTime(DateTime.Now).ToShortDateString();
-                    this.Config.Update(c);
+            //if (Config != null)
+            //{
+            //    const int z = 2;
+            //    Config? c = Config.Find(z);
+            //    if (string.IsNullOrEmpty(c?.StringValue))
+            //    {
+            //        c!.StringValue = DateOnly.FromDateTime(DateTime.Now).ToShortDateString();
+            //        Config.Update(c);
 
-                    i = this.SaveChanges();
-                }
-            }
-#if TRIGGER
+            //        i = SaveChanges();
+            //    }
+            //}
             if (this.Database != null)
             {
                 try
@@ -99,9 +105,9 @@ namespace TimeClockApp.Shared.Models
                     System.Diagnostics.Trace.WriteLine(e.Message + "\n" + e.InnerException);
                 }
             }
-#endif
             return i;
         }
+#endif
 
         public DbSet<Employee> Employee { get; set; }
         public DbSet<Project> Project { get; set; }
@@ -113,7 +119,7 @@ namespace TimeClockApp.Shared.Models
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder?
-#if DEBUG
+#if DEBUG && !MIGRATION
                     .EnableSensitiveDataLogging(true)
                     .EnableDetailedErrors()
 #endif
@@ -133,7 +139,7 @@ namespace TimeClockApp.Shared.Models
             }
 #endif
 
-            #region ForeignKeys
+#region ForeignKeys
 
             modelBuilder.Entity<TimeCard>()
                 .HasOne(t => t.Employee)
@@ -155,9 +161,9 @@ namespace TimeClockApp.Shared.Models
                 .WithMany(t => t.Expenses)
                 .HasForeignKey(t => t.ProjectId);
 
-            #endregion ForeignKeys
+#endregion ForeignKeys
 
-            #region DefaultValues
+#region DefaultValues
 
             modelBuilder.Entity<Employee>()
                 .Property(b => b.Employee_Employed)
@@ -178,19 +184,19 @@ namespace TimeClockApp.Shared.Models
                 .Property(e => e.IsRecent)
                 .HasDefaultValue(true);
 
-            #endregion DefaultValues
+#endregion DefaultValues
 
-            #region Indexs
+#region Indexs
 
             modelBuilder.Entity<TimeCard>()
-                 .HasIndex(b => new { b.EmployeeId, b.TimeCard_Status, b.TimeCard_Date, b.TimeCard_bReadOnly })
+                 .HasIndex(b => new { b.EmployeeId, b.TimeCard_Status, b.TimeCard_Date, b.TimeCard_bReadOnly})
                  .HasDatabaseName("IX_TimeCardEmpStatDateRead");
 
             modelBuilder.Entity<TimeCard>()
                 .Property(t => t.TimeCard_WorkHours)
                 .HasComputedColumnSql("round((strftime('%s', [TimeCard_EndTime]) - strftime('%s', [TimeCard_StartTime])) / 3600.0, 2)", stored: true);
 
-            #endregion Indexs
+#endregion Indexs
 
             modelBuilder.Entity<Config>().HasData(new Config
             {
@@ -203,7 +209,8 @@ namespace TimeClockApp.Shared.Models
             {
                 ConfigId = 2,
                 Name = "FirstRun",
-                Hint = "Date this app was 1st ran. For internal use only"
+                StringValue = DateOnly.FromDateTime(DateTime.Now).ToShortDateString(),
+                Hint = "Date this app was 1st ran. For internal use only"                
             },
             new Config
             {

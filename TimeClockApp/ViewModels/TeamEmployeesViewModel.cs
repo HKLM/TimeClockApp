@@ -1,4 +1,8 @@
-﻿namespace TimeClockApp.ViewModels
+﻿using CommunityToolkit.Maui.Core.Extensions;
+
+#nullable enable
+
+namespace TimeClockApp.ViewModels
 {
     public partial class TeamEmployeesViewModel(UserManagerService service) : TimeStampViewModel
     {
@@ -7,50 +11,40 @@
         [ObservableProperty]
         private ObservableCollection<Employee> employee_List = [];
 
-        public void OnAppearing()
+        public async Task OnAppearing()
         {
-            RefreshEmployeeList();
-        }
-
-        private void RefreshEmployeeList()
-        {
-            if (Employee_List.Any())
-                Employee_List.Clear();
-            Employee_List = employeeService.GetEmployeesGroupInStatus();
-        }
-
-#nullable enable
-
-        [RelayCommand]
-        private void SetTeamActive(Employee? employee)
-        {
-            if (employee?.EmployeeId > 0)
-            {
-                if (employeeService.UpdateEmployee(employee.EmployeeId, EmploymentStatus.Employed))
-                {
-                    App.NoticeUserHasChanged = true;
-                    RefreshEmployeeList();
-                    App.AlertSvc.ShowAlert("NOTICE", "Saved " + employee.Employee_Name);
-                }
-                else
-                    App.AlertSvc.ShowAlert("ERROR", "Something went wrong. Data not saved.");
-            }
+            List<Employee> e = await employeeService.GetEmployeesGroupInStatusAsync();
+            Employee_List = e.ToObservableCollection<Employee>();
         }
 
         [RelayCommand]
-        private void SetTeamNotActive(Employee? employee)
+        private async Task SetTeamActiveAsync(Employee? employee)
         {
-            if (employee?.EmployeeId > 0)
+            if (employee == null) return;
+            bool u = employeeService.UpdateEmployee(employee.EmployeeId, EmploymentStatus.Employed);
+            if (u)
             {
-                if (employeeService.UpdateEmployee(employee.EmployeeId, EmploymentStatus.Inactive))
-                {
-                    App.NoticeUserHasChanged = true;
-                    RefreshEmployeeList();
-                    App.AlertSvc.ShowAlert("NOTICE", "Saved " + employee.Employee_Name);
-                }
-                else
-                    App.AlertSvc.ShowAlert("ERROR", "Something went wrong. Data not saved.");
+                App.NoticeUserHasChanged = true;
+                List<Employee> e = await employeeService.GetEmployeesGroupInStatusAsync();
+                Employee_List = e.ToObservableCollection<Employee>();
             }
+            else
+                App.AlertSvc.ShowAlert("ERROR", "Data not saved. Error in saving the data.");
+        }
+
+        [RelayCommand]
+        private async Task SetTeamNotActiveAsync(Employee? employee)
+        {
+            if (employee == null) return;
+            bool u = employeeService.UpdateEmployee(employee.EmployeeId, EmploymentStatus.Inactive);
+            if (u)
+            {
+                App.NoticeUserHasChanged = true;
+                List<Employee> e = await employeeService.GetEmployeesGroupInStatusAsync();
+                Employee_List = e.ToObservableCollection<Employee>();
+            }
+            else
+                App.AlertSvc.ShowAlert("ERROR", "Something went wrong. Data not saved.");
         }
 
         [RelayCommand]

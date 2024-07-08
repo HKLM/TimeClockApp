@@ -34,51 +34,54 @@ namespace TimeClockApp.Services
             }
 
             sheet.TimeCards = await GetTimeCardsForPayPeriodAsync(employeeId, start, end, showPaid);
-            if (sheet.TimeCards.Count == 0)
+            if (sheet.TimeCards == null || (sheet.TimeCards != null && sheet.TimeCards.Count == 0))
                 return sheet;
 
             double pay = 0;
-            IQueryable<IGrouping<DateOnly, TimeCard>> tg = sheet.TimeCards.GroupBy(x => x.TimeCard_Date).AsQueryable();
-            foreach (var g in tg)
+            if (sheet.TimeCards != null)
             {
-                double x = 0;
-                foreach (TimeCard item in g)
+                IQueryable<IGrouping<DateOnly, TimeCard>> tg = sheet.TimeCards.GroupBy(x => x.TimeCard_Date).AsQueryable();
+                foreach (var g in tg)
                 {
-                    if (item.TimeCard_Status == ShiftStatus.ClockedOut)
+                    double x = 0;
+                    foreach (TimeCard item in g)
                     {
-                        sheet.UnpaidTimeCards.Add(item);
-                        x += item.TimeCard_WorkHours;
+                        if (item.TimeCard_Status == ShiftStatus.ClockedOut)
+                        {
+                            sheet.UnpaidTimeCards.Add(item);
+                            x += item.TimeCard_WorkHours;
+                        }
+                        else if (item.TimeCard_Status == ShiftStatus.Paid)
+                        {
+                            sheet.PaidTimeCards.Add(item);
+                            x += item.TimeCard_WorkHours;
+                        }
                     }
-                    else if (item.TimeCard_Status == ShiftStatus.Paid)
+
+                    //TODO fix
+                    pay = g.Select(x => x.TimeCard_EmployeePayRate).First();
+                    //dont include any cards ClockedIn. They wreak havoc on the calculations.
+                    TimeCardDayTotal dayHours = new TimeCardDayTotal(g
+                        .Where(x => x.TimeCard_Status == ShiftStatus.ClockedOut
+                        || x.TimeCard_Status == ShiftStatus.Paid)
+                        .Sum(x => x.TimeCard_WorkHours));
+                    sheet.TotalWorkHours += dayHours.TotalWorkHours;
+                    sheet.RegTotalHours += dayHours.RegTotalHours;
+                    sheet.TotalOTHours += dayHours.TotalOTHours;
+                    sheet.TotalOT2Hours += dayHours.TotalOT2Hours;
+
+                    // Calculate unpaid hours
+                    double d = g.Where(x =>
+                                    x.TimeCard_Status == ShiftStatus.ClockedOut)
+                                    .Sum(x => x.TimeCard_WorkHours);
+                    if (d > 0)
                     {
-                        sheet.PaidTimeCards.Add(item);
-                        x += item.TimeCard_WorkHours;
+                        TimeCardDayTotal unpaidDayHours = new(d);
+                        sheet.UnPaidTotalWorkHours += unpaidDayHours.TotalWorkHours;
+                        sheet.UnPaidRegTotalHours += unpaidDayHours.RegTotalHours;
+                        sheet.UnPaidTotalOTHours += unpaidDayHours.TotalOTHours;
+                        sheet.UnPaidTotalOT2Hours += unpaidDayHours.TotalOT2Hours;
                     }
-                }
-
-                //TODO fix
-                pay = g.Select(x => x.TimeCard_EmployeePayRate).First();
-                //dont include any cards ClockedIn. They wreak havoc on the calculations.
-                TimeCardDayTotal dayHours = new TimeCardDayTotal(g
-                    .Where(x => x.TimeCard_Status == ShiftStatus.ClockedOut
-                    || x.TimeCard_Status == ShiftStatus.Paid)
-                    .Sum(x => x.TimeCard_WorkHours));
-                sheet.TotalWorkHours += dayHours.TotalWorkHours;
-                sheet.RegTotalHours += dayHours.RegTotalHours;
-                sheet.TotalOTHours += dayHours.TotalOTHours;
-                sheet.TotalOT2Hours += dayHours.TotalOT2Hours;
-
-                // Calculate unpaid hours
-                double d = g.Where(x => 
-                                x.TimeCard_Status == ShiftStatus.ClockedOut)
-                                .Sum(x => x.TimeCard_WorkHours);
-                if (d > 0)
-                {
-                    TimeCardDayTotal unpaidDayHours = new(d);
-                    sheet.UnPaidTotalWorkHours += unpaidDayHours.TotalWorkHours;
-                    sheet.UnPaidRegTotalHours += unpaidDayHours.RegTotalHours;
-                    sheet.UnPaidTotalOTHours += unpaidDayHours.TotalOTHours;
-                    sheet.UnPaidTotalOT2Hours += unpaidDayHours.TotalOT2Hours;
                 }
             }
 
@@ -110,54 +113,59 @@ namespace TimeClockApp.Services
             }
             sheet.TimeCards = GetTimeCardsForPayPeriod(employeeId, start, end, showPaid);
 
-            if (sheet.TimeCards.Count == 0)
+            if (sheet.TimeCards == null || (sheet.TimeCards != null && sheet.TimeCards.Count == 0))
                 return sheet;
 
             double pay = 0;
-            IQueryable<IGrouping<DateOnly, TimeCard>> tg = sheet.TimeCards.GroupBy(x => x.TimeCard_Date).AsQueryable();
-            foreach (var g in tg)
+            if (sheet.TimeCards != null)
             {
-                double x = 0;
-                foreach (TimeCard item in g)
+                IQueryable<IGrouping<DateOnly, TimeCard>> tg = sheet.TimeCards.GroupBy(x => x.TimeCard_Date).AsQueryable();
+                foreach (IGrouping<DateOnly, TimeCard> g in tg)
                 {
-                    if (item.TimeCard_Status == ShiftStatus.ClockedOut)
+                    double x = 0;
+                    foreach (TimeCard item in g)
                     {
-                        sheet.UnpaidTimeCards.Add(item);
-                        x += item.TimeCard_WorkHours;
+                        if (item != null)
+                        {
+                            if (item.TimeCard_Status == ShiftStatus.ClockedOut)
+                            {
+                                sheet.UnpaidTimeCards.Add(item);
+                                x += item.TimeCard_WorkHours;
+                            }
+                            else if (item.TimeCard_Status == ShiftStatus.Paid)
+                            {
+                                sheet.PaidTimeCards.Add(item);
+                                x += item.TimeCard_WorkHours;
+                            }
+                        }
                     }
-                    else if (item.TimeCard_Status == ShiftStatus.Paid)
+
+                    //TODO fix
+                    pay = g.Select(x => x.TimeCard_EmployeePayRate).First();
+                    //dont include any cards ClockedIn. They wreak havoc on the calculations.
+                    TimeCardDayTotal dayHours = new TimeCardDayTotal(g
+                        .Where(x => x.TimeCard_Status == ShiftStatus.ClockedOut
+                        || x.TimeCard_Status == ShiftStatus.Paid)
+                        .Sum(x => x.TimeCard_WorkHours));
+                    sheet.TotalWorkHours += dayHours.TotalWorkHours;
+                    sheet.RegTotalHours += dayHours.RegTotalHours;
+                    sheet.TotalOTHours += dayHours.TotalOTHours;
+                    sheet.TotalOT2Hours += dayHours.TotalOT2Hours;
+
+                    // Calculate unpaid hours
+                    double d = g.Where(x =>
+                                x.TimeCard_Status == ShiftStatus.ClockedOut)
+                                .Sum(x => x.TimeCard_WorkHours);
+                    if (d > 0)
                     {
-                        sheet.PaidTimeCards.Add(item);
-                        x += item.TimeCard_WorkHours;
+                        TimeCardDayTotal unpaidDayHours = new(d);
+                        sheet.UnPaidTotalWorkHours += unpaidDayHours.TotalWorkHours;
+                        sheet.UnPaidRegTotalHours += unpaidDayHours.RegTotalHours;
+                        sheet.UnPaidTotalOTHours += unpaidDayHours.TotalOTHours;
+                        sheet.UnPaidTotalOT2Hours += unpaidDayHours.TotalOT2Hours;
                     }
-                }
-
-                //TODO fix
-                pay = g.Select(x => x.TimeCard_EmployeePayRate).First();
-                //dont include any cards ClockedIn. They wreak havoc on the calculations.
-                TimeCardDayTotal dayHours = new TimeCardDayTotal(g
-                    .Where(x => x.TimeCard_Status == ShiftStatus.ClockedOut
-                    || x.TimeCard_Status == ShiftStatus.Paid)
-                    .Sum(x => x.TimeCard_WorkHours));
-                sheet.TotalWorkHours += dayHours.TotalWorkHours;
-                sheet.RegTotalHours += dayHours.RegTotalHours;
-                sheet.TotalOTHours += dayHours.TotalOTHours;
-                sheet.TotalOT2Hours += dayHours.TotalOT2Hours;
-
-                // Calculate unpaid hours
-                double d = g.Where(x => 
-                            x.TimeCard_Status == ShiftStatus.ClockedOut)
-                            .Sum(x => x.TimeCard_WorkHours);
-                if (d > 0)
-                {
-                    TimeCardDayTotal unpaidDayHours = new(d);
-                    sheet.UnPaidTotalWorkHours += unpaidDayHours.TotalWorkHours;
-                    sheet.UnPaidRegTotalHours += unpaidDayHours.RegTotalHours;
-                    sheet.UnPaidTotalOTHours += unpaidDayHours.TotalOTHours;
-                    sheet.UnPaidTotalOT2Hours += unpaidDayHours.TotalOT2Hours;
                 }
             }
-
             // calculate wages for this sheet
             sheet.RegTotalPay = sheet.RegTotalHours * pay;
             sheet.TotalOTPay = sheet.TotalOTHours * (pay * 1.5);

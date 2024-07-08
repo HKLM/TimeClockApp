@@ -3,24 +3,24 @@
     public class ImportDataModel
     {
         public bool bTimeCard;
-        public string FileTimeCard;
+        public string FileTimeCard = string.Empty;
         public bool bEmployee;
-        public string FileEmployee;
+        public string FileEmployee = string.Empty;
         public bool bProject;
-        public string FileProject;
+        public string FileProject = string.Empty;
         public bool bPhase;
-        public string FilePhase;
+        public string FilePhase = string.Empty;
         public bool bConfig;
-        public string FileConfig;
+        public string FileConfig = string.Empty;
         public bool bExpense;
-        public string FileExpense;
+        public string FileExpense = string.Empty;
 
-        public List<TimeCard> ImTimeCard;
-        public List<Employee> ImEmployee;
-        public List<Project> ImProject;
-        public List<Phase> ImPhase;
-        public List<Config> ImConfig;
-        public List<Expense> ImExpense;
+        public List<TimeCard> ImTimeCard = [];
+        public List<Employee> ImEmployee = [];
+        public List<Project> ImProject = [];
+        public List<Phase> ImPhase = [];
+        public List<Config> ImConfig = [];
+        public List<Expense> ImExpense = [];
 
         public int ReadyToSave = 0;
 

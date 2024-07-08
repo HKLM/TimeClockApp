@@ -1,4 +1,6 @@
-﻿namespace TimeClockApp.ViewModels
+﻿#nullable enable
+
+namespace TimeClockApp.ViewModels
 {
     public partial class SettingsPageViewModel : TimeStampViewModel
     {
@@ -7,32 +9,25 @@
         private ObservableCollection<Config> settingsList = new();
 
         [ObservableProperty]
-        private string helpInfo;
+        private string helpInfo = string.Empty;
 
         public SettingsPageViewModel()
         {
             configService = new();
         }
+
         public void OnAppearing()
         {
             RefreshSettings();
         }
 
-#nullable enable
         [RelayCommand]
         private void SaveSetting(Config? item)
         {
             if (item == null) return;
 
-            try
-            {
-                if (configService.SaveConfig(item))
-                    RefreshSettings();
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Trace.WriteLine(ex.Message + "\n" + ex.InnerException);
-            }
+            if (configService.SaveConfig(item))
+                RefreshSettings();
         }
 
         [RelayCommand]
@@ -40,18 +35,9 @@
         {
             if (item == null) return;
 
-            try
-            {
-                HelpInfo = item.Hint! ?? string.Empty;
-                OnToggleHelpInfoBox();
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Trace.WriteLine(ex.Message + "\n" + ex.InnerException);
-            }
+            HelpInfo = string.IsNullOrEmpty(item.Hint) ? string.Empty : item.Hint;
+            OnToggleHelpInfoBox();
         }
-
-#nullable disable
 
         [RelayCommand]
         private void RefreshSettings()

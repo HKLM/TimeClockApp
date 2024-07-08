@@ -7,13 +7,6 @@ namespace TimeClockApp.Services
 {
     public class EditTimeCardService : TimeCardDataStore
     {
-        public Task<TimeCard> GetTimeCardByIDAsync(int cardId) =>
-            Context.TimeCard
-                .Include(item => item.Employee)
-                .Where(item => item.TimeCardId == cardId
-                    && item.TimeCard_Status != ShiftStatus.Deleted)
-                .FirstAsync();
-
         public TimeCard? GetTimeCardByID(int cardId) =>
             Context.TimeCard
                 .Include(item => item.Employee)

@@ -1,4 +1,5 @@
 ﻿using TimeClockApp.Shared.Helpers;
+#nullable enable
 
 namespace TimeClockApp.ViewModels
 {
@@ -14,7 +15,7 @@ namespace TimeClockApp.ViewModels
         }
 
         [ObservableProperty]
-        private TimeCard timeCardEditing = new();
+        private TimeCard? timeCardEditing = null;
 
         [ObservableProperty]
         private int timeCardEmployeeId;
@@ -52,7 +53,7 @@ namespace TimeClockApp.ViewModels
         [ObservableProperty]
         private double timeCard_WorkHours = 0;
         [ObservableProperty]
-        private string timeCard_EmployeeName;
+        private string timeCard_EmployeeName = string.Empty;
         [ObservableProperty]
         private double timeCard_EmployeePayRate = 0.0;
         [ObservableProperty]
@@ -66,15 +67,17 @@ namespace TimeClockApp.ViewModels
         [ObservableProperty]
         private ObservableCollection<Project> projectList = [];
         [ObservableProperty]
-        private Project selectedProject;
+        private Project? selectedProject = null;
         [ObservableProperty]
         private ObservableCollection<Phase> phaseList = [];
         [ObservableProperty]
-        private Phase selectedPhase;
+        private Phase? selectedPhase = null;
 
         [ObservableProperty]
         private ShiftStatus timeCard_Status = ShiftStatus.NA;
         public IReadOnlyList<string> AllShiftStatus { get; } = Enum.GetNames(typeof(ShiftStatus));
+
+        //If the TimeCard failed the clockOut validation (TimeCardDataStore.ValidateClockOutAsync()), then this is used
         [ObservableProperty]
         private int errorCode = 0!;
         partial void OnErrorCodeChanged(int value)
@@ -86,11 +89,9 @@ namespace TimeClockApp.ViewModels
             else
                 Title = "Edit TimeCard";
         }
-#nullable enable
 
         [ObservableProperty]
         private string? title = "Edit TimeCard";
-#nullable restore
 
         public void ApplyQueryAttributes(IDictionary<string, object> query)
         {
@@ -130,11 +131,11 @@ namespace TimeClockApp.ViewModels
                 TimeCard_Status = ShiftStatus.ClockedOut;
             }
 
+            if (TimeCardEditing == null || TimeCardID == 0 || TimeCardEditing.TimeCardId == 0 || SelectedProject == null || SelectedPhase == null)
+                return;
+
             try
             {
-                if (TimeCardEditing == null || TimeCardID == 0 || TimeCardEditing.TimeCardId == 0)
-                    return;
-
                 TimeCardEditing.TimeCardId = TimeCardID;
                 TimeCardEditing.TimeCard_StartTime = TimeHelper.RoundTimeOnly(new TimeOnly(TimeCard_StartTime.Hour, TimeCard_StartTime.Minute));
                 TimeCardEditing.TimeCard_Date = TimeCard_Date;

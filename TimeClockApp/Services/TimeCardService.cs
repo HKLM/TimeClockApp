@@ -2,11 +2,12 @@
 using Microsoft.EntityFrameworkCore;
 using TimeClockApp.Shared.Helpers;
 
+#nullable enable
+
 namespace TimeClockApp.Services
 {
     public class TimeCardService : TimeCardDataStore
     {
-#nullable enable
         public async Task<List<TimeCard>> GetLastTimeCardForAllEmployeesAsync()
         {
             List<TimeCard> _timeCards = new();
@@ -29,9 +30,7 @@ namespace TimeClockApp.Services
             return _timeCards;
         }
 
-#nullable disable
-
-        public async Task<bool> EmployeeClockInAsync(TimeCard card, int projectID, int phaseID)
+        public async Task<bool> EmployeeClockInAsync(TimeCard card, int projectID, int phaseID, string projectName, string phaseTitle)
         {
             if (card.Employee == null || card.EmployeeId == 0 || card.Employee.Employee_Employed != EmploymentStatus.Employed)
                 return false;
@@ -39,7 +38,7 @@ namespace TimeClockApp.Services
             if (IsEmployeeNotOnTheClock(card.EmployeeId))
             {
                 DateTime entry = DateTime.Now;
-                TimeCard c = new(card.Employee, projectID, phaseID)
+                TimeCard c = new(card.Employee, projectID, phaseID, projectName, phaseTitle)
                 {
                     TimeCard_StartTime = TimeHelper.RoundTimeOnly(new TimeOnly(entry.Hour, entry.Minute)),
                     TimeCard_Status = ShiftStatus.ClockedIn
@@ -89,13 +88,16 @@ namespace TimeClockApp.Services
                 && !IsTimeCardReadOnly(timeCard.TimeCardId) 
                 && timeCard.TimeCard_Status == ShiftStatus.ClockedOut)
             {
-                    TimeCard t = Context.TimeCard.Find(timeCard.TimeCardId);
+                TimeCard? t = Context.TimeCard.Find(timeCard.TimeCardId);
+                if (t != null)
+                {
                     t.TimeCard_Status = ShiftStatus.Paid;
                     t.TimeCard_bReadOnly = true;
                     Context.Update<TimeCard>(t);
                     Task<int> i = Context.SaveChangesAsync();
                     if (await i != 0)
                         return true;
+                }
             }
             return false;
         }

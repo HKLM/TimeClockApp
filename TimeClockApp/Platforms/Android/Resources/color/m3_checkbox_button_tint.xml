@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2022 The Android Open Source Project
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+-->
+<!--Fix for LogCat errors
+[ResourcesCompat] Failed to inflate ColorStateList, leaving it to the framework
+[ResourcesCompat] java.lang.UnsupportedOperationException: Failed to resolve attribute at index 0: TypedValue{t=0x2/d=0x7f040111 a=-1}, theme={InheritanceMap=[id=0x7f120137com.ouibank.android.app:style/Maui.MainTheme.NoActionBar, id=0x7f120136com.ouibank.android.app:style/Maui.MainTheme, id=0x7f120249com.ouibank.android.app:style/Theme.MaterialComponents.DayNight, id=0x7f120262com.ouibank.android.app:style/Theme.MaterialComponents.Light, id=0x7f12006bcom.ouibank.android.app:style/Base.Theme.MaterialComponents.Light, id=0x7f1200a4com.ouibank.android.app:style/Base.V21.Theme.MaterialComponents.Light, id=0x7f120092com.ouibank.android.app:style/Base.V14.Theme.MaterialComponents.Light, id=0x7f120093com.ouibank.android.app:style/Base.V14.Theme.MaterialComponents.Light.Bridge, id=0x7f120140com.ouibank.android.app:style/Platform.MaterialComponents.Light, id=0x7f12021ccom.ouibank.android.app:style/Theme.AppCompat.Light, id=0x7f120053com.ouibank.android.app:style/Base.Theme.AppCompat.Light, id=0x7f1200b6com.ouibank.android.app:style/Base.V28.Theme.AppCompat.Light, id=0x7f1200b3com.ouibank.android.app:style/Base.V26.Theme.AppCompat.Light, id=0x7f1200adcom.ouibank.android.app:style/Base.V23.Theme.AppCompat.Light, id=0x7f1200abcom.ouibank.android.app:style/Base.V22.Theme.AppCompat.Light, id=0x7f1200a0com.ouibank.android.app:style/Base.V21.Theme.AppCompat.Light, id=0x7f1200b9com.ouibank.android.app:style/Base.V7.Theme.AppCompat.Light, id=0x7f12013dcom.ouibank.android.app:style/Platform.AppCompat.Light, id=0x7f120148com.ouibank.android.app:style/Platform.V25.AppCompat.Light, id=0x1030241android:style/Theme.Material.Light.NoActionBar, id=0x1030237android:style/Theme.Material.Light, id=0x103000candroid:style/Theme.Light, id=0x1030005android:style/Theme], Themes=[com.ouibank.android.app:style/Maui.MainTheme.NoActionBar, forced, com.ouibank.android.app:style/Maui.SplashTheme, forced, com.ouibank.android.app:style/Theme.AppCompat.Empty, forced, android:style/Theme.DeviceDefault.Light.DarkActionBar, forced]}
+[ResourcesCompat] 	at android.content.res.TypedArray.getColor(TypedArray.java:529)-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto">
+  <!-- Disabled -->
+  <item android:alpha="@dimen/m3_comp_checkbox_selected_disabled_container_opacity"
+        android:color="#FFFFFF"
+        android:state_enabled="false"/>
+
+  <!-- Error -->
+  <item android:color="#FFFFFF" app:state_error="true"/>
+
+  <!-- Indeterminate -->
+  <item android:color="#FFFFFF" app:state_indeterminate="true"/>
+
+  <!-- Checked -->
+  <item android:color="#FFFFFF" android:state_checked="true"/>
+
+  <!-- Unchecked -->
+  <item android:color="#FFFFFF" android:state_checked="false"/>
+</selector>

@@ -14,13 +14,14 @@
 		<Configurations>Debug;Release;DebugMigrator</Configurations>
 		<Authors>Brian Alexander</Authors>
 		<Company>Alexander Builder</Company>
-		<Version>1.6</Version>
+		<Version>1.7</Version>
 		<Title>TimeClockApp.Shared</Title>
 		<Copyright>2024 (c) Brian Alexander</Copyright>
-		<FileVersion>1.6</FileVersion>
-		<AssemblyVersion>1.6</AssemblyVersion>
-		<ApplicationVersion>3</ApplicationVersion>
-		<ApplicationDisplayVersion>1.6</ApplicationDisplayVersion>
+		<AssemblyVersion>1.7</AssemblyVersion>
+		<FileVersion>1.7</FileVersion>
+		<ApplicationVersion>4</ApplicationVersion>
+		<ApplicationDisplayVersion>1.7</ApplicationDisplayVersion>
+		<SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-android|AnyCPU'">
@@ -28,7 +29,6 @@
 		<PublishTrimmed>True</PublishTrimmed>
 		<AndroidLinkTool>r8</AndroidLinkTool>
 		<AndroidEnableProfiledAot>True</AndroidEnableProfiledAot>
-		<SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-android|AnyCPU'">

@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using CsvHelper.Configuration;
-
-#nullable enable
+#nullable enable 
 
 namespace TimeClockApp.Shared.Models
 {

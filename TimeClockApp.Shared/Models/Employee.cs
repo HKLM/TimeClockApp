@@ -42,24 +42,8 @@ namespace TimeClockApp.Shared.Models
     {
         public Employee()
         {
-            TimeCards = new List<TimeCard>();
-        }
-
-        public Employee(string employee_Name, double employee_PayRate, string jobTitle)
-        {
-            Employee_Name = employee_Name;
-            Employee_PayRate = employee_PayRate;
-            JobTitle = jobTitle;
-            Employee_Employed = EmploymentStatus.Employed;
-        }
-
-        public Employee(int employeeId, string employee_Name, double employee_PayRate, EmploymentStatus employee_Employed, string jobTitle)
-        {
-            EmployeeId = employeeId;
-            Employee_Name = employee_Name;
-            Employee_PayRate = employee_PayRate;
-            Employee_Employed = employee_Employed;
-            JobTitle = jobTitle;
+            //TimeCards = new List<TimeCard>();
+            //TimeSheets = new HashSet<TimeSheet>();
         }
 
         [Key]
@@ -67,7 +51,7 @@ namespace TimeClockApp.Shared.Models
 
         [Required]
         [StringLength(50)]
-        public required string Employee_Name { get; set; } = string.Empty;
+        public string Employee_Name { get; set; } = string.Empty;
 
         /// <summary>
         /// Employees Rate of Pay.
@@ -83,10 +67,10 @@ namespace TimeClockApp.Shared.Models
         public EmploymentStatus Employee_Employed { get; set; }
 
         [StringLength(50)]
-        public string JobTitle { get; set; }
+        public string JobTitle { get; set; } = string.Empty;
 
-        public virtual ICollection<TimeCard> TimeCards { get; set; } = new List<TimeCard>();
-        public virtual ICollection<TimeSheet> TimeSheets { get; set;  } = new List<TimeSheet>();
+        public virtual ICollection<TimeCard> TimeCards { get; set; }
+        public virtual ICollection<TimeSheet> TimeSheets { get; set; }
 
 #if DEBUG
         public override string ToString()

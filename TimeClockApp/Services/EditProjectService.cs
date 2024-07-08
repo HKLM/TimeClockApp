@@ -1,20 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
-
-namespace TimeClockApp.Services
+﻿namespace TimeClockApp.Services
 {
     public class EditProjectService : TimeCardDataStore
     {
-        public static string GetProjectNameFromId(int projectId)
-        {
-            if (projectId == 1) return ".None";
-
-            return Context.Project
-            .AsNoTracking()
-            .Where(p => p.ProjectId == projectId)
-            .Select(p => p.Name)
-            .First();
-        }
-
         /// <summary>
         /// Add new project
         /// </summary>

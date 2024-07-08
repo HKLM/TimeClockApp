@@ -1,24 +1,10 @@
 ﻿using System.Data;
-
 using CommunityToolkit.Maui.Core.Extensions;
-
-using Microsoft.EntityFrameworkCore;
 
 namespace TimeClockApp.Services
 {
     public class EditPhaseService : TimeCardDataStore
     {
-        public static string GetPhaseTitleFromId(int phaseId)
-        {
-            if (phaseId == 1) return ".Misc";
-
-            return Context.Phase
-                .AsNoTracking()
-                .Where(p => p.PhaseId == phaseId)
-                .Select(p => p.PhaseTitle)
-                .First();
-        }
-
         public ObservableCollection<Phase> GetEditPhaseList()
         {
             return Context.Phase
