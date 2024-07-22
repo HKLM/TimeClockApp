@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using CsvHelper.Configuration;
 using Microsoft.EntityFrameworkCore;
 
@@ -46,6 +47,14 @@ namespace TimeClockApp.Shared.Models
             //TimeSheets = new HashSet<TimeSheet>();
         }
 
+        public Employee(string employee_Name, double employee_PayRate, EmploymentStatus employee_Employed, string jobTitle)
+        {
+            Employee_Name = employee_Name ?? throw new ArgumentNullException(nameof(employee_Name));
+            Employee_PayRate = employee_PayRate;
+            Employee_Employed = employee_Employed;
+            JobTitle = jobTitle ?? string.Empty;
+        }
+
         [Key]
         public int EmployeeId { get; set; }
 
@@ -70,7 +79,6 @@ namespace TimeClockApp.Shared.Models
         public string JobTitle { get; set; } = string.Empty;
 
         public virtual ICollection<TimeCard> TimeCards { get; set; }
-        public virtual ICollection<TimeSheet> TimeSheets { get; set; }
 
 #if DEBUG
         public override string ToString()
@@ -88,6 +96,7 @@ namespace TimeClockApp.Shared.Models
 
     public sealed class EmployeeMap : ClassMap<Employee>
     {
+        [RequiresUnreferencedCode("Calls DynamicBehavior for Import or Export to CSV.")]
         public EmployeeMap()
         {
             //AutoMap(CultureInfo.InvariantCulture);

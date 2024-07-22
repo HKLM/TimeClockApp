@@ -20,19 +20,21 @@
     </ContentPage.Resources>
     <ScrollView>
         <VerticalStackLayout>
-            <Frame
+            <Border
                 x:Name="helpbox" 
                 Padding="8"
-                CornerRadius="10" 
                 HorizontalOptions="FillAndExpand"
                 IsVisible="{Binding HelpInfoBoxVisible}"
                 VerticalOptions="Center">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="10"/>
+                </Border.StrokeShape>
                 <Label
                     LineBreakMode="WordWrap"
                     Style="{StaticResource LabelSmall}"
                     Text="Report of the overall cost of projects. &#10;&#10;Report of total labor (hours worked, wages paid etc) per Project. &#10;&#10;Can filter by Project, Phase, per Employee and or by Date range" />
-            </Frame>
-            <Frame>
+            </Border>
+            <Border>
                 <Grid
                     ColumnDefinitions="Auto,*" 
                     ColumnSpacing="3"
@@ -127,8 +129,8 @@
                         Command="{Binding MakeReportCommand}"
                         Text="Run Report" />
                 </Grid>
-            </Frame>
-            <Frame Margin="0,20,0,0">
+            </Border>
+            <Border Margin="0,20,0,0">
                 <Grid
                     ColumnDefinitions="Auto, *" 
                     ColumnSpacing="35"
@@ -199,7 +201,7 @@
                         Style="{StaticResource LabelSmallCenter}"
                         Text="{Binding TotalOT2Hours, StringFormat='{0:F2}'}" />
                 </Grid>
-            </Frame>
+            </Border>
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

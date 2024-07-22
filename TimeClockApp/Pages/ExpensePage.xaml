@@ -8,28 +8,28 @@
 	xmlns:models="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
 	xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
 	xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
-	Title="Expences"
-	x:DataType="vm:ExpenseViewModel">
-	<ContentPage.ToolbarItems>
+	Title="Expences">
+    <ContentPage.Behaviors>
+        <toolkit:EventToCommandBehavior Command="{Binding InitCommand}" EventName="Loaded" />
+    </ContentPage.Behaviors>
+    <ContentPage.ToolbarItems>
 		<ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
 		<ToolbarItem
 			x:Name="ArchiveButton"
 			Clicked="ArchiveButton_ClickedAsync"
 			IconImageSource="archive.png"
 			Text="Archive" />
-		<ToolbarItem Command="{Binding AddNewExpenseCommand}" IconImageSource="post_add.png" />
 	</ContentPage.ToolbarItems>
 	<ContentPage.Resources>
 		<ResourceDictionary>
 			<Converter:DateOnlyToDateTimeConverter x:Key="dateOnlyToDateTimeConverter" />
 			<Converter:DateOnlyConverter x:Key="dateOnlyConverter" />
-			<Converter:ExpenseEnumToIntConverter x:Key="expenseEnumToIntConverter" />
 		</ResourceDictionary>
 		<Style x:Key="InvalidEntryStyle" TargetType="Entry">
 			<Setter Property="TextColor" Value="Red" />
 		</Style>
 
-		<DataTemplate x:Key="expenseTemplate">
+        <DataTemplate x:Key="expenseTemplate" x:DataType="vm:ExpenseViewModel">
 			<SwipeView>
 				<SwipeView.LeftItems>
 					<SwipeItems Mode="Execute">
@@ -42,8 +42,8 @@
 							Text="Edit Expense" />
 					</SwipeItems>
 				</SwipeView.LeftItems>
-				<Frame>
-					<VerticalStackLayout>
+                <Border Padding="6">
+                    <VerticalStackLayout x:DataType="models:Expense">
 						<Grid
 							ColumnDefinitions="*,*,*"
 							ColumnSpacing="10"
@@ -55,7 +55,7 @@
 							<Label
 								Grid.Column="1"
 								Style="{StaticResource LabelSmall}"
-								Text="{Binding Category, StringFormat='{0}'}"
+								Text="{Binding ExpenseType_CategoryName}"
 								VerticalTextAlignment="Center" />
 							<Label
 								Grid.Column="2"
@@ -64,7 +64,7 @@
 								VerticalTextAlignment="Center" />
 						</Grid>
 					</VerticalStackLayout>
-				</Frame>
+				</Border>
 			</SwipeView>
 		</DataTemplate>
 
@@ -73,75 +73,75 @@
 
 	<ScrollView>
 		<StackLayout Spacing="4">
-			<Frame
+			<Border
 				x:Name="helpbox"
 				Padding="8"
-				CornerRadius="10"
 				HorizontalOptions="FillAndExpand"
 				IsVisible="{Binding HelpInfoBoxVisible}"
 				VerticalOptions="Center">
-				<Label
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="10"/>
+                </Border.StrokeShape>
+                <Label
 					LineBreakMode="WordWrap"
 					Style="{StaticResource LabelSmall}"
 					Text="Expenses. &#10;&#10;Ledger page to record project expenses and income. &#10;&#10;TODO" />
-			</Frame>
-			<Grid ColumnDefinitions="Auto,10,*" RowDefinitions="Auto,Auto">
-				<Label
-					HorizontalOptions="Start"
-					Text="Project: "
-					VerticalTextAlignment="Center" />
-				<Picker
-					Grid.Column="2"
-					HorizontalOptions="Fill"
-					ItemDisplayBinding="{Binding Name}"
-					ItemsSource="{Binding ProjectList}"
-					SelectedItem="{Binding SelectedProject, Mode=TwoWay}" />
-				<Label
-					Grid.Row="1"
-					HorizontalOptions="Start"
-					Text="Phase: "
-					VerticalTextAlignment="Center" />
-				<Picker
-					Grid.Row="1"
-					Grid.Column="2"
-					HorizontalOptions="Fill"
-					ItemDisplayBinding="{Binding PhaseTitle}"
-					ItemsSource="{Binding PhaseList}"
-					SelectedItem="{Binding SelectedPhase, Mode=TwoWay}" />
-			</Grid>
-			<Frame>
-				<Grid
-					ColumnDefinitions="Auto,20,*"
-					ColumnSpacing="3"
-					RowDefinitions="Auto,Auto,Auto,Auto">
+			</Border>
+			<Border>
+                <Grid ColumnDefinitions="Auto,20,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
 					<Label
-						Style="{StaticResource LabelSmall}"
-						Text="Category: "
+						HorizontalOptions="Start"
+						Text="Project: "
 						VerticalTextAlignment="Center" />
 					<Picker
 						Grid.Column="2"
 						HorizontalOptions="Fill"
-						ItemsSource="{Binding AllCategory}"
-						SelectedIndex="{Binding Category, Converter={StaticResource expenseEnumToIntConverter}, Mode=TwoWay}"
-						VerticalTextAlignment="Center" />
+						ItemDisplayBinding="{Binding Name}"
+						ItemsSource="{Binding ProjectList}"
+						SelectedItem="{Binding SelectedProject, Mode=TwoWay}" />
 					<Label
 						Grid.Row="1"
+						HorizontalOptions="Start"
+						Text="Phase: "
+						VerticalTextAlignment="Center" />
+						<Picker
+						Grid.Row="1"
+						Grid.Column="2"
+						HorizontalOptions="Fill"
+						ItemDisplayBinding="{Binding PhaseTitle}"
+						ItemsSource="{Binding PhaseList}"
+						SelectedItem="{Binding SelectedPhase, Mode=TwoWay}" />
+                    <Label
+                        Grid.Row="2"                
+						Style="{StaticResource LabelSmall}"
+						Text="Category: "
+						VerticalTextAlignment="Center" />
+                    <Picker
+                        Grid.Row="2"
+						Grid.Column="2"
+						HorizontalOptions="Fill"
+						ItemDisplayBinding="{Binding CategoryName}"
+						ItemsSource="{Binding ExpenseTypeList}"
+						SelectedItem="{Binding SelectedExpenseType, Mode=TwoWay}"
+						VerticalTextAlignment="Center" />
+                    <Label
+						Grid.Row="3"
 						Style="{StaticResource LabelSmallCenter}"
 						Text="Date: "
 						VerticalTextAlignment="Center" />
 					<DatePicker
-						Grid.Row="1"
+						Grid.Row="3"
 						Grid.Column="2"
 						Date="{Binding ExpenseDate, Converter={StaticResource dateOnlyToDateTimeConverter}, Mode=TwoWay}"
 						MaximumDate="{Binding PickerMaxDate}"
 						MinimumDate="{Binding PickerMinDate}" />
 					<Label
-						Grid.Row="2"
+						Grid.Row="4"
 						Style="{StaticResource LabelSmall}"
 						Text="Amount: "
 						VerticalTextAlignment="Center" />
 					<Entry
-						Grid.Row="2"
+						Grid.Row="4"
 						Grid.Column="2"
 						FontSize="Small"
 						Keyboard="Numeric"
@@ -157,19 +157,27 @@
 						</Entry.Behaviors>
 					</Entry>
 					<Label
-						Grid.Row="3"
-						Grid.Column="0"
+						Grid.Row="5"
 						Style="{StaticResource LabelSmall}"
 						Text="Show Archived"
 						VerticalTextAlignment="Center" />
 					<CheckBox
 						x:Name="ShowArchivedChkBox"
-						Grid.Row="3"
-						Grid.Column="1"
+						Grid.Row="5"
+						Grid.Column="2"
 						CheckedChanged="ShowArchivedChkBox_CheckedChanged"
 						IsChecked="{Binding ShowArchived}" />
-					<Button
-						Grid.Row="3"
+                    <Label
+                        Grid.Row="6"
+                        Style="{StaticResource LabelSmall}"
+                        Text="Show All: "
+                        VerticalTextAlignment="Center" />
+                    <CheckBox 
+                        Grid.Row="6"
+                        Grid.Column="2" 
+                        IsChecked="{Binding ShowAll, Mode=TwoWay}" />
+                    <Button
+						Grid.Row="7"
 						Grid.Column="2"
 						Margin="20,10"
 						Command="{Binding AddNewExpenseCommand}"
@@ -177,7 +185,7 @@
 						HorizontalOptions="Fill"
 						Text="Save New" />
 				</Grid>
-			</Frame>
+			</Border>
 			<CollectionView
 				Margin="0,2"
 				EmptyView="No items to display"

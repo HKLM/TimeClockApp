@@ -37,25 +37,27 @@ namespace TimeClockApp.Services
 
         public Phase GetPhase(int phaseID) => Context.Phase.Find(phaseID);
 
-        public ObservableCollection<Project> GetProjectsList()
-        {
-            return Context.Project
+        public ObservableCollection<Project> GetProjectsList() => 
+            Context.Project
                 .Where(item => item.Status < ProjectStatus.Completed)
                 .OrderBy(e => e.Name)
                 .ToObservableCollection();
-        }
 
-        public ObservableCollection<Project> GetAllProjectsList(bool bShowAll) => 
-            (bShowAll) ? Context.Project
-                                    .Where(item => item.Status != ProjectStatus.Deleted)
-                                    .OrderBy(e => e.Name)
-                                    .ToObservableCollection()
-                                : Context.Project
-                                    .Where(item => item.Status < ProjectStatus.Completed)
-                                    .OrderBy(e => e.Name)
-                                    .ToObservableCollection();
+        public ObservableCollection<Project> GetAllProjectsList(bool bShowAll) =>
+            (bShowAll) ? Get_AllProjectsList() : Get_NotAllProjectsList();
 
-        public ObservableCollection<Phase> GetPhaseList() => Context.Phase.ToObservableCollection();
+        private ObservableCollection<Project> Get_AllProjectsList() =>
+            Context.Project
+                .Where(item => item.Status != ProjectStatus.Deleted)
+                .OrderBy(e => e.Name)
+                .ToObservableCollection();
+        private ObservableCollection<Project> Get_NotAllProjectsList() => 
+            Context.Project
+                .Where(item => item.Status < ProjectStatus.Completed)
+                .OrderBy(e => e.Name)
+                .ToObservableCollection();
+
+        public ObservableCollection<Phase> GetPhaseList() => Context.Phase.OrderBy(e => e.PhaseTitle).ToObservableCollection();
 
         public ObservableCollection<Employee> GetAllEmployees(bool includeNotEmployed = false)
         {
@@ -72,19 +74,21 @@ namespace TimeClockApp.Services
             return new ObservableCollection<Employee>(await Context.Employee
                 .Where(e => e.Employee_Employed < es)
                 .OrderBy(e => e.Employee_Name)
-                .ToListAsync());
+                .ToListAsync().ConfigureAwait(false));
         }
 
-        public async Task<ObservableCollection<Employee>> GetEmployeesAsync() => new ObservableCollection<Employee>(await Context.Employee
+        public async Task<ObservableCollection<Employee>> GetEmployeesAsync() => 
+            new ObservableCollection<Employee>(await Context.Employee
                 .Where(e => e.Employee_Employed == EmploymentStatus.Employed)
                 .OrderBy(e => e.Employee_Name)
-                .ToListAsync());
+                .ToListAsync().ConfigureAwait(false));
 
-        public async Task<List<Employee>> GetEmployeesGroupInStatusAsync() => await Context.Employee
+        public async Task<List<Employee>> GetEmployeesGroupInStatusAsync() => 
+            await Context.Employee
                 .Where(e => e.Employee_Employed < EmploymentStatus.NotEmployed)
                 .OrderBy(e => e.Employee_Employed)
                 .ThenBy(e => e.Employee_Name)
-                .ToListAsync();
+                .ToListAsync().ConfigureAwait(false);
 
         public TimeCard GetTimeCard(int timeCardID) => Context.TimeCard.Find(timeCardID);
 
@@ -214,25 +218,21 @@ namespace TimeClockApp.Services
                 ? GetListPaidTimeCardsForPayPeriod(employeeId, start, end)
                 : GetListUnpaidTimeCardsForPayPeriod(employeeId);
 
-        private List<TimeCard> GetListUnpaidTimeCardsForPayPeriod(int employeeId)
-        {
-            return Context.TimeCard
+        private List<TimeCard> GetListUnpaidTimeCardsForPayPeriod(int employeeId) => 
+            Context.TimeCard
                     .Where(item => item.EmployeeId == employeeId
                         && (item.TimeCard_Status == ShiftStatus.ClockedOut
                         || item.TimeCard_Status == ShiftStatus.ClockedIn))
                     .OrderBy(item => item.TimeCard_Date)
                     .ToList();
-        }
-        private List<TimeCard> GetListPaidTimeCardsForPayPeriod(int employeeId, DateOnly start, DateOnly end)
-        {
-            return Context.TimeCard
+        private List<TimeCard> GetListPaidTimeCardsForPayPeriod(int employeeId, DateOnly start, DateOnly end) => 
+            Context.TimeCard
                     .Where(item => item.EmployeeId == employeeId
                         && item.TimeCard_Date >= start
                         && item.TimeCard_Date <= end
                         && item.TimeCard_Status < ShiftStatus.Deleted)
                     .OrderBy(item => item.TimeCard_Date)
                     .ToList();
-        }
 
         public async Task<List<TimeCard>> GetTimeCardsForPayPeriodAsync(int employeeId, DateOnly start, DateOnly end, bool showPaid = true) => showPaid
                 ? await Task.Run(() => GetListPaidTimeCardsForPayPeriodAsync(employeeId, start, end))
@@ -244,7 +244,7 @@ namespace TimeClockApp.Services
                         && (item.TimeCard_Status == ShiftStatus.ClockedOut
                         || item.TimeCard_Status == ShiftStatus.ClockedIn))
                     .OrderBy(item => item.TimeCard_Date)
-                    .ToListAsync();
+                    .ToListAsync().ConfigureAwait(false);
         private async Task<List<TimeCard>> GetListPaidTimeCardsForPayPeriodAsync(int employeeId, DateOnly start, DateOnly end) =>
                 await Context.TimeCard
                     .Where(item => item.EmployeeId == employeeId
@@ -252,6 +252,47 @@ namespace TimeClockApp.Services
                         && item.TimeCard_Date <= end
                         && item.TimeCard_Status < ShiftStatus.Deleted)
                     .OrderBy(item => item.TimeCard_Date)
-                    .ToListAsync();
+                    .ToListAsync().ConfigureAwait(false);
+
+        public ExpenseType GetExpenseType(int expenseTypeId) => Context.ExpenseType.Find(expenseTypeId);
+        //public async Task<ExpenseType> GetExpenseTypeAsync(int expenseTypeId) => await Context.ExpenseType.FindAsync(expenseTypeId);
+        public string GetExpenseType_CategoryName(int expenseTypeId) => Context.ExpenseType.First(z => z.ExpenseTypeId == expenseTypeId).CategoryName;
+
+        public bool AddNewExpense(int projectId, int phaseId, double amount, string memo, string projectName, string phaseTitle, int expenseTypeId = 2, string expenseType_CategoryName = "")
+        {
+            string e;
+            if (string.IsNullOrEmpty(expenseType_CategoryName))
+                e = GetExpenseType_CategoryName(expenseTypeId);
+            else
+                e = expenseType_CategoryName;
+
+            //make expenses (not income) a negative number
+            if (expenseTypeId != 2)
+                amount *= (-1);
+
+            Expense exp = new(projectId, phaseId, amount, DateOnly.FromDateTime(DateTime.Now), projectName, phaseTitle, memo, expenseTypeId, e);
+
+            Context.Add<Expense>(exp);
+            return (Context.SaveChanges() > 0);
+        }
+
+        // used to add new entry when marking a timecard as paid
+        public Task AddNewExpenseAsync(int projectId, int phaseId, double amount, string memo, string projectName, string phaseTitle, int expenseTypeId = 3, string expenseType_CategoryName = "")
+        {
+            string e;
+            if (string.IsNullOrEmpty(expenseType_CategoryName))
+                e = GetExpenseType_CategoryName(expenseTypeId);
+            else
+                e = expenseType_CategoryName;
+
+            //make expenses (not income) a negative number
+            if (expenseTypeId != 2)
+                amount *= (-1);
+
+            Expense exp = new(projectId, phaseId, amount, DateOnly.FromDateTime(DateTime.Now), projectName, phaseTitle, memo, expenseTypeId, e);
+
+            Context.Add<Expense>(exp);
+            return Task.FromResult(Context.SaveChangesAsync());
+        }
     }
 }

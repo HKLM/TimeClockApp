@@ -23,15 +23,18 @@
     </ContentPage.ToolbarItems>
     <ScrollView>
         <StackLayout>
-            <Frame
+            <Border
                 x:Name="helpbox"
                 Padding="8"
-                CornerRadius="10" HorizontalOptions="FillAndExpand"
+                HorizontalOptions="FillAndExpand"
                 IsVisible="{Binding HelpInfoBoxVisible}"
                 VerticalOptions="Center">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="10"/>
+                </Border.StrokeShape>
                 <Label LineBreakMode="WordWrap" Style="{StaticResource LabelSmall}" 
                        Text="TimeCard Manager. &#10;&#10;View all time cards. Then by selecting a time card you can view more details or edit that card." />
-            </Frame>
+            </Border>
             <Grid ColumnDefinitions="150,120,*" ColumnSpacing="10" RowDefinitions="*">
                 <Label
                     Grid.Column="1"
@@ -58,14 +61,18 @@
                     Command="{Binding RefreshAllCardsCommand}"
                     HorizontalOptions="Fill" Text="Refresh" />
             </Grid>
-            <Frame Padding="8" CornerRadius="10" HasShadow="True">
+            <Border
+                Padding="8">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="10"/>
+                </Border.StrokeShape>
                 <ListView
                     x:Name="ItemsListView"
                     ItemSelected="ItemsListView_ItemSelected"
                     ItemsSource="{Binding TimeCards}"
                     SelectionMode="Single">
                     <ListView.Header>
-                        <Grid ColumnDefinitions="*,*,*,*,*" ColumnSpacing="4" RowDefinitions="*">
+                        <Grid ColumnDefinitions="*,*,*,*,*" ColumnSpacing="4" RowDefinitions="*" Margin="0,5,0,10">
                             <Label FontAttributes="Bold" Style="{StaticResource LabelMicro}" Text="Date" />
                             <Label
                                 Grid.Column="1"
@@ -137,7 +144,7 @@
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
-            </Frame>
+            </Border>
             <AbsoluteLayout ZIndex="10">
                 <ActivityIndicator IsRunning="{Binding Loading}"
                                    AbsoluteLayout.LayoutFlags="PositionProportional"

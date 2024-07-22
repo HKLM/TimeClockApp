@@ -1,15 +1,11 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage
-    x:Class="TimeClockApp.Pages.EditPhasePage"
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:models="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
-    xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
-    Title="Phase List Manager"
-    x:DataType="vm:EditPhaseViewModel">
-    <ContentPage.BindingContext>
-        <vm:EditPhaseViewModel x:Name="viewModel" />
-    </ContentPage.BindingContext>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
+             xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
+             x:Class="TimeClockApp.Pages.EditExpenseTypePage"
+             x:DataType="vm:EditExpenseTypeViewModel"
+             Title="Edit ExpenseType">
     <ContentPage.ToolbarItems>
         <ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
     </ContentPage.ToolbarItems>
@@ -24,53 +20,45 @@
                 <Border.StrokeShape>
                     <RoundRectangle CornerRadius="10"/>
                 </Border.StrokeShape>
-                <!--  TODO  -->
                 <Label
                     LineBreakMode="WordWrap"
                     Style="{StaticResource LabelSmall}"
-                    Text="Phase Editor Page. &#10;&#10;Phases are a way to seperate parts of the Project in to smaller groups. &#10;&#10;TODO" />
+                    Text="ExpenseType Editor Page. &#10;&#10;ExpenseTypes are a way to label what this record of money is for. Helpful for taxes and project summary reports.&#10;&#10;To Add a new ExpenseType, enter it in the 'ExpenseType Name' box and then click 'Add New' button.&#10;&#10;To make changes to an existing ExpenseType, select it in the 'ExpenseType List' and then use the 'ExpenseType Name' box to edit the name and then click 'Save Change' or 'Delete' to permanently remove that ExpenseType." />
             </Border>
 
             <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,4,Auto,6,Auto" RowSpacing="15">
                 <Label
-                    Text="Select Phase To Edit: "
+                    Text="Select ExpenseType To Edit: "
                     VerticalOptions="Center"
                     VerticalTextAlignment="Center" />
                 <Picker
-                    x:Name="PhasePicker"
                     Grid.Row="1"
                     HorizontalOptions="FillAndExpand"
-                    ItemDisplayBinding="{Binding PhaseTitle}"
-                    ItemsSource="{Binding PhaseList}"
-                    SelectedItem="{Binding SelectedPhase, Mode=TwoWay}"
+                    ItemDisplayBinding="{Binding CategoryName}"
+                    ItemsSource="{Binding ExpenseTypeList}"
+                    SelectedItem="{Binding SelectedExpenseType, Mode=TwoWay}"
                     VerticalOptions="Center" />
-                <Label
+                <Button 
                     Grid.Row="2"
-                    HorizontalOptions="Start"
-                    Text="PhaseId:"
-                    VerticalTextAlignment="Center" />
-                <Label
-                    Grid.Row="2"
-                    HorizontalOptions="Center"
-                    Text="{Binding PhaseId}"
-                    VerticalTextAlignment="Center" />
+                    Text="Clear Selection"
+                    Command="{Binding ClearSelectionCommand}"/>
                 <Label
                     Grid.Row="3"
-                    Text="Phase Title: "
+                    Text="ExpenseType Name: "
                     VerticalOptions="Center"
                     VerticalTextAlignment="Center" />
                 <Entry
-                    x:Name="PhaseNameBox"
+                    x:Name="CategoryNameBox"
                     Grid.Row="4"
                     Keyboard="Text"
-                    Text="{Binding PhaseTitle, Mode=TwoWay}" />
+                    Text="{Binding NewCategoryName, Mode=TwoWay}" />
                 <Button
                     Grid.Row="5"
-                    Command="{Binding SavePhaseEditCommand}"
+                    Command="{Binding EditExpenseTypeCommand}"
                     Text="Save Change">
                     <Button.Triggers>
                         <DataTrigger
-                            Binding="{Binding Source={x:Reference PhaseNameBox}, Path=Text.Length}"
+                            Binding="{Binding Source={x:Reference CategoryNameBox}, Path=Text.Length}"
                             TargetType="Button"
                             Value="0">
                             <Setter Property="IsEnabled" Value="False" />
@@ -83,8 +71,8 @@
                     HorizontalOptions="Fill" />
                 <Button
                     Grid.Row="7"
-                    Command="{Binding SaveNewPhaseCommand}"
-                    IsEnabled="{Binding EnableAddDelButtons}"
+                    Command="{Binding AddExpenseTypeCommand}"
+                    IsEnabled="{Binding EnableAddButton}"
                     Text="Add New" />
                 <BoxView
                     Grid.Row="8"
@@ -92,8 +80,8 @@
                     HorizontalOptions="Fill" />
                 <Button
                     Grid.Row="9"
-                    Command="{Binding DeletePhaseCommand}"
-                    IsEnabled="{Binding EnableAddDelButtons}"
+                    Command="{Binding DelExpenseTypeCommand}"
+                    IsEnabled="{Binding EnableDeleteButton}"
                     Text="Delete" />
             </Grid>
         </StackLayout>

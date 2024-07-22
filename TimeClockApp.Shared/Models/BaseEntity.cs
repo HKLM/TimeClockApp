@@ -4,7 +4,7 @@ namespace TimeClockApp.Shared.Models
     /// <summary>
     /// Adds timestamps for when the row has changed and was created.
     /// </summary>
-    public partial class BaseEntity
+    public class BaseEntity
     {
 #if TIMESTAMP
         /// <summary>

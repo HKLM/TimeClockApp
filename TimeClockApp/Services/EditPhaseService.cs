@@ -5,12 +5,9 @@ namespace TimeClockApp.Services
 {
     public class EditPhaseService : TimeCardDataStore
     {
-        public ObservableCollection<Phase> GetEditPhaseList()
-        {
-            return Context.Phase
+        public ObservableCollection<Phase> GetEditPhaseList() => Context.Phase
                 .OrderBy(e => e.PhaseTitle)
                 .ToObservableCollection();
-        }
 
         public bool AddNewPhase(string phaseName)
         {

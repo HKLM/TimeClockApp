@@ -33,29 +33,29 @@ namespace TimeClockApp.ViewModels
                 cardService.SaveCurrentPhase(value.PhaseId);
         }
 
+        //[RelayCommand]
+        //private async Task InitAsync()
+        //{
+        //    Loading = true;
+        //    HasError = false;
+
+        //    try
+        //    {
+        //        RefreshProjectPhases();
+        //        List<TimeCard> t = await cardService.GetLastTimeCardForAllEmployeesAsync();
+        //        if (t?.Count > 0)
+        //            TimeCards = t.ToObservableCollection();
+        //    }
+        //    catch
+        //    {
+        //        HasError = true;
+        //    }
+        //    finally
+        //    {
+        //        Loading = false;
+        //    }
+        //}
         [RelayCommand]
-        private async Task InitAsync()
-        {
-            Loading = true;
-            HasError = false;
-
-            try
-            {
-                RefreshProjectPhases();
-                List<TimeCard> t = await cardService.GetLastTimeCardForAllEmployeesAsync();
-                if (t?.Count > 0)
-                    TimeCards = t.ToObservableCollection();
-            }
-            catch
-            {
-                HasError = true;
-            }
-            finally
-            {
-                Loading = false;
-            }
-        }
-
         public async Task OnAppearing()
         {
             Loading = true;

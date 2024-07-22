@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using CsvHelper.Configuration;
-using Microsoft.EntityFrameworkCore;
 
 namespace TimeClockApp.Shared.Models
 {
@@ -26,7 +26,6 @@ namespace TimeClockApp.Shared.Models
     /// same name can be created. Just be sure to have only 1 of them be set to [Active] at one time. If 2+ of same name
     /// are [Active], it would be difficult for the user to determine which Project they actually want.
     /// </summary>
-    [Index(nameof(Name), IsUnique = false)]
     public class Project
     {
         public Project()
@@ -90,6 +89,7 @@ namespace TimeClockApp.Shared.Models
 
     public sealed class ProjectMap : ClassMap<Project>
     {
+        [RequiresUnreferencedCode("Calls DynamicBehavior for Import or Export to CSV.")]
         public ProjectMap()
         {
             //AutoMap(CultureInfo.InvariantCulture);

@@ -2,20 +2,14 @@
 {
     public class UserManagerService : TimeCardDataStore
     {
-        public bool AddNewEmployee(string employeeName, double payRate, string jobTitle)
+        public bool AddNewEmployee(string employeeName, double payRate, string jobTitle, EmploymentStatus employed)
         {
             if (string.IsNullOrEmpty(employeeName) || Context.Employee.Any(x => x.Employee_Name == employeeName))
                 return false;
 
             try
             {
-                Employee p = new()
-                {
-                    Employee_Name = employeeName,
-                    Employee_PayRate = payRate,
-                    JobTitle = jobTitle
-                };
-
+                Employee p = new(employeeName, payRate, employed, jobTitle);
                 Context.Add<Employee>(p);
                 return (Context.SaveChanges() > 0);
             }
@@ -27,9 +21,9 @@
             return false;
         }
 
-        public bool UpdateEmployee(int employeeId, string name, double payRate, EmploymentStatus employed)
+        public bool UpdateEmployee(int employeeId, string name, double payRate, EmploymentStatus employed, string jobTitle)
         {
-            if (employeeId == 0)
+            if (employeeId == 0 || string.IsNullOrEmpty(name))
                 return false;
 
             Employee item = GetEmployee(employeeId);
@@ -40,6 +34,7 @@
 
             item.Employee_PayRate = payRate;
             item.Employee_Employed = employed;
+            item.JobTitle = jobTitle;
             Context.Update<Employee>(item);
             return (Context.SaveChanges() > 0);
         }

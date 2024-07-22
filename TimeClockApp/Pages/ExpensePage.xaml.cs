@@ -11,10 +11,10 @@ public partial class ExpensePage : ContentPage
         BindingContext = this.viewModel = ViewModel;
     }
 
-    protected override void OnAppearing()
+    protected override async void OnAppearing()
     {
         base.OnAppearing();
-        viewModel.OnAppearing();
+        await viewModel.OnAppearing();
     }
 
     private async void ExpenseEditAction_Clicked(object sender, EventArgs e)
@@ -25,7 +25,6 @@ public partial class ExpensePage : ContentPage
             if (int.TryParse(swipeItem.CommandParameter.ToString(), out int i))
             {
                 await Shell.Current.GoToAsync($"EditExpensePage?id={i}");
-                viewModel.OnAppearing();
             }
         }
     }

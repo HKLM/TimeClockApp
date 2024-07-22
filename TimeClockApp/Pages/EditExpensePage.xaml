@@ -7,8 +7,7 @@
     xmlns:models="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
-    Title="Edit Expence"
-    x:DataType="vm:EditExpensePageViewModel">
+    Title="Edit Expence">
     <ContentPage.BindingContext>
         <vm:EditExpensePageViewModel x:Name="viewModel" />
     </ContentPage.BindingContext>
@@ -18,7 +17,6 @@
     <ContentPage.Resources>
         <ResourceDictionary>
             <Converter:DateOnlyToDateTimeConverter x:Key="dateOnlyToDateTimeConverter" />
-            <Converter:ExpenseEnumToIntConverter x:Key="expenseEnumToIntConverter" />
         </ResourceDictionary>
         <Style x:Key="InvalidEntryStyle" TargetType="Entry">
             <Setter Property="TextColor" Value="Red" />
@@ -26,20 +24,22 @@
     </ContentPage.Resources>
     <ScrollView>
         <StackLayout>
-            <Frame
+            <Border
                 x:Name="helpbox"
                 Padding="8"
-                CornerRadius="10"
                 HorizontalOptions="FillAndExpand"
                 IsVisible="{Binding HelpInfoBoxVisible}"
                 VerticalOptions="Center">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="10"/>
+                </Border.StrokeShape>
                 <Label
                     LineBreakMode="WordWrap"
                     Style="{StaticResource LabelSmall}"
                     Text="Edit Expence Page. &#10;&#10;Make changes or delete the expense item. &#10;&#10;Note: This is the only page you will see the contents of the Memo displayed." />
-            </Frame>
+            </Border>
 
-            <Frame>
+            <Border>
                 <Grid ColumnDefinitions="Auto,10,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,8,Auto">
                     <Label
                         HorizontalOptions="Start"
@@ -70,10 +70,11 @@
                         VerticalTextAlignment="Center" />
                     <Picker
                         Grid.Row="2"
-                        Grid.Column="2"
-                        HorizontalOptions="Fill"
-                        ItemsSource="{Binding AllCategory}"
-                        SelectedIndex="{Binding Category, Converter={StaticResource expenseEnumToIntConverter}, Mode=TwoWay}"
+					    Grid.Column="2"
+					    HorizontalOptions="Fill"
+					    ItemDisplayBinding="{Binding CategoryName}"
+					    ItemsSource="{Binding ExpenseTypeList}"
+					    SelectedItem="{Binding SelectedExpenseType, Mode=TwoWay}"
                         VerticalTextAlignment="Center" />
                     <Label
                         Grid.Row="3"
@@ -143,7 +144,7 @@
                         HorizontalOptions="Fill"
                         Text="Delete" />
                 </Grid>
-            </Frame>
+            </Border>
         </StackLayout>
     </ScrollView>
 </ContentPage>

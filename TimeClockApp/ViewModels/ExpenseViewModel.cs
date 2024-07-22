@@ -1,4 +1,7 @@
-﻿namespace TimeClockApp.ViewModels
+﻿using System.Xml.Linq;
+using CommunityToolkit.Maui.Core.Extensions;
+
+namespace TimeClockApp.ViewModels
 {
     public partial class ExpenseViewModel : TimeStampViewModel
     {
@@ -31,8 +34,9 @@
         }
 
         [ObservableProperty]
-        private ExpenseType category = ExpenseType.Materials;
-        public IReadOnlyList<string> AllCategory { get; } = Enum.GetNames(typeof(ExpenseType));
+        private ObservableCollection<ExpenseType> expenseTypeList = [];
+        [ObservableProperty]
+        private ExpenseType selectedExpenseType = new();
 
         [ObservableProperty]
         private DateOnly expenseDate;
@@ -50,19 +54,61 @@
         private bool showArchived;
         private bool ShowRecent => !ShowArchived;
 
+        [ObservableProperty]
+        private bool showAll = true;
+
+        [ObservableProperty]
+        private string memo = string.Empty;
+
         public ExpenseViewModel(ExpenseService service)
         {
             dataService = service;
             ShowArchived = false;
             PickerMinDate = dataService.GetAppFirstRunDate();
             pickerMaxDate = DateTime.Now;
-            Category = ExpenseType.Materials;
         }
 
-        public void OnAppearing()
+        [RelayCommand]
+        private async Task InitAsync()
         {
+            Loading = true;
+            HasError = false;
+
+            ExpenseList ??= new();
             ExpenseDate = DateOnly.FromDateTime(DateTime.Now);
+            ShowAll = true;
+            try
+            {
+                await GetExpenseListAsync();
+
+                RefreshProjectPhases();
+            }
+            catch (Exception e)
+            {
+                HasError = true;
+                System.Diagnostics.Trace.WriteLine(e.Message + "\n  -- " + e.Source + "\n  -- " + e.InnerException);
+            }
+            finally
+            {
+                Loading = false;
+            }
+        }
+
+        public async Task OnAppearing()
+        {
             Refresh();
+
+            Loading = true;
+            HasError = false;
+
+            try
+            {
+                await GetExpenseListAsync();
+            }
+            finally
+            {
+                Loading = false;
+            }
         }
 
         private void Refresh()
@@ -88,6 +134,15 @@
 
             if (SelectedPhase == null || SelectedPhase.PhaseId == 0)
                 SelectedPhase = dataService.GetCurrentPhaseEntity();
+
+            ExpenseTypeList ??= [];
+
+            List<ExpenseType> x = dataService.GetExpenseTypeList();
+            ExpenseTypeList = x.ToObservableCollection();
+
+            //default to materials
+            //TODO make this user configurable
+            SelectedExpenseType = dataService.GetExpenseType(5);
         }
 
         [RelayCommand]
@@ -110,9 +165,37 @@
         }
 
         [RelayCommand]
+        private async Task GetExpenseListAsync()
+        {
+            await Task.Run(async () => await ExpenseListAsync(SelectedProject.ProjectId, ShowRecent, ShowAll));
+        }
+        private async Task ExpenseListAsync(int? projectId = null, bool useRecent = true, bool useShowAll = false)
+        {
+            IsRefreshingList = true;
+            try
+            {
+                if (useShowAll)
+                {
+                    var L = await dataService.GetAllExpensesListAsync(20);
+                    ExpenseList = L.ToObservableCollection();
+                }
+                else if (SelectedProject?.ProjectId > 0)
+                {
+                   var L  = await dataService.GetExpenseListAsync(projectId, useRecent, useShowAll);
+                    ExpenseList = L.ToObservableCollection();
+                }
+            }
+            finally
+            {
+                IsRefreshingList = false;
+            }
+
+        }
+
+        [RelayCommand]
         private async Task AddNewExpenseAsync()
         {
-            if (SelectedProject == null || SelectedProject.ProjectId < 1 || SelectedPhase == null)
+            if (SelectedProject == null || SelectedProject.ProjectId < 1 || SelectedPhase == null || SelectedExpenseType == null)
                 return;
 
             if (Amount == 0)
@@ -123,7 +206,8 @@
 
             try
             {
-                if (dataService.AddNewExpense(SelectedProject.ProjectId, SelectedPhase.PhaseId, Amount, string.Empty, SelectedProject.Name, SelectedPhase.PhaseTitle, Category))
+                string expenseNewMemo = Memo.Trim();
+                if (dataService.AddNewExpense(SelectedProject.ProjectId, SelectedPhase.PhaseId, Amount, expenseNewMemo, SelectedProject.Name, SelectedPhase.PhaseTitle, SelectedExpenseType.ExpenseTypeId, SelectedExpenseType.CategoryName))
                 {
                     await App.AlertSvc.ShowAlertAsync("NOTICE", "Saved");
                     Amount = 0;
@@ -167,7 +251,6 @@
             catch (Exception ex)
             {
                 System.Diagnostics.Trace.WriteLine(ex.Message + "\n" + ex.InnerException);
-                //App.AlertSvc.ShowAlert("ERROR", ex.Message + "\n" + ex.InnerException);
             }
         }
 

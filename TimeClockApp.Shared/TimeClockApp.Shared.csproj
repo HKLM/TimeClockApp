@@ -14,13 +14,13 @@
 		<Configurations>Debug;Release;DebugMigrator</Configurations>
 		<Authors>Brian Alexander</Authors>
 		<Company>Alexander Builder</Company>
-		<Version>1.7</Version>
+		<Version>1.8</Version>
 		<Title>TimeClockApp.Shared</Title>
 		<Copyright>2024 (c) Brian Alexander</Copyright>
-		<AssemblyVersion>1.7</AssemblyVersion>
-		<FileVersion>1.7</FileVersion>
+		<AssemblyVersion>1.8</AssemblyVersion>
+		<FileVersion>1.8</FileVersion>
 		<ApplicationVersion>4</ApplicationVersion>
-		<ApplicationDisplayVersion>1.7</ApplicationDisplayVersion>
+		<ApplicationDisplayVersion>1.8</ApplicationDisplayVersion>
 		<SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
 	</PropertyGroup>
 
@@ -47,10 +47,14 @@
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-windows10.0.19041.0|AnyCPU'">
 	</PropertyGroup>
+	<ItemGroup>
+		<TrimmerRootAssembly Include="TimeClockApp.Shared" RootMode="library" />
+		<!--<TrimmerRootAssembly Include="TimeClockApp" RootMode="All" />-->
+	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="CsvHelper" Version="33.0.1" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0-preview.5.24306.3" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0-preview.6.24327.4" />
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
 	</ItemGroup>
 

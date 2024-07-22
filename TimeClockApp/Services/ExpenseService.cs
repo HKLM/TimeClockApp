@@ -1,41 +1,50 @@
 ﻿using CommunityToolkit.Maui.Core.Extensions;
-
 using Microsoft.EntityFrameworkCore;
 
 namespace TimeClockApp.Services
 {
-    public partial class ExpenseService : TimeCardDataStore
+    public class ExpenseService : TimeCardDataStore
     {
-        public Expense GetExpense(int expenseId)
-        {
-            return Context.Expense
-                .Include(item => item.Project)
-                .First(item => item.ExpenseId == expenseId);
-        }
+        public Expense GetExpense(int expenseId) => Context.Expense.Find(expenseId);
 
-        public ObservableCollection<Expense> GetAllExpenses(int projectId, bool showRecent = true)
-        {
-            return Context.Expense
-                .Include(item => item.Project)
+        public List<ExpenseType> GetExpenseTypeList() => 
+            Context.ExpenseType
+                .Where(item => item.ExpenseTypeId > 1)
+                .OrderBy(item => item.CategoryName)
+                .ToList();
+
+        //public async Task<List<ExpenseType>> GetExpenseTypeListAsync() => 
+        //    await Context.ExpenseType
+        //        .Where(item => item.ExpenseTypeId > 1)
+        //        .OrderBy(item => item.CategoryName)
+        //        .ToListAsync();
+
+        public ObservableCollection<Expense> GetAllExpenses(int projectId, bool showRecent = true) => 
+            Context.Expense
                 .Where(item => item.ProjectId == projectId
-                    && item.Category != ExpenseType.Deleted
+                    && item.ExpenseTypeId > 1
                     && item.IsRecent == showRecent)
                 .OrderByDescending(e => e.ExpenseDate)
                 .ToObservableCollection();
-        }
 
-        public bool AddNewExpense(int projectId, int phaseId, double amount, string memo, string projectName, string phaseTitle, ExpenseType category = ExpenseType.Materials)
-        {
-            if (projectId == 0) return false;
-            //make expenses a negative number
-            if (category != ExpenseType.Income)
-                amount *= (-1);
+        public Task<List<Expense>> GetRecentExpensesListAsync(int projectId, bool showRecent = true, int numOfResults = 20) => 
+            Context.Expense
+                .Where(item => item.ProjectId == projectId
+                    && item.ExpenseTypeId > 1
+                    && item.IsRecent == showRecent)
+                .OrderByDescending(e => e.ExpenseDate)
+                .Take(numOfResults)
+                .ToListAsync();
 
-            Expense exp = new(projectId, phaseId, amount, DateOnly.FromDateTime(DateTime.Now), projectName, phaseTitle, memo, category);
+        public async Task<List<Expense>> GetAllExpensesListAsync(int numOfResults) => await Context.Expense
+                .Where(item => item.ExpenseTypeId > 1)
+                .OrderByDescending(e => e.ExpenseDate)
+                .Take(numOfResults)
+                .ToListAsync();
 
-            Context.Add<Expense>(exp);
-            return (Context.SaveChanges() > 0);
-        }
+        public async Task<List<Expense>> GetExpenseListAsync(int? projectId, bool showRecent = true, bool showAll = false, int numOfResults = 20) => showAll
+        ? await Task.Run(() => GetAllExpensesListAsync(numOfResults))
+        : await Task.Run(() => GetRecentExpensesListAsync(projectId.Value, showRecent, numOfResults));
 
         public bool UpdateExpense(Expense newExpense)
         {
@@ -45,8 +54,12 @@ namespace TimeClockApp.Services
             Expense origExpense = Context.Expense.Find(newExpense.ExpenseId);
             if (origExpense != null)
             {
+                //make expenses (not income) a negative number
+                if (newExpense.ExpenseTypeId != 2 && newExpense.Amount > 0)
+                    newExpense.Amount *= (-1);
+
                 origExpense.Amount = newExpense.Amount;
-                origExpense.Category = newExpense.Category;
+                origExpense.ExpenseTypeId = newExpense.ExpenseTypeId;
                 origExpense.Memo = newExpense.Memo;
                 origExpense.ExpenseDate = newExpense.ExpenseDate;
                 origExpense.ProjectId = newExpense.ProjectId;
@@ -54,6 +67,7 @@ namespace TimeClockApp.Services
                 origExpense.IsRecent = newExpense.IsRecent;
                 origExpense.ExpenseProject = newExpense.ExpenseProject;
                 origExpense.ExpensePhase = newExpense.ExpensePhase;
+                origExpense.ExpenseType_CategoryName = newExpense.ExpenseType_CategoryName;
                 Context.Update<Expense>(origExpense);
                 return (Context.SaveChanges() > 0);
             }
@@ -68,7 +82,8 @@ namespace TimeClockApp.Services
             Expense origExpense = Context.Expense.Find(delExpense.ExpenseId);
             if (origExpense != null)
             {
-                Context.Remove<Expense>(origExpense);
+                origExpense.ExpenseTypeId = 1;
+                Context.Update<Expense>(origExpense);
                 return (await Context.SaveChangesAsync() > 0);
             }
             return false;

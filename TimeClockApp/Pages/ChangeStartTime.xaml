@@ -18,23 +18,25 @@
     </ContentPage.Resources>
     <ScrollView>
         <StackLayout>
-            <Frame
+            <Border
 				x:Name="helpbox"
 				Padding="8"
-				CornerRadius="10"
 				HorizontalOptions="FillAndExpand"
 				IsVisible="{Binding HelpInfoBoxVisible}"
 				VerticalOptions="Center">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="10"/>
+                </Border.StrokeShape>
                 <Label
 					LineBreakMode="WordWrap"
 					Style="{StaticResource LabelSmall}"
 					Text="Change TimeCard Start Time. &#10;&#10;Change the time cards date, start time, associated project and/or phase." />
-            </Frame>
+            </Border>
             <StackLayout Padding="8" >
                 <Label FontSize="Small" Text="{Binding TimeCardID, StringFormat='Id={0}'}" />
                 <Label FontSize="Title" Text="{Binding TimeCard_EmployeeName}" />
                 <Label FontSize="Small" Text="{Binding TimeCard_Date, StringFormat='{0:MMM d ddd}'}" />
-                <Frame>
+                <Border>
                     <Grid
 							ColumnDefinitions="*,*"
 							ColumnSpacing="10"
@@ -76,7 +78,7 @@
 								SelectedItem="{Binding SelectedPhase, Mode=TwoWay}"
 								VerticalOptions="Center" />
                     </Grid>
-                </Frame>
+                </Border>
                 <Button
 						Margin="20,0"
 						Command="{Binding SaveTimeCardCommand}"

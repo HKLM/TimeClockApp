@@ -24,7 +24,8 @@ namespace TimeClockApp.Utilities
             }
 
             // Get a timestamped filename
-            string exportZipFilename = $"MyAppData_{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.zip";
+            //string exportZipFilename = $"MyAppData_{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.zip";
+            string exportZipFilename = $"TimeClockAppData_{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.zip";            
             Directory.CreateDirectory(exportZipTempDirectory);
 
             string exportZipFilePath = Path.Combine(exportZipTempDirectory, exportZipFilename);
@@ -36,7 +37,7 @@ namespace TimeClockApp.Utilities
             // Zip everything up
             ZipFile.CreateFromDirectory(folderToZipPath, exportZipFilePath, CompressionLevel.Fastest, false);
 
-            // Copy zip file to public accessable download folder, outside of app sandbox
+            // Copy zip file to public accessible download folder, outside of app sandbox
             string filePublic = Path.Combine(fhs.GetDownloadPath(), exportZipFilename);
             if (File.Exists(filePublic))
             {
@@ -63,6 +64,11 @@ namespace TimeClockApp.Utilities
                 // UnZip everything 
                 ZipFile.ExtractToDirectory(fileToUNZipPath, unZipTempDirectory, true);
 
+                string versionFile = Path.Combine(unZipTempDirectory, "FILE_ID.DIZ");
+                dataModel.bVersion = File.Exists(versionFile);
+                if (dataModel.bVersion) 
+                    dataModel.FileVersion = versionFile;
+
                 string timecardFile = Path.Combine(unZipTempDirectory, "TimeCard.csv");
                 dataModel.bTimeCard = File.Exists(timecardFile);
                 dataModel.FileTimeCard = timecardFile;
@@ -81,6 +87,9 @@ namespace TimeClockApp.Utilities
                 string expenseFile = Path.Combine(unZipTempDirectory, "Expense.csv");
                 dataModel.bExpense = File.Exists(expenseFile);
                 dataModel.FileExpense = expenseFile;
+                string expenseTypeFile = Path.Combine(unZipTempDirectory, "ExpenseType.csv");
+                dataModel.bExpenseType = File.Exists(expenseTypeFile);
+                dataModel.FileExpenseType = expenseTypeFile;
             }
             catch (Exception ex)
             {

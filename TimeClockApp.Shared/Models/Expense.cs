@@ -1,54 +1,29 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using CsvHelper.Configuration;
 
 namespace TimeClockApp.Shared.Models
 {
-    //TODO move to database table so that user can modify the entries
-    public enum ExpenseType
-    {
-        [Description("Income")]
-        Income = 0,
-        [Description("Materials")]
-        Materials = 1,
-        [Description("Payroll")]
-        Payroll = 2,
-        [Description("Dumps")]
-        Dumps = 3,
-        [Description("Toll-Gas")]
-        Toll = 4,
-        [Description("Overhead")]
-        Overhead = 5,
-        [Description("Service")]
-        Service = 6,
-        [Description("Permit")]
-        Permit = 7,
-        [Description("Misc")]
-        Misc = 8,
-        [Description("Refund")]
-        Refund = 9,
-        [Description("Deleted")]
-        Deleted = 10
-    }
-
     public class Expense : BaseEntity
     {
         public Expense() { }
-        public Expense(int ProjectId, int PhaseId, double Amount, DateOnly ExpenseDate, string ExpenseProject = "", string ExpensePhase = "", string Memo = "", ExpenseType Category = ExpenseType.Materials)
+        public Expense(int ProjectId, int PhaseId, double Amount, DateOnly ExpenseDate, string ExpenseProject = "", string ExpensePhase = "", string Memo = "", int ExpenseTypeId = 2, string ExpenseType_CategoryName = "")
         {
             this.ProjectId = ProjectId;
             this.PhaseId = PhaseId;
-            this.Memo = Memo;
-            this.Amount = Amount;
-            this.Category = Category;
+            this.ExpenseTypeId = ExpenseTypeId;
             this.ExpenseDate = ExpenseDate;
-            IsRecent = true;
+            this.Amount = Amount;
+            this.IsRecent = true;
+            this.Memo = Memo;
             this.ExpenseProject = string.IsNullOrEmpty(ExpenseProject) ? string.Empty : ExpenseProject;
             this.ExpensePhase = string.IsNullOrEmpty(ExpensePhase) ? string.Empty : ExpensePhase;
+            this.ExpenseType_CategoryName = string.IsNullOrEmpty(ExpenseType_CategoryName) ? string.Empty : ExpenseType_CategoryName;
         }
 
         [Key]
         public int ExpenseId { get; set; }
+
         /// <summary>
         /// The Project this Expense is associated with.
         /// </summary>
@@ -60,9 +35,18 @@ namespace TimeClockApp.Shared.Models
         public int PhaseId { get; set; }
 
         /// <summary>
+        /// A way to categorize expenses
+        /// </summary>
+        public int ExpenseTypeId { get; set; }
+
+        /// <summary>
+        /// Saved ExpenseType_CategoryName at the time this expense was made.
+        /// </summary>
+        public string ExpenseType_CategoryName { get; set; }
+
+        /// <summary>
         /// Date of expense
         /// </summary>
-        [Required]
         [System.ComponentModel.DataAnnotations.Schema.Column(TypeName = "DateOnly")]
         public DateOnly ExpenseDate { get; set; }
 
@@ -76,12 +60,6 @@ namespace TimeClockApp.Shared.Models
         [Required]
         [System.ComponentModel.DataAnnotations.Schema.Column(TypeName = "double")]
         public double Amount { get; set; }
-
-        /// <summary>
-        /// A way to categorize expenses
-        /// </summary>
-        [Required]
-        public ExpenseType Category { get; set; }
 
         /// <summary>
         /// When false, this record is considered archived. No longer actively displayed.
@@ -100,6 +78,7 @@ namespace TimeClockApp.Shared.Models
 
         public virtual Project Project { get; set; } 
         public virtual Phase Phase { get; set; }
+        public virtual ExpenseType ExpenseType { get; set; }
 
 #if DEBUG
         public override string ToString()
@@ -107,10 +86,11 @@ namespace TimeClockApp.Shared.Models
             string rv = "\n--------------[  ExpenseId: " + ExpenseId + "  ]---------------------\n";
             rv += "ProjectId:       " + ProjectId + Environment.NewLine;
             rv += "PhaseId:         " + PhaseId + Environment.NewLine;
+            rv += "ExpenseTypeId:   " + ExpenseTypeId + Environment.NewLine;
+            rv += "ExpenseType_CategoryName:   " + ExpenseType_CategoryName + Environment.NewLine;
             rv += "ExpenseDate:     " + ExpenseDate.ToString() + Environment.NewLine;
             rv += "Memo:            " + Memo + Environment.NewLine;
             rv += "Amount:          " + Amount.ToString() + Environment.NewLine;
-            rv += "Category:        " + Category.ToString() + Environment.NewLine;
             rv += "IsRecent:        " + IsRecent.ToString() + Environment.NewLine;
             rv += "ExpenseProject:  " + ExpenseProject + Environment.NewLine;
             rv += "ExpensePhase:    " + ExpensePhase + Environment.NewLine;
@@ -122,16 +102,18 @@ namespace TimeClockApp.Shared.Models
 
     public sealed class ExpenseMap : ClassMap<Expense>
     {
+        [RequiresUnreferencedCode("Calls DynamicBehavior for Import or Export to CSV.")]
         public ExpenseMap()
         {
             //AutoMap(CultureInfo.InvariantCulture);
             Map(m => m.ExpenseId);
             Map(m => m.ProjectId);
             Map(m => m.PhaseId);
+            Map(m => m.ExpenseTypeId);
+            Map(m => m.ExpenseType_CategoryName);
             Map(m => m.ExpenseDate);
             Map(m => m.Memo).Optional();
             Map(m => m.Amount);
-            Map(m => m.Category).Name("Category", "Category").Default(ExpenseType.Materials);
             Map(m => m.IsRecent);
             Map(m => m.ExpenseProject).Optional();
             Map(m => m.ExpensePhase).Optional();

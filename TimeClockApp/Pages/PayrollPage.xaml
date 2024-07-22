@@ -41,7 +41,13 @@
                     </SwipeItems>
                 </SwipeView.RightItems>
 
-                <Frame Padding="8" CornerRadius="10" HorizontalOptions="FillAndExpand" VerticalOptions="Center">
+                <Border
+                    Padding="8" 
+                    HorizontalOptions="FillAndExpand" 
+                    VerticalOptions="Center">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="10"/>
+                    </Border.StrokeShape>
                     <StackLayout>
                         <Label HorizontalTextAlignment="Start" Style="{StaticResource LabelTitleName}" Text="{Binding TimeCard_EmployeeName}" />
                         <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,*,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="15" RowSpacing="10">
@@ -62,7 +68,7 @@
                             <Label Text="{Binding TotalOwedGrossPay, StringFormat='{0:C}'}" FontSize="Small" Grid.Column="5" Grid.Row="2" FontAttributes="Bold" />
                         </Grid>
                     </StackLayout>
-                </Frame>
+                </Border>
             </SwipeView>
         </DataTemplate>
 
@@ -76,16 +82,18 @@
                 <Label Text="Loading failed" />
                 <Button Text="Retry" Command="{Binding InitCommand}" />
             </VerticalStackLayout>
-            <Frame
+            <Border
 				x:Name="helpbox"
 				Padding="8"
-				CornerRadius="10"
 				HorizontalOptions="FillAndExpand"
 				IsVisible="{Binding HelpInfoBoxVisible}"
 				VerticalOptions="Center">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="10"/>
+                </Border.StrokeShape>
                 <Label LineBreakMode="WordWrap" Style="{StaticResource LabelSmall}"
 					Text="TODO. &#10;&#10;TODO. &#10;&#10;Additional" />
-            </Frame>
+            </Border>
             <Button 
 				Command="{Binding ToggleFilterOptionsCommand}" 
 				Text="Filter" 
@@ -130,13 +138,17 @@
 					ContentLayout="Right, 20" />
             </Grid>
             <Label FontSize="Small" Text="{Binding PayPeriod}" />
-            <Frame Padding="8" CornerRadius="10" HasShadow="True">
+            <Border 
+                Padding="8">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="10"/>
+                </Border.StrokeShape>
                 <CollectionView
 					x:Name="sheetListView"
 					EmptyView="No items to display"
 					ItemTemplate="{StaticResource singletemplatesel}"
 					ItemsSource="{Binding SheetList}" />
-            </Frame>
+            </Border>
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

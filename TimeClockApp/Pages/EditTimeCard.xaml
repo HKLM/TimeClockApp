@@ -22,18 +22,20 @@
 	</ContentPage.Resources>
 	<ScrollView>
 		<StackLayout Margin="10">
-			<Frame
+			<Border
 				x:Name="helpbox"
 				Padding="8"
-				CornerRadius="10"
 				HorizontalOptions="FillAndExpand"
 				IsVisible="{Binding HelpInfoBoxVisible}"
 				VerticalOptions="Center">
-				<Label
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="10"/>
+                </Border.StrokeShape>
+                <Label
 					LineBreakMode="WordWrap"
 					Style="{StaticResource LabelSmall}"
 					Text="TimeCard Editor &#10;&#10;Change the time cards date, start time, end time, associated project and/or phase. &#10;&#10;Note: Once a time card has been marked as paid, it is ReadOnly, and can not be changed." />
-			</Frame>
+			</Border>
 
 			<Label
 				Style="{StaticResource LabelSmallCenter}"

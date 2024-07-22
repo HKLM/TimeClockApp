@@ -51,10 +51,11 @@
             {
                 if (!string.IsNullOrEmpty(PhaseTitle))
                 {
-                    phaseService.AddNewPhase(PhaseTitle);
+                    string phaseNewTitle = PhaseTitle.Trim();
+                    phaseService.AddNewPhase(phaseNewTitle);
                     App.NoticePhaseHasChanged = true;
                     RefreshPhases();
-                    App.AlertSvc.ShowAlert("NOTICE", PhaseTitle + " saved");
+                    App.AlertSvc.ShowAlert("NOTICE", phaseNewTitle + " saved");
                 }
             }
             catch (Exception ex)
@@ -93,10 +94,11 @@
             {
                 if (!string.IsNullOrEmpty(PhaseTitle))
                 {
-                    phaseService.UpdatePhase(PhaseTitle, PhaseId);
+                    string phaseNewTitle = PhaseTitle.Trim();
+                    phaseService.UpdatePhase(phaseNewTitle, PhaseId);
                     App.NoticePhaseHasChanged = true;
                     RefreshPhases();
-                    App.AlertSvc.ShowAlert("NOTICE", PhaseTitle + " saved");
+                    App.AlertSvc.ShowAlert("NOTICE", phaseNewTitle + " saved");
                 }
                 else if (PhaseId == 0)
                     App.AlertSvc.ShowAlert("Notice", "You must select a Phase before it can be updated");

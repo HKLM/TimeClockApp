@@ -26,18 +26,20 @@
 	</ContentPage.Resources>
 	<ScrollView>
 		<VerticalStackLayout>
-			<Frame
+			<Border
 				x:Name="helpbox"
 				Padding="8"
-				CornerRadius="10"
 				HorizontalOptions="FillAndExpand"
 				IsVisible="{Binding HelpInfoBoxVisible}"
 				VerticalOptions="Center">
-				<Label
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="10"/>
+                </Border.StrokeShape>
+                <Label
 					LineBreakMode="WordWrap"
 					Style="{StaticResource LabelSmall}"
 					Text="Manage Employees. &#10;&#10;Add, edit, Fire, or place on leave. &#10;TODO" />
-			</Frame>
+			</Border>
 			<StackLayout Padding="12">
 				<Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,4,Auto,4,Auto,4,Auto" RowSpacing="11">
 					<Label

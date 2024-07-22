@@ -13,12 +13,14 @@
 	</ContentPage.ToolbarItems>
 	<ContentPage.Resources>
 		<DataTemplate x:Key="activeTeam">
-			<Frame
+			<Border
 				Padding="8"
-				CornerRadius="10"
 				HorizontalOptions="FillAndExpand"
 				VerticalOptions="Center">
-				<Grid ColumnDefinitions="*,30,150">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="10"/>
+                </Border.StrokeShape>
+                <Grid ColumnDefinitions="*,30,150">
 					<Label
                         Style="{StaticResource LabelTitleName}" Text="{Binding Employee_Name}" />
 					<Button
@@ -28,16 +30,18 @@
 						Style="{StaticResource GreenButton}"
 						Text="Active" />
 				</Grid>
-			</Frame>
+			</Border>
 		</DataTemplate>
 
 		<DataTemplate x:Key="notActiveTeam">
-			<Frame
+			<Border
 				Padding="8"
-				CornerRadius="10"
 				HorizontalOptions="FillAndExpand"
 				VerticalOptions="Center">
-				<Grid ColumnDefinitions="*,30,150">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="10"/>
+                </Border.StrokeShape>
+                <Grid ColumnDefinitions="*,30,150">
 					<Label 
                         Style="{StaticResource LabelTitleName}" Text="{Binding Employee_Name}" />
 					<Button
@@ -47,7 +51,7 @@
 						Style="{StaticResource RedButton}"
 						Text="Not Active" />
 				</Grid>
-			</Frame>
+			</Border>
 		</DataTemplate>
 		<controls:TeamStatusDataTemplateSelector
 			x:Key="teamtemplate"
@@ -58,18 +62,20 @@
 	<ContentPage.Content>
 		<ScrollView>
 			<StackLayout>
-				<Frame
+				<Border
 					x:Name="helpbox"
 					Padding="8"
-					CornerRadius="10"
 					HorizontalOptions="FillAndExpand"
 					IsVisible="{Binding HelpInfoBoxVisible}"
 					VerticalOptions="Center">
-					<Label
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="10"/>
+                    </Border.StrokeShape>
+                    <Label
 						LineBreakMode="WordWrap"
 						Style="{StaticResource LabelSmall}"
 						Text="Change Employee Active Status. &#10;&#10;Set employees status to Active to have that person displayed on the TimeCard Home Page. &#10;&#10;By setting employee's status to Inactive, removes that person from the TimeCards Home page (Note this does not change the Employment status for the employee. They will still be consitered to still be on the payroll.)" />
-				</Frame>
+				</Border>
 				<CollectionView
 					x:Name="collectionTeamView"
 					EmptyView="No items to display"

@@ -23,7 +23,7 @@ namespace TimeClockApp.Services
                         && (item.TimeCard_Status < ShiftStatus.Paid
                         && !item.TimeCard_bReadOnly))
                     .OrderByDescending(item => item.TimeCard_DateTime)
-                    .FirstOrDefaultAsync();
+                    .FirstOrDefaultAsync().ConfigureAwait(false);
 
                 _timeCards.Add(x ?? new TimeCard(employee));
             }
@@ -72,15 +72,12 @@ namespace TimeClockApp.Services
             return false;
         }
 
-        private bool IsEmployeeNotOnTheClock(int employeeID)
-        {
-            return !Context.TimeCard
+        private bool IsEmployeeNotOnTheClock(int employeeID) => !Context.TimeCard
                 .AsNoTracking()
                 .Where(tc => tc.EmployeeId == employeeID
                     && !tc.TimeCard_bReadOnly
                     && tc.TimeCard_Status == ShiftStatus.ClockedIn)
                 .Any();
-        }
 
         public async Task<bool> MarkTimeCardAsPaidAsync(TimeCard timeCard)
         {

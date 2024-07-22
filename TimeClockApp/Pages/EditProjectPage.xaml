@@ -23,18 +23,20 @@
 	<ScrollView>
 		<VerticalStackLayout>
 			<StackLayout Padding="12">
-				<Frame
+				<Border
 					x:Name="helpbox"
 					Padding="8"
-					CornerRadius="10"
 					HorizontalOptions="FillAndExpand"
 					IsVisible="{Binding HelpInfoBoxVisible}"
 					VerticalOptions="Center">
-					<Label
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="10"/>
+                    </Border.StrokeShape>
+                    <Label
 						LineBreakMode="WordWrap"
 						Style="{StaticResource LabelSmall}"
 						Text="Project Editor Page. &#10;&#10;Here you can add, archive, or rename projects. &#10;&#10;By archiving the project, it ends that project so that it is no longer a option to pick for TimeCards or expenses. You can have another project of the same name, but only one can be active at one time. " />
-				</Frame>
+				</Border>
 
 				<Grid
 					ColumnDefinitions="Auto, *"

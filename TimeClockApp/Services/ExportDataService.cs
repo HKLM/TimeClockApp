@@ -1,29 +1,49 @@
-﻿using CsvHelper;
+﻿using System.Diagnostics.CodeAnalysis;
+using CsvHelper;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using TimeClockApp.Shared;
+
+#nullable enable
 
 namespace TimeClockApp.Services
 {
     //TODO Make class content async
     public class ExportDataService : SQLiteDataStore
     {
-        public List<TimeCard> BackupGetTimeCard() => Context.TimeCard
-             .IgnoreAutoIncludes().ToList();
-        public List<Employee> BackupGetEmployee() => Context.Employee
-            .IgnoreAutoIncludes().ToList();
-        public List<Project> BackupGetProject() => Context.Project
-            .IgnoreAutoIncludes().ToList();
-        public List<Phase> BackupGetPhase() => Context.Phase
-            .IgnoreAutoIncludes().ToList();
-        public List<Config> BackupGetConfig() => Context.Config
-            .IgnoreAutoIncludes().ToList();
-        public List<Expense> BackupGetExpense() => Context.Expense
-            .IgnoreAutoIncludes().ToList();
+        // import data must be this version or newer
+        private static readonly double VERSIONCHECKNUMBER = 1.0;
+        public double GetVERSIONCHECKNUMBER => VERSIONCHECKNUMBER;
+
+        public Task<List<TimeCard>> BackupGetTimeCard() => Context.TimeCard
+             .IgnoreAutoIncludes().ToListAsync();
+        public Task<List<Employee>> BackupGetEmployee() => Context.Employee
+            .IgnoreAutoIncludes().ToListAsync();
+        public Task<List<Project>> BackupGetProject() => Context.Project
+            .IgnoreAutoIncludes().ToListAsync();
+        public Task<List<Phase>> BackupGetPhase() => Context.Phase
+            .IgnoreAutoIncludes().ToListAsync();
+        public Task<List<Config>> BackupGetConfig() => Context.Config
+            .IgnoreAutoIncludes().ToListAsync();
+        public Task<List<Expense>> BackupGetExpense() => Context.Expense
+            .IgnoreAutoIncludes().ToListAsync();
+        public Task<List<ExpenseType>> BackupGetExpenseType() => Context.ExpenseType
+            .IgnoreAutoIncludes().ToListAsync();
 
 #region READCSV
-        public List<TimeCard> ReadCSVTimeCards(string csvFile)
+        private string? ReadFileVersion(string csvFile)
+        {
+            string? records;
+            using (var reader = new StreamReader(csvFile))
+            {
+                records = reader.ReadToEnd();
+            }
+            return records;
+        }
+
+        [RequiresUnreferencedCode("Calls DynamicBehavior for Import or Export to CSV.")]
+        private List<TimeCard> ReadCSVTimeCards(string csvFile)
         {
             List<TimeCard> records = new();
             using (var reader = new StreamReader(csvFile))
@@ -35,7 +55,8 @@ namespace TimeClockApp.Services
             return records;
         }
 
-        public List<Employee> ReadCSVEmployee(string csvFile)
+        [RequiresUnreferencedCode("Calls DynamicBehavior for Import or Export to CSV.")]
+        private List<Employee> ReadCSVEmployee(string csvFile)
         {
             List<Employee> records = new();
             using (var reader = new StreamReader(csvFile))
@@ -46,8 +67,8 @@ namespace TimeClockApp.Services
             }
             return records;
         }
-
-        public List<Project> ReadCSVProject(string csvFile)
+        [RequiresUnreferencedCode("Calls DynamicBehavior for Import or Export to CSV.")]
+        private List<Project> ReadCSVProject(string csvFile)
         {
             List<Project> records = new();
             using (var reader = new StreamReader(csvFile))
@@ -59,7 +80,8 @@ namespace TimeClockApp.Services
             return records;
         }
 
-        public List<Phase> ReadCSVPhase(string csvFile)
+        [RequiresUnreferencedCode("Calls DynamicBehavior for Import or Export to CSV.")]
+        private List<Phase> ReadCSVPhase(string csvFile)
         {
             List<Phase> records = new();
             using (var reader = new StreamReader(csvFile))
@@ -71,7 +93,8 @@ namespace TimeClockApp.Services
             return records;
         }
 
-        public List<Config> ReadCSVConfig(string csvFile)
+        [RequiresUnreferencedCode("Calls DynamicBehavior for Import or Export to CSV.")]
+        private List<Config> ReadCSVConfig(string csvFile)
         {
             List<Config> records = new();
             using (var reader = new StreamReader(csvFile))
@@ -82,7 +105,9 @@ namespace TimeClockApp.Services
             }
             return records;
         }
-        public List<Expense> ReadCSVExpense(string csvFile)
+
+        [RequiresUnreferencedCode("Calls DynamicBehavior for Import or Export to CSV.")]
+        private List<Expense> ReadCSVExpense(string csvFile)
         {
             List<Expense> records = new();
             using (var reader = new StreamReader(csvFile))
@@ -93,9 +118,23 @@ namespace TimeClockApp.Services
             }
             return records;
         }
+
+        [RequiresUnreferencedCode("Calls DynamicBehavior for Import or Export to CSV.")]
+        private List<ExpenseType> ReadCSVExpenseType(string csvFile)
+        {
+            List<ExpenseType> records = new();
+            using (var reader = new StreamReader(csvFile))
+            using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+            {
+                csv.Context.RegisterClassMap<ExpenseTypeMap>();
+                records = csv.GetRecords<ExpenseType>().ToList();
+            }
+            return records;
+        }
+
 #endregion READCSV
 
-        public async Task BackupDatabase(string savePath = null)
+        public async Task BackupDatabase(string? savePath = null)
         {
             try
             {
@@ -135,6 +174,23 @@ namespace TimeClockApp.Services
             {
                 using (IDbContextTransaction transaction = Context.Database.BeginTransaction())
                 {
+                    // Version check
+                    if (dataModel.bVersion)
+                    {
+                        ExportLog += "Checking compatibility...\n";
+                        dataModel.ImportVersionString = ReadFileVersion(dataModel.FileVersion);
+                        if (!string.IsNullOrEmpty(dataModel.ImportVersionString) && dataModel.ImportVersionNumber > 0)
+                        {
+                            dataModel.bCompatibleVersion = true;
+                            ExportLog += "PASSED. Version=" + dataModel.ImportVersionString + "\n";
+                        }
+                    }
+                    if (!dataModel.bCompatibleVersion)
+                    {
+                        ExportLog += "No data to import!\nABORTING DUE TO INCOMPATIBLE DATA FILES\n";
+                        return ExportLog;
+                    }
+#nullable restore
                     ExportLog += "Starting to import...\n";
                     try
                     {
@@ -200,6 +256,16 @@ namespace TimeClockApp.Services
                                     dataModel.ReadyToSave++;
                             }
                         }
+                        if (dataModel.bExpenseType)
+                        {
+                            ExportLog += "Importing ExpenseType\n";
+                            dataModel.ImExpenseType = ReadCSVExpenseType(dataModel.FileExpense);
+                            for (int i = 0; i < dataModel.ImExpenseType.Count; i++)
+                            {
+                                if (ImportExpenseType(dataModel.ImExpenseType[i], overWriteData))
+                                    dataModel.ReadyToSave++;
+                            }
+                        }
 
                         if (dataModel.ReadyToSave > 0)
                         {
@@ -242,7 +308,7 @@ namespace TimeClockApp.Services
         }
 
 #region INSERT DATA TO DB
-        public bool ImportTimeCard(TimeCard card, bool overWriteData)
+        private bool ImportTimeCard(TimeCard card, bool overWriteData)
         {
             try
             {
@@ -282,7 +348,7 @@ namespace TimeClockApp.Services
             return false;
         }
 
-        public bool ImportEmployee(Employee card)
+        private bool ImportEmployee(Employee card)
         {
             try
             {
@@ -293,7 +359,7 @@ namespace TimeClockApp.Services
                     updateCard.Employee_Name = card.Employee_Name;
                     updateCard.Employee_PayRate = card.Employee_PayRate;
                     updateCard.Employee_Employed = card.Employee_Employed;
-                    updateCard.JobTitle = card.JobTitle;
+                    updateCard.JobTitle = card.JobTitle ?? string.Empty;
                     Context.Update<Employee>(updateCard);
                     return true;
                 }
@@ -316,7 +382,7 @@ namespace TimeClockApp.Services
             return false;
         }
 
-        public bool ImportProject(Project card)
+        private bool ImportProject(Project card)
         {
             try
             {
@@ -344,7 +410,7 @@ namespace TimeClockApp.Services
             return false;
         }
 
-        public bool ImportPhase(Phase card)
+        private bool ImportPhase(Phase card)
         {
             try
             {
@@ -370,7 +436,7 @@ namespace TimeClockApp.Services
             return false;
         }
 
-        public bool ImportConfig(Config card)
+        private bool ImportConfig(Config card)
         {
             try
             {
@@ -399,7 +465,7 @@ namespace TimeClockApp.Services
             return false;
         }
 
-        public bool ImportExpense(Expense card, bool overWriteData)
+        private bool ImportExpense(Expense card, bool overWriteData)
         {
             try
             {
@@ -409,10 +475,11 @@ namespace TimeClockApp.Services
                     Expense updateCard = Context.Expense.IgnoreAutoIncludes().FirstOrDefault(x => x.ExpenseId == card.ExpenseId);
                     updateCard.ProjectId = card.ProjectId;
                     updateCard.PhaseId = card.PhaseId;
-                    updateCard.Amount = card.Amount;
-                    updateCard.Memo = card.Memo;
-                    updateCard.Category = card.Category;
+                    updateCard.ExpenseTypeId = card.ExpenseTypeId;
+                    updateCard.ExpenseType_CategoryName = card.ExpenseType_CategoryName ?? string.Empty;
                     updateCard.ExpenseDate = card.ExpenseDate;
+                    updateCard.Memo = card.Memo ?? string.Empty;
+                    updateCard.Amount = card.Amount;
                     updateCard.IsRecent = card.IsRecent;
                     updateCard.ExpenseProject = card.ExpenseProject ?? string.Empty;
                     updateCard.ExpensePhase = card.ExpensePhase ?? string.Empty;
@@ -432,6 +499,33 @@ namespace TimeClockApp.Services
             }
             return false;
         }
+
+        private bool ImportExpenseType(ExpenseType card, bool overWriteData)
+        {
+            try
+            {
+                ExpenseType t = Context.ExpenseType.Find(card.ExpenseTypeId);
+                if (t != null && overWriteData)
+                {
+                    ExpenseType updateCard = Context.ExpenseType.IgnoreAutoIncludes().FirstOrDefault(x => x.ExpenseTypeId == card.ExpenseTypeId);
+                    updateCard.CategoryName = card.CategoryName;
+                    Context.Update<ExpenseType>(updateCard);
+                    return true;
+                }
+                else
+                {
+                    Context.Add<ExpenseType>(card);
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException + "\n", "Import");
+                ShowPopupError(ex.Message + "\n" + ex.InnerException, "ABORTING DUE TO ERROR");
+            }
+            return false;
+        }
+
 #endregion
     }
 }

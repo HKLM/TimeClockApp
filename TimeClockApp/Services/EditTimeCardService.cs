@@ -14,15 +14,13 @@ namespace TimeClockApp.Services
                     && item.TimeCard_Status != ShiftStatus.Deleted)
                 .FirstOrDefault();
 
-        public async Task<List<TimeCard>> GetTimeCards(int NumResults)
-        {
-            return await Context.TimeCard
+        public async Task<List<TimeCard>> GetTimeCards(int NumResults) => 
+            await Context.TimeCard
                 .AsNoTracking()
                 .Where(item => item.TimeCard_Status != ShiftStatus.Deleted)
                 .OrderByDescending(item => item.TimeCard_DateTime)
                 .Take(NumResults)
-                .ToListAsync();
-        }
+                .ToListAsync().ConfigureAwait(false);
 
         public bool UpdateTimeCard(TimeCard newTimeCard, bool isAdmin = false, bool bChangedDate = false)
         {

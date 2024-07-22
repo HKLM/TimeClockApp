@@ -1,4 +1,5 @@
-﻿using CsvHelper;
+﻿using System.Diagnostics.CodeAnalysis;
+using CsvHelper;
 using TimeClockApp.Shared;
 
 namespace TimeClockApp.ViewModels
@@ -29,7 +30,9 @@ namespace TimeClockApp.ViewModels
             Project = 2,
             Phase = 3,
             Config = 4,
-            Expense = 5
+            Expense = 5,
+            ExpenseType = 6,
+            Version = 7
         }
 
         public ExportPageViewModel()
@@ -181,13 +184,14 @@ namespace TimeClockApp.ViewModels
             return CSVFilePath;
         }
 
+        [RequiresUnreferencedCode("Calls DynamicBehavior for Import or Export to CSV.")]
         private async Task CreateFileAsync(SQLTables table, string filePath, string fileName)
         {
             string file = Path.Combine(filePath, fileName);
             switch (table)
             {
                 case SQLTables.TimeCard:
-                    List<TimeCard> w = dataService.BackupGetTimeCard();
+                    List<TimeCard> w = await dataService.BackupGetTimeCard();
                     await using (StreamWriter writer = new(file))
                     await using (CsvWriter csv = new(writer, CultureInfo.InvariantCulture))
                     {
@@ -197,7 +201,7 @@ namespace TimeClockApp.ViewModels
                     }
                     return;
                 case SQLTables.Employee:
-                    List<Employee> emp = dataService.BackupGetEmployee();
+                    List<Employee> emp = await dataService.BackupGetEmployee();
                     await using (StreamWriter writer = new(file))
                     await using (CsvWriter csv = new(writer, CultureInfo.InvariantCulture))
                     {
@@ -207,7 +211,7 @@ namespace TimeClockApp.ViewModels
                     }
                     return;
                 case SQLTables.Project:
-                    List<Project> pr = dataService.BackupGetProject();
+                    List<Project> pr = await dataService.BackupGetProject();
                     await using (StreamWriter writer = new(file))
                     await using (CsvWriter csv = new(writer, CultureInfo.InvariantCulture))
                     {
@@ -217,7 +221,7 @@ namespace TimeClockApp.ViewModels
                     }
                     return;
                 case SQLTables.Phase:
-                    List<Phase> ph = dataService.BackupGetPhase();
+                    List<Phase> ph = await dataService.BackupGetPhase();
                     await using (StreamWriter writer = new(file))
                     await using (CsvWriter csv = new(writer, CultureInfo.InvariantCulture))
                     {
@@ -227,7 +231,7 @@ namespace TimeClockApp.ViewModels
                     }
                     return;
                 case SQLTables.Config:
-                    List<Config> c = dataService.BackupGetConfig();
+                    List<Config> c = await dataService.BackupGetConfig();
                     await using (StreamWriter writer = new(file))
                     await using (CsvWriter csv = new(writer, CultureInfo.InvariantCulture))
                     {
@@ -237,13 +241,29 @@ namespace TimeClockApp.ViewModels
                     }
                     return;
                 case SQLTables.Expense:
-                    List<Expense> e = dataService.BackupGetExpense();
+                    List<Expense> e = await dataService.BackupGetExpense();
                     await using (StreamWriter writer = new(file))
                     await using (CsvWriter csv = new(writer, CultureInfo.InvariantCulture))
                     {
                         csv.Context.RegisterClassMap<ExpenseMap>();
                         await csv.WriteRecordsAsync(e);
                         await csv.FlushAsync();
+                    }
+                    return;
+                case SQLTables.ExpenseType:
+                    List<ExpenseType> et = await dataService.BackupGetExpenseType();
+                    await using (StreamWriter writer = new(file))
+                    await using (CsvWriter csv = new(writer, CultureInfo.InvariantCulture))
+                    {
+                        csv.Context.RegisterClassMap<ExpenseTypeMap>();
+                        await csv.WriteRecordsAsync(et);
+                        await csv.FlushAsync();
+                    }
+                    return;
+                case SQLTables.Version:
+                    using (StreamWriter outputFile = new StreamWriter(Path.Combine(filePath, "FILE_ID.DIZ")))
+                    {
+                        await outputFile.WriteAsync(dataService.GetVERSIONCHECKNUMBER.ToString());
                     }
                     return;
 

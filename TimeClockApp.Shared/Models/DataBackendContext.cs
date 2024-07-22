@@ -10,9 +10,9 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.EntityFrameworkCore;
-#if DEBUG
+//#if DEBUG
 using Microsoft.Extensions.Logging;
-#endif
+//#endif
 
 #nullable enable 
 
@@ -48,6 +48,7 @@ namespace TimeClockApp.Shared.Models
                 {
 #if NEW_DATABASE && DEBUG
                     this.Database.EnsureDeleted();
+                    this.Database.EnsureCreated();
 #endif
 #if SAVECREATESQL && DEBUG
                     FileService fhs = new();
@@ -56,8 +57,10 @@ namespace TimeClockApp.Shared.Models
                     string sql = this.Database.GenerateCreateScript();
                     File.WriteAllText(sqltxt, sql);
 #endif
+#if !NEW_DATABASE
                     SQLitePCL.Batteries_V2.Init();
                     Database.Migrate();
+#endif
 #if TRIGGER
                     CreateDBTrigger();
 #endif
@@ -115,6 +118,7 @@ namespace TimeClockApp.Shared.Models
         public DbSet<Phase> Phase { get; set; }
         public DbSet<Config> Config { get; set; }
         public DbSet<Expense> Expense { get; set; }
+        public DbSet<ExpenseType> ExpenseType { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -122,9 +126,10 @@ namespace TimeClockApp.Shared.Models
 #if DEBUG && !MIGRATION
                     .EnableSensitiveDataLogging(true)
                     .EnableDetailedErrors()
-#endif
-#if TRACE && DEBUG
                     .LogTo(Console.WriteLine, LogLevel.Debug)
+#else
+                    //#if TRACE && DEBUG
+                    .LogTo(Console.WriteLine, LogLevel.Warning)
 #endif
                     .UseSqlite($"Filename={SQLiteSetting.SQLiteDBPath}");
         }
@@ -161,6 +166,17 @@ namespace TimeClockApp.Shared.Models
                 .WithMany(t => t.Expenses)
                 .HasForeignKey(t => t.ProjectId);
 
+            modelBuilder.Entity<Expense>()
+                .HasOne(t => t.Phase)
+                .WithMany(t => t.Expenses)
+                .HasForeignKey(t => t.PhaseId);
+
+            modelBuilder.Entity<Expense>()
+                .HasOne(t => t.ExpenseType)
+                .WithMany(t => t.Expenses)
+                .HasForeignKey(t => t.ExpenseTypeId);
+
+
 #endregion ForeignKeys
 
 #region DefaultValues
@@ -195,6 +211,14 @@ namespace TimeClockApp.Shared.Models
             modelBuilder.Entity<TimeCard>()
                 .Property(t => t.TimeCard_WorkHours)
                 .HasComputedColumnSql("round((strftime('%s', [TimeCard_EndTime]) - strftime('%s', [TimeCard_StartTime])) / 3600.0, 2)", stored: true);
+
+            modelBuilder.Entity<Employee>()
+                .HasIndex(b => new { b.EmployeeId, b.Employee_Employed })
+                .HasDatabaseName("IX_EmployeeEmployed");
+
+            modelBuilder.Entity<Project>()
+                .HasIndex(p => new { p.ProjectId, p.Status })
+                .HasDatabaseName("IX_ProjectStatus");
 
 #endregion Indexs
 
@@ -271,6 +295,13 @@ namespace TimeClockApp.Shared.Models
                 Name = "PayDayOfWeek",
                 IntValue = 5,
                 Hint = "Day of week that is the end of the pay period (0=Sunday...3=Wednesday...5=Friday,6=Saturday)(Default 5)"
+            },
+            new Config
+            {
+                ConfigId = 12,
+                Name = "Version",
+                StringValue = "1.7",
+                Hint = "Application Database version"
             });
 
             modelBuilder.Entity<Employee>().HasData(new Employee
@@ -289,6 +320,71 @@ namespace TimeClockApp.Shared.Models
                 JobTitle = "Job Title",
                 Employee_Employed = EmploymentStatus.Employed
 
+            modelBuilder.Entity<ExpenseType>().HasData(
+            new ExpenseType
+            {
+                ExpenseTypeId = 1,
+                CategoryName = "Deleted"
+            },
+            new ExpenseType
+            {
+                ExpenseTypeId = 2,
+                CategoryName = "Income"
+            },
+            new ExpenseType
+            {
+                ExpenseTypeId = 3,
+                CategoryName = "Payroll"
+            },
+            new ExpenseType
+            {
+                ExpenseTypeId = 4,
+                CategoryName = "WorkersComp"
+            },
+            new ExpenseType
+            {
+                ExpenseTypeId = 5,
+                CategoryName = "Materials"
+            },
+            new ExpenseType
+            {
+                ExpenseTypeId = 6,
+                CategoryName = "Toll.Gas"
+            },
+            new ExpenseType
+            {
+                ExpenseTypeId = 7,
+                CategoryName = "Misc"
+            },
+            new ExpenseType
+            {
+                ExpenseTypeId = 8,
+                CategoryName = "Refund"
+            },
+            new ExpenseType
+            {
+                ExpenseTypeId = 9,
+                CategoryName = "Subcontractor"
+            },
+            new ExpenseType
+            {
+                ExpenseTypeId = 10,
+                CategoryName = "Taxes"
+            },
+            new ExpenseType
+            {
+                ExpenseTypeId = 11,
+                CategoryName = "Dumps"
+            },
+            new ExpenseType
+            {
+                ExpenseTypeId = 12,
+                CategoryName = "Overhead"
+            },
+            new ExpenseType
+            {
+                ExpenseTypeId = 13,
+                CategoryName = "Permit"
             });
 
             string[] projectNames = new string[] { ".None", "Sample" };

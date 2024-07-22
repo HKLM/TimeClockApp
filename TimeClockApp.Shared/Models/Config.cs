@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using CsvHelper.Configuration;
 #nullable enable 
 
@@ -52,6 +53,7 @@ namespace TimeClockApp.Shared.Models
 
     public sealed class ConfigMap : ClassMap<Config>
     {
+        [RequiresUnreferencedCode("Calls DynamicBehavior for Import or Export to CSV.")]
         public ConfigMap()
         {
             //AutoMap(CultureInfo.InvariantCulture);

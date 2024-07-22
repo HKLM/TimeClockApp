@@ -79,10 +79,11 @@
             {
                 if (!string.IsNullOrEmpty(Name))
                 {
-                    if (projectService.AddNewProject(Name))
-                        App.AlertSvc.ShowAlert("Notice", Name + " saved.\nExisting project of same name has been archived.");
+                    string projectNewName = Name.Trim();
+                    if (projectService.AddNewProject(projectNewName))
+                        App.AlertSvc.ShowAlert("Notice", projectNewName + " saved.\nExisting project of same name has been archived.");
                     else
-                        App.AlertSvc.ShowAlert("Notice", Name + " saved");
+                        App.AlertSvc.ShowAlert("Notice", projectNewName + " saved");
 
                     App.NoticeProjectHasChanged = true;
                     LoadProjects();
@@ -127,11 +128,12 @@
             {
                 if (!string.IsNullOrEmpty(Name) && ProjectId > 1)
                 {
-                    projectService.UpdateProject(Name, ProjectId, ProjectDate, Project_Status);
+                    string projectNewName = Name.Trim();
+                    projectService.UpdateProject(projectNewName, ProjectId, ProjectDate, Project_Status);
                     App.NoticeProjectHasChanged = true;
                     LoadProjects();
+                    App.AlertSvc.ShowAlert("Notice", projectNewName + " saved");
                     Name = string.Empty;
-                    App.AlertSvc.ShowAlert("Notice", Name + " saved");
                 }
                 else if (ProjectId == 1)
                     App.AlertSvc.ShowAlert("Notice", "Can not edit this project. It is a Read Only project.");

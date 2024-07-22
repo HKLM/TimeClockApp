@@ -342,17 +342,20 @@
                 <Label Text="Loading failed" />
                 <Button Command="{Binding InitCommand}" Text="Retry" />
             </VerticalStackLayout>
-            <Frame
+            <Border
                 x:Name="helpbox"
                 Padding="8"
-                CornerRadius="10" HorizontalOptions="FillAndExpand"
+                HorizontalOptions="FillAndExpand"
                 IsVisible="{Binding HelpInfoBoxVisible}"
                 VerticalOptions="Center">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="10"/>
+                </Border.StrokeShape>
                 <Label 
                     LineBreakMode="WordWrap" 
                     Style="{StaticResource LabelSmall}" 
                     Text="Payroll Page. &#10;&#10;Select the employee to have that persons timecards and totals, displayed for the given time period. &#10;&#10;Timecards are shown by Date, the Start Time, the End Time, the hours for that card, and a button, that can mark that timecard as paid.&#10;&#10;Marking a time card as paid, locks the time card and it can no longer be changed." />
-            </Frame>
+            </Border>
             <Label Style="{StaticResource LabelSmall}" Text="Employee:" VerticalTextAlignment="Center" />
             <Picker
                 HorizontalOptions="FillAndExpand"
@@ -393,35 +396,41 @@
                 <Button x:DataType="vm:PayrollDetailViewModel" Command="{Binding GetAllUnpaidTimeCardsCommand}" Text="Get All Unpaid" />
             </HorizontalStackLayout>
             <Label FontSize="Small" Text="{Binding PayPeriod}" />
-            <Frame
+            <Border
                 Padding="8"
-                CornerRadius="10" HasShadow="True"
                 IsVisible="{Binding Source={x:Reference PayrollDetail}, Path=BindingContext.NotDisplayLandscapeMode}">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="10"/>
+                </Border.StrokeShape>
                 <CollectionView
                     x:Name="ReportTimeCards"
                     Margin="0,5"
                     x:DataType="vm:PayrollDetailViewModel" EmptyView="No items to display"
                     ItemTemplate="{StaticResource reportcardtemplatesel}"
                     ItemsSource="{Binding TimeCards}" />
-            </Frame>
-            <Frame
+            </Border>
+            <Border
                 Padding="8"
-                CornerRadius="10" HasShadow="True"
                 IsVisible="{Binding Source={x:Reference PayrollDetail}, Path=BindingContext.DisplayLandscapeMode}">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="10"/>
+                </Border.StrokeShape>
                 <CollectionView
                     x:Name="ReportLandscapeTimeCards"
                     Margin="0,5"
                     x:DataType="vm:PayrollDetailViewModel" EmptyView="No items to display"
                     ItemTemplate="{StaticResource landscapereportcardtemplatesel}"
                     ItemsSource="{Binding TimeCards}" />
-            </Frame>
+            </Border>
             <Label
                 FontSize="Micro"
                 Text="HOUR TOTALS" HorizontalOptions="Center" />
-            <Frame
+            <Border
                 Padding="8" 
-                CornerRadius="10" 
                 HorizontalOptions="FillAndExpand">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="10"/>
+                </Border.StrokeShape>
                 <Grid
                     ColumnDefinitions="60,*,*,*,*" ColumnSpacing="12" RowDefinitions="Auto,Auto,Auto,Auto,Auto"
                     RowSpacing="10">
@@ -487,7 +496,7 @@
                         FontSize="Small"
                         Text="{Binding TotalEstimatedWC, StringFormat='{0:C}'}" />
                 </Grid>
-            </Frame>
+            </Border>
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

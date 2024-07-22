@@ -81,18 +81,20 @@
 
 	<ScrollView>
 		<VerticalStackLayout>
-			<Frame
+			<Border
 				x:Name="helpbox"
 				Padding="8"
-				CornerRadius="10"
 				HorizontalOptions="FillAndExpand"
 				IsVisible="{Binding HelpInfoBoxVisible}"
 				VerticalOptions="Center">
-				<Label
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="10"/>
+                </Border.StrokeShape>
+                <Label
 					LineBreakMode="WordWrap"
 					Style="{StaticResource LabelSmall}"
 					Text="{Binding HelpInfo}" />
-			</Frame>
+			</Border>
 
 			<CollectionView
 				x:Name="collectionView"

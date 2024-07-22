@@ -18,7 +18,7 @@
 		 <!--Versions--> 
 		<ApplicationIdGuid>AA699F0D-F30D-4094-AAEC-745B07309A2B</ApplicationIdGuid>
 		<ApplicationVersion>4</ApplicationVersion>
-		<ApplicationDisplayVersion>1.7</ApplicationDisplayVersion>
+		<ApplicationDisplayVersion>1.8</ApplicationDisplayVersion>
 
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">30.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
@@ -30,14 +30,15 @@
 		<Description>Employee TimeCard app to track amount of time employees has worked and for reporting weekly hours for payroll.</Description>
 		<SourceRevisionId>build$([System.DateTime]::Now.ToString("yy.M.d:HH.mm"))</SourceRevisionId>
 		<Title>TimeClock App</Title>
-		<FileVersion>1.7</FileVersion>
-		<AssemblyVersion>1.7</AssemblyVersion>
+		<FileVersion>1.8</FileVersion>
+		<AssemblyVersion>1.8</AssemblyVersion>
 		<DefaultLanguage>en</DefaultLanguage>
 	    <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-android|AnyCPU'">
 	  <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
+	  <EnableLLVM>False</EnableLLVM>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-windows10.0.19041.0|AnyCPU'">
@@ -47,7 +48,7 @@
 	  <PublishTrimmed>True</PublishTrimmed>
 	  <RunAOTCompilation>True</RunAOTCompilation>
 	  <AndroidLinkTool>r8</AndroidLinkTool>
-	  <AndroidCreatePackagePerAbi>True</AndroidCreatePackagePerAbi>
+	  <AndroidEnableProfiledAot>True</AndroidEnableProfiledAot>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-windows10.0.19041.0|AnyCPU'">
@@ -55,6 +56,7 @@
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='DebugMigrator|net9.0-android|AnyCPU'">
 	  <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
+	  <EnableLLVM>False</EnableLLVM>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='DebugMigrator|net9.0-windows10.0.19041.0|AnyCPU'">
@@ -67,13 +69,14 @@
 		<!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
 		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
 	</ItemGroup>
-
+	
 	<ItemGroup>
-		<PackageReference Include="CommunityToolkit.Maui" Version="9.0.1" />
+		<PackageReference Include="CommunityToolkit.Maui" Version="9.0.2" />
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
 		<PackageReference Include="CsvHelper" Version="33.0.1" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0-preview.5.24306.3" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0-preview.6.24327.4" />
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+		<!--<PackageReference Include="Microsoft.Maui.Controls" Version="9.0.0-preview.6.24360.5" />-->
 	</ItemGroup>
 
 	<ItemGroup>
@@ -81,6 +84,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<TrimmerRootAssembly Include="TimeClockApp" RootMode="All" />
+		<!--<TrimmableAssembly Include="TimeClockApp.Shared" />-->
 		<TrimmerRootAssembly Include="TimeClockApp.Shared" RootMode="library" />
 		<!--<TrimmerRootAssembly Include="TimeClockApp" RootMode="All" />-->
 	</ItemGroup>
@@ -90,6 +95,9 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Pages\EditExpensePage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Pages\EditExpenseTypePage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Pages\EditPhasePage.xaml">

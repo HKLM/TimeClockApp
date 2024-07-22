@@ -12,6 +12,7 @@ namespace TimeClockApp.Shared.Models
         Deleted = 3
     }
 
+    [NotMapped]
     public class TimeSheet
     {
         public TimeSheet() { }
@@ -25,6 +26,7 @@ namespace TimeClockApp.Shared.Models
             this.PayPeriodEnd = PayPeriodEnd;
         }
 
+        [NotMapped]
         [Key]
         public int TimeSheetId { get; set; }
         public int EmployeeId { get; set; }

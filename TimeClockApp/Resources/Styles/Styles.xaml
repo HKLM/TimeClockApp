@@ -14,9 +14,10 @@
 	</Style>
 
 	<Style TargetType="Border">
-		<Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray500}}" />
+        <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray500}}" />
 		<Setter Property="StrokeShape" Value="Rectangle"/>
 		<Setter Property="StrokeThickness" Value="1"/>
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray600}}" />
 	</Style>
 
 	<Style TargetType="BoxView">
@@ -419,8 +420,8 @@
         <Setter Property="HorizontalTextAlignment" Value="Start" />
     </Style>
 
-    <Style x:Key="WarnFrame" TargetType="Frame">
-        <Setter Property="BorderColor" Value="{StaticResource OrangeRedAccent}" />
+    <Style x:Key="WarnFrame" TargetType="Border">
+        <Setter Property="Stroke" Value="{StaticResource OrangeRedAccent}" />
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray600}}" />
     </Style>
 

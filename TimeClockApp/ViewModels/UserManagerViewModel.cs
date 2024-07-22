@@ -6,14 +6,14 @@
         [ObservableProperty]
         private int employeeId = 0;
         [ObservableProperty]
-        private string employeeName;
+        private string employeeName = string.Empty;
         partial void OnEmployeeNameChanging(string value)
         {
             EnableAddButton = !string.IsNullOrEmpty(EmployeeName);
         }
 
         [ObservableProperty]
-        private string jobTitle;
+        private string jobTitle = string.Empty;
         [ObservableProperty]
         private double payRate;
 
@@ -104,11 +104,13 @@
         {
             try
             {
-                if (EmployeeName != null && EmployeeName != "" && JobTitle != null && JobTitle != "")
+                if (!string.IsNullOrEmpty(EmployeeName))
                 {
-                    HRService.AddNewEmployee(EmployeeName, PayRate, JobTitle);
+                    string employeeNewName = EmployeeName.Trim();
+                    string employeeNewJobTitle = JobTitle.Trim();
+                    HRService.AddNewEmployee(employeeNewName, PayRate, employeeNewJobTitle, IsEmployed);
                     await RefreshEmployeesAsync(true);
-                    await App.AlertSvc.ShowAlertAsync("NOTICE", "Added new employee " + EmployeeName);
+                    await App.AlertSvc.ShowAlertAsync("NOTICE", "Added new employee " + employeeNewName);
                 }
             }
             catch (Exception ex)
@@ -141,12 +143,18 @@
         [RelayCommand]
         private void SaveEditEmployee()
         {
+            if (string.IsNullOrEmpty(EmployeeName))
+                return;
+
             try
             {
-                if (EmployeeId > 0 && HRService.UpdateEmployee(EmployeeId, EmployeeName, PayRate, IsEmployed))
+                string employeeNewName = EmployeeName.Trim();
+                string employeeNewJobTitle = JobTitle.Trim();
+                if (EmployeeId > 0 && HRService.UpdateEmployee(EmployeeId, employeeNewName, PayRate, IsEmployed, employeeNewJobTitle))
                 {
+
                     RefreshEmployees(true);
-                    App.AlertSvc.ShowAlert("NOTICE", "Saved " + EmployeeName);
+                    App.AlertSvc.ShowAlert("NOTICE", "Saved " + employeeNewName);
                 }
             }
             catch (Exception ex)

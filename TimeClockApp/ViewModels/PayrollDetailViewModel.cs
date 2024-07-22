@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Core.Extensions;
+#nullable enable
 
 namespace TimeClockApp.ViewModels
 {
@@ -27,7 +28,6 @@ namespace TimeClockApp.ViewModels
 #endregion
 
         public string PayPeriod => $"TimeCards for Pay Period {StartDate.ToShortDateString()} to {EndDate.ToShortDateString()}";
-
 
         [ObservableProperty]
         private double regTotalHours = 0;
@@ -78,11 +78,12 @@ namespace TimeClockApp.ViewModels
         private bool showFilterOptions = false;
 
         [ObservableProperty]
-        private Employee selectedFilter;
-        partial void OnSelectedFilterChanged(global::TimeClockApp.Shared.Models.Employee value)
+        private Employee? selectedFilter;
+        partial void OnSelectedFilterChanged(global::TimeClockApp.Shared.Models.Employee? value)
         {
             TimeCards.Clear();
-            Refresh_Cards();
+            Task.Run(async () => await RefreshCardsAsync(false));
+            //Refresh_Cards();
         }
         private int? selectedFilterId;
 
@@ -90,12 +91,12 @@ namespace TimeClockApp.ViewModels
         {
             if (query.ContainsKey("start"))
             {
-                if (DateOnly.TryParseExact(Uri.UnescapeDataString(query["start"].ToString()), new string[] { "MM/dd/yyyy", "MM-dd-yyyy", "MM.dd.yyyy" }, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateOnly sdate))
+                if (DateOnly.TryParseExact(Uri.UnescapeDataString(query["start"].ToString()!), new string[] { "MM/dd/yyyy", "MM-dd-yyyy", "MM.dd.yyyy" }, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateOnly sdate))
                     StartDate = new DateTime(sdate.Year, sdate.Month, sdate.Day);
             }
             if (query.ContainsKey("end"))
             {
-                if (DateOnly.TryParseExact(Uri.UnescapeDataString(query["end"].ToString()), new string[] { "MM/dd/yyyy", "MM-dd-yyyy", "MM.dd.yyyy" }, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateOnly edate))
+                if (DateOnly.TryParseExact(Uri.UnescapeDataString(query["end"].ToString()!), new string[] { "MM/dd/yyyy", "MM-dd-yyyy", "MM.dd.yyyy" }, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateOnly edate))
                     EndDate = new DateTime(edate.Year, edate.Month, edate.Day);
             }
             if (query.ContainsKey("id"))
@@ -108,6 +109,9 @@ namespace TimeClockApp.ViewModels
         public async Task OnAppearing()
         {
             WCRate = payrollData.GetWCRate();
+            IsAdmin = IntToBool(payrollData.GetConfigInt(9, 0));
+            if (SelectedFilter == null && !selectedFilterId.HasValue)
+                ResetItems();
             await RefreshCardsAsync();
         }
 
@@ -168,7 +172,7 @@ namespace TimeClockApp.ViewModels
         {
             if (DateOnly.FromDateTime(StartDate) > DateOnly.FromDateTime(EndDate))
             {
-                App.AlertSvc.ShowAlert("VALIDATION ERROR", "StartDate must be before EndDate");
+                await App.AlertSvc.ShowAlertAsync("VALIDATION ERROR", "StartDate must be before EndDate");
                 return;
             }
             ResetItems();
@@ -192,7 +196,6 @@ namespace TimeClockApp.ViewModels
                 UnPaidTotalWorkHours = SheetTime.UnPaidTotalWorkHours;
                 TotalGrossPay = SheetTime.TotalGrossPay;
                 TotalOwedGrossPay = SheetTime.TotalOwedGrossPay;
-
             }
         }
 
@@ -252,6 +255,16 @@ namespace TimeClockApp.ViewModels
         {
             if (card == null)
                 return;
+            if (!IsAdmin)
+            {
+                await App.AlertSvc.ShowAlertAsync("NOTICE", "Use toolbar \'Mark All As Paid\' or enable IsAdmin setting");
+                return;
+            }
+
+            //TODO fix amount. TotalOwedGrossPay is not for just 1 card
+            Task expense = payrollData.AddNewExpenseAsync(card.ProjectId, card.PhaseId, TotalOwedGrossPay, string.Empty, card.ProjectName, card.PhaseTitle, 3);
+            //TODO add entry for WorkersComp amount too
+            await expense;
 
             Task<bool> m = payrollData.MarkTimeCardAsPaidAsync(card);
             if (await m)
@@ -268,13 +281,27 @@ namespace TimeClockApp.ViewModels
             HasError = false;
 
             List<Task> tasks = [];
+            List<Task> taskExpense = [];
+
             try
             {
+                double p = payrollData.GetPayrollInfoForExpense(TimeCards.ToList());
+                double wc = p * WCRate;
+
+                int i = TimeCards.Count - 1;
+                //default to use the last timecard to file it under that project and phase
+                taskExpense.Add(payrollData.AddNewExpenseAsync(TimeCards[i].ProjectId, TimeCards[i].PhaseId, p, string.Empty, TimeCards[i].ProjectName, TimeCards[i].PhaseTitle, 3));
+                taskExpense.Add(payrollData.AddNewExpenseAsync(TimeCards[i].ProjectId, TimeCards[i].PhaseId, wc, string.Empty, TimeCards[i].ProjectName, TimeCards[i].PhaseTitle, 4));
+
                 foreach (TimeCard item in TimeCards)
                 {
                     if (item.TimeCard_Status == ShiftStatus.ClockedOut)
+                    {
                         tasks.Add(payrollData.MarkTimeCardAsPaidAsync(item));
+                    }
                 }
+                await Task.WhenAll(taskExpense);
+
                 if (tasks.Count > 0)
                 {
                     await Task.WhenAll(tasks);

@@ -6,7 +6,7 @@
 
         public SQLiteDataStore() { }
 
-#region POPUP
+        #region POPUP
 
         /// <summary>
         /// Writes error message to debug log and then shows alert popup to the user, displaying the error message.

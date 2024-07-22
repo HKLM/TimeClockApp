@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 using CsvHelper.Configuration;
 
 namespace TimeClockApp.Shared.Models
@@ -280,6 +281,7 @@ namespace TimeClockApp.Shared.Models
 
     public sealed class TimeCardMap : ClassMap<TimeCard>
     {
+        [RequiresUnreferencedCode("Calls DynamicBehavior for Import or Export to CSV.")]
         public TimeCardMap()
         {
             //AutoMap(CultureInfo.InvariantCulture);

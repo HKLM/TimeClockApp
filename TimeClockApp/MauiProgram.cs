@@ -33,11 +33,17 @@ public static class MauiProgram
         builder.Services.AddTransient<PayrollPage>();
 
         builder.Services.AddTransient<PayrollDetailViewModel>();
-        builder.Services.AddTransient<PayrollDetailPage>();
+        //builder.Services.AddTransient<PayrollDetailPage>();
+        //builder.Services.AddSingleton<PayrollDetailViewModel>();
+        builder.Services.AddSingleton<PayrollDetailPage>();
 
         builder.Services.AddSingleton<ExpenseService>();
         builder.Services.AddTransient<ExpenseViewModel>();
         builder.Services.AddSingleton<ExpensePage>();
+
+        builder.Services.AddSingleton<EditExpenseTypeService>();
+        builder.Services.AddTransient<EditExpenseTypeViewModel>();
+        builder.Services.AddSingleton<EditExpenseTypePage>();
 
         builder.Services.AddSingleton<UserManagerService>();
         builder.Services.AddTransient<TeamEmployeesViewModel>();

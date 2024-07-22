@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace TimeClockApp.Services
 {
-    public partial class PayrollService : TimeCardService
+    public class PayrollService : TimeCardService
     {
         /// <summary>
         /// Gets the WorkersCompensation rate value.
@@ -179,6 +179,64 @@ namespace TimeClockApp.Services
             sheet.TotalOwedGrossPay = sheet.UnPaidRegTotalPay + sheet.UnPaidTotalOTPay + sheet.UnPaidTotalOT2Pay;
 
             return sheet;
+        }
+
+        public double GetPayrollInfoForExpense(List<TimeCard> cards)
+        {
+            TimeSheet? sheet;
+            if (cards != null && cards[0] != null && cards[0].EmployeeId > 0 && !string.IsNullOrEmpty(cards[0].TimeCard_EmployeeName))
+            {
+                sheet = new TimeSheet(cards[0].EmployeeId, DateOnly.FromDateTime(DateTime.Now), DateOnly.FromDateTime(DateTime.Now), cards[0].TimeCard_EmployeeName);
+            }
+            else
+            {
+                return 0;
+            }
+
+            sheet.TimeCards = cards.ToList();
+            if (sheet.TimeCards == null || (sheet.TimeCards != null && sheet.TimeCards.Count == 0))
+                return 0;
+
+            double pay = 0;
+            if (sheet.TimeCards != null)
+            {
+                IQueryable<IGrouping<DateOnly, TimeCard>> tg = sheet.TimeCards.GroupBy(x => x.TimeCard_Date).AsQueryable();
+                foreach (var g in tg)
+                {
+                    double x = 0;
+                    foreach (TimeCard item in g)
+                    {
+                        if (item.TimeCard_Status == ShiftStatus.ClockedOut)
+                        {
+                            sheet.UnpaidTimeCards.Add(item);
+                            x += item.TimeCard_WorkHours;
+                        }
+                    }
+
+                    pay = g.Select(x => x.TimeCard_EmployeePayRate).First();
+
+                    // Calculate unpaid hours
+                    double d = g.Where(x =>
+                                    x.TimeCard_Status == ShiftStatus.ClockedOut)
+                                    .Sum(x => x.TimeCard_WorkHours);
+                    if (d > 0)
+                    {
+                        TimeCardDayTotal unpaidDayHours = new(d);
+                        sheet.UnPaidTotalWorkHours += unpaidDayHours.TotalWorkHours;
+                        sheet.UnPaidRegTotalHours += unpaidDayHours.RegTotalHours;
+                        sheet.UnPaidTotalOTHours += unpaidDayHours.TotalOTHours;
+                        sheet.UnPaidTotalOT2Hours += unpaidDayHours.TotalOT2Hours;
+                    }
+                }
+            }
+
+            // calculate wages owed for this sheet
+            sheet.UnPaidRegTotalPay = sheet.UnPaidRegTotalHours * pay;
+            sheet.UnPaidTotalOTPay = sheet.UnPaidTotalOTHours * (pay * 1.5);
+            sheet.UnPaidTotalOT2Pay = sheet.UnPaidTotalOT2Hours * (pay * 2);
+            sheet.TotalOwedGrossPay = sheet.UnPaidRegTotalPay + sheet.UnPaidTotalOTPay + sheet.UnPaidTotalOT2Pay;
+
+            return sheet.TotalOwedGrossPay;
         }
     }
 }

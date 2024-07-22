@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using CsvHelper.Configuration;
 using Microsoft.EntityFrameworkCore;
 
@@ -29,7 +30,7 @@ namespace TimeClockApp.Shared.Models
         public string PhaseTitle { get; set; } = string.Empty;
 
         public virtual ICollection<TimeCard> TimeCards { get; set; } = new HashSet<TimeCard>();
-
+        public virtual ICollection<Expense> Expenses { get; set; } = new HashSet<Expense>();
 #if DEBUG
         public override string ToString()
         {
@@ -43,6 +44,7 @@ namespace TimeClockApp.Shared.Models
 
     public sealed class PhaseMap : ClassMap<Phase>
     {
+        [RequiresUnreferencedCode("Calls DynamicBehavior for Import or Export to CSV.")]
         public PhaseMap()
         {
             //AutoMap(CultureInfo.InvariantCulture);

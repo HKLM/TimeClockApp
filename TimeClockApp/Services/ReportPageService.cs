@@ -100,7 +100,7 @@ namespace TimeClockApp.Services
                      && item.TimeCard_Date <= end!.Value);
             }
 
-            return await q.Distinct().ToListAsync();
+            return await q.Distinct().ToListAsync().ConfigureAwait(false);
         }
     }
 }
