@@ -1,5 +1,5 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
+# 17
 VisualStudioVersion = 17.11.35005.142
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TimeClockApp", "TimeClockApp\TimeClockApp.csproj", "{98EB1C85-FEDC-4289-B4D6-123FBE41B85B}"
@@ -7,6 +7,11 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TimeClockApp.Shared", "TimeClockApp.Shared\TimeClockApp.Shared.csproj", "{5FB90588-3D01-409A-B67E-69D12F783377}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EFMigrator", "EFMigrator\EFMigrator.csproj", "{D6D9FEC7-B63F-43F5-BFE1-06BD8BC2E6B3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7EE5F98A-23CA-4FDA-98AE-DBF51AEC9302}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
