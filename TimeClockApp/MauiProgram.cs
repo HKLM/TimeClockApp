@@ -1,4 +1,6 @@
-﻿[assembly: XamlCompilation(XamlCompilationOptions.Compile)]
+﻿using TimeClockApp.Shared.Interfaces;
+
+[assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 namespace TimeClockApp;
 
 public static class MauiProgram
@@ -17,44 +19,51 @@ public static class MauiProgram
         builder.Services.AddTransient<DataBackendContext>((services) => new());
 
         builder.Services.AddSingleton<IAlertService, AlertService>();
+        builder.Services.AddSingleton<ISharedService, SharedService>();
+
         builder.Services.AddSingleton<TimeCardService>();
         builder.Services.AddTransient<TimeCardPageViewModel>();
         builder.Services.AddSingleton<TimeCardPage>();
 
         builder.Services.AddSingleton<EditTimeCardService>();
         builder.Services.AddTransient<EditTimeCardViewModel>();
-        builder.Services.AddSingleton<EditTimeCard>();
+        builder.Services.AddTransient<EditTimeCard>();
 
         builder.Services.AddTransient<ChangeStartTimeViewModel>();
-        builder.Services.AddSingleton<ChangeStartTime>();
+        builder.Services.AddTransient<ChangeStartTime>();
 
         builder.Services.AddSingleton<PayrollService>();
         builder.Services.AddTransient<PayrollPageViewModel>();
         builder.Services.AddTransient<PayrollPage>();
 
         builder.Services.AddTransient<PayrollDetailViewModel>();
-        //builder.Services.AddTransient<PayrollDetailPage>();
-        //builder.Services.AddSingleton<PayrollDetailViewModel>();
         builder.Services.AddSingleton<PayrollDetailPage>();
 
         builder.Services.AddSingleton<ExpenseService>();
         builder.Services.AddTransient<ExpenseViewModel>();
         builder.Services.AddSingleton<ExpensePage>();
 
-        builder.Services.AddSingleton<EditExpenseTypeService>();
         builder.Services.AddTransient<EditExpenseTypeViewModel>();
-        builder.Services.AddSingleton<EditExpenseTypePage>();
+        builder.Services.AddSingleton<EditExpenseTypeTab>();
 
-        builder.Services.AddSingleton<UserManagerService>();
+        builder.Services.AddTransient<EditExpenseTypePage>();
+
         builder.Services.AddTransient<TeamEmployeesViewModel>();
         builder.Services.AddSingleton<TeamEmployeesPage>();
 
         builder.Services.AddTransient<TimeCardManagerViewModel>();
         builder.Services.AddSingleton<TimeCardManagerPage>();
 
-        builder.Services.AddSingleton<ReportPageService>();
         builder.Services.AddTransient<ReportPageViewModel>();
         builder.Services.AddSingleton<ReportPage>();
+
+        builder.Services.AddSingleton<InvoiceService>();
+        builder.Services.AddTransient<InvoiceViewModel>();
+        builder.Services.AddSingleton<InvoicePage>();
+
+        builder.Services.AddTransient<InvoiceDetailExpensesViewModel>();
+        builder.Services.AddTransient<InvoiceDetailTimecardsViewModel>();
+
         return builder.Build();
     }
 }

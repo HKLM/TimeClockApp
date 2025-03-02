@@ -2,14 +2,14 @@
 
 namespace TimeClockApp.ViewModels
 {
-    public partial class SettingsPageViewModel : TimeStampViewModel
+    public partial class SettingsPageViewModel : BaseViewModel
     {
         private readonly SettingsService configService;
         [ObservableProperty]
-        private ObservableCollection<Config> settingsList = new();
+        public partial ObservableCollection<Config> SettingsList { get; set; } = new();
 
         [ObservableProperty]
-        private string helpInfo = string.Empty;
+        public partial string HelpInfo { get; set; } = "System configuration settings. Improper changes may crash the program.";
 
         public SettingsPageViewModel()
         {

@@ -7,10 +7,8 @@
 
         protected override DataTemplate OnSelectTemplate(object item, BindableObject container)
         {
-            if ((TimeCard)item == null)
-                return StartTemplate;
-            else
-                return ((TimeCard)item).TimeCard_Status != ShiftStatus.ClockedIn ? StartTemplate : EndTemplate;
+            return !(item is TimeCard) ? StartTemplate
+                : ((TimeCard)item).TimeCard_Status != ShiftStatus.ClockedIn ? StartTemplate : EndTemplate;
         }
     }
 }

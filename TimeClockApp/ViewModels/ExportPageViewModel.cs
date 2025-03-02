@@ -1,27 +1,29 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using CsvHelper;
 using TimeClockApp.Shared;
+using TimeClockApp.Utilities;
 
 namespace TimeClockApp.ViewModels
 {
-    public partial class ExportPageViewModel : TimeStampViewModel
+    public partial class ExportPageViewModel : BaseViewModel
     {
         private readonly ExportDataService dataService = new();
         private readonly FileService fhs = new();
+        private readonly ExportUtilities util = new();
         internal string CSVFilePath { get; set; }
 
         [ObservableProperty]
-        private string exportLog = string.Empty;
+        public partial string ExportLog { get; set; } = string.Empty;
 
         //TODO FIX when adding to data fails due to existing data at same rowId.
         /// <summary>
         /// During import of Data should the TimeCards and Expenses data be overwritten or only added to (with possible duplicates)
         /// </summary>
         [ObservableProperty]
-        private bool overwriteData = true;
+        public partial bool OverwriteData { get; set; } = true;
 
         [ObservableProperty]
-        private bool warningBoxVisible = false;
+        public partial bool WarningBoxVisible { get; set; } = false;
 
         private enum SQLTables
         {
@@ -60,6 +62,7 @@ namespace TimeClockApp.ViewModels
                 FilePickerFileType customFileType = new(new Dictionary<DevicePlatform, IEnumerable<string>>
                             {
                                 { DevicePlatform.Android, new[] { "application/zip" } },
+                                { DevicePlatform.WinUI, new[] { ".zip" } },
                             });
 
                 FileResult result = await FilePicker.PickAsync(new PickOptions
@@ -90,13 +93,14 @@ namespace TimeClockApp.ViewModels
                 ExportLog += "Start Unzip file...\n";
                 ImportDataModel dataModel = new();
 
-                //TODO - add some sort of version check to ensure the files we are importing are even compatible with the current version
-
-                dataModel = Utilities.ExportUtilities.UnzipArchive(fileCopyName, UnZipPath);
+                dataModel = util.UnzipArchive(fileCopyName, UnZipPath);
                 if (dataModel.IsAnyTrue())
                 {
                     ExportLog += "Done!...\n";
                     ExportLog += dataService.ImportData(dataModel, ExportLog, OverwriteData);
+                    App.NoticeProjectHasChanged = true;
+                    App.NoticePhaseHasChanged = true;
+                    App.NoticeUserHasChanged = true;
                     int icd = dataModel.DeleteCachedFile();
                     ExportLog += "\nCleaned up " + icd + " temp files\n";
                 }
@@ -110,11 +114,18 @@ namespace TimeClockApp.ViewModels
 
                 ExportLog += "Done!\n";
             }
+            catch (AggregateException ax)
+            {
+                HasError = true;
+                Log.WriteLine("ImportData Exception =================\n");
+                string f = TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateExceptionForPopup(ax, "ExportPageViewModel");
+                await dataService.ShowPopupErrorAsync(f, "ABORTING DUE TO ERROR");
+            }
             catch (Exception ex)
             {
                 HasError = true;
-                Trace.WriteLine("\nEXCEPTION ERROR\n" + ex.Message + "\n" + ex.InnerException);
-                //await dataService.ShowPopupErrorAsync("EXCEPTION ERROR\n" + ex.Message + "\n" + ex.InnerException, "ABORTING DUE TO ERROR");
+                Log.WriteLine("\nEXCEPTION ERROR\n" + ex.Message + "\n" + ex.InnerException, "ExportPageViewModel");
+                await dataService.ShowPopupErrorAsync("EXCEPTION ERROR\n" + ex.Message + "\n" + ex.InnerException, "ABORTING DUE TO ERROR");
             }
             finally
             {
@@ -143,7 +154,7 @@ namespace TimeClockApp.ViewModels
                 catch (Exception ex)
                 {
                     // Log things and move on, don't want to fail just because of a left over lock or something
-                    Debug.WriteLine(ex);
+                    Log.WriteLine("\nEXPECTED POSSIBLE EXCEPTION\n" + ex.Message + "\n" + ex.InnerException);
                     ExportLog += ex.Message + "\n";
                 }
 
@@ -153,15 +164,21 @@ namespace TimeClockApp.ViewModels
 
                 //  Zip everything and present a share dialog to the user
                 ExportLog += "Zipping ... \n";
-                await taskA.ContinueWith(async antecedent => await Utilities.ExportUtilities.CompressAndExportFolder((await antecedent))).Unwrap();
+                await taskA.ContinueWith(async antecedent => await util.CompressAndExportFolder((await antecedent))).Unwrap();
 
                 ExportLog += "Done!\n";
+            }
+            catch (AggregateException ax)
+            {
+                HasError = true;
+                string f = TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateExceptionForPopup(ax, "ExportPageViewModel");
+                await dataService.ShowPopupErrorAsync(f, "ABORTING DUE TO ERROR");
             }
             catch (Exception ex)
             {
                 HasError = true;
-                Trace.WriteLine(ex);
-                //await dataService.ShowPopupErrorAsync("EXCEPTION ERROR\n" + ex.Message + "\n" + ex.InnerException, "ABORTING DUE TO ERROR");
+                Log.WriteLine("\nEXCEPTION ERROR\n" + ex.Message + "\n" + ex.InnerException);
+                await dataService.ShowPopupErrorAsync("EXCEPTION ERROR\n" + ex.Message + "\n" + ex.InnerException, "ABORTING DUE TO ERROR");
             }
             finally
             {
@@ -283,39 +300,78 @@ namespace TimeClockApp.ViewModels
             {
                 ExportLog = "START BACKUP DATABASE: \n";
 
-                string dbFileName = "database-bk.db3";
+                string dbFileName = "timeclock_" + DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss") + ".db3";
                 string file = Path.Combine(Microsoft.Maui.Storage.FileSystem.CacheDirectory, dbFileName);
-                if (File.Exists(file))
+                bool bFileDeleteError = false;
+                try
                 {
-                    ExportLog += "File Exists, Deleting filename: " + file + "\n";
-                    File.Delete(file);
+                    if (File.Exists(file))
+                    {
+                        ExportLog += "Old Temp File Exists, Deleting filename: " + file + "\n";
+                        File.Delete(file);
+                        ExportLog += "Old Temp File Deleted.\n";
+                    }
                 }
-                ExportLog += "Begin backing up...\n";
-
-                await dataService.BackupDatabase(file);
-
-                // Copy file to public accessable download folder, outside of app sandbox
-                string filePublic = Path.Combine(fhs.GetDownloadPath(), dbFileName);
-                if (File.Exists(filePublic))
+                catch (IOException iox)
                 {
-                    File.Delete(filePublic);
+                    bFileDeleteError = true;
+                    HasError = true;
+                    Log.WriteLine(iox.Message + "\n" + iox.InnerException + "\n", "Backup");
                 }
-                byte[] bytes = await File.ReadAllBytesAsync(file);
-                ExportLog += "Copy backup database file to: " + filePublic + "\n";
-                await File.WriteAllBytesAsync(filePublic, bytes);
-
-                ExportLog += "Back up complete, start share file...\n";
-                await Share.RequestAsync(new ShareFileRequest
+                if (!bFileDeleteError)
                 {
-                    Title = "TimeClock App SQLite3 Database",
-                    File = new ShareFile(filePublic),
-                });
+                    ExportLog += "Begin backing up...\n";
+                    await dataService.BackupDatabase(file);
+#if WINDOWS
+                    await Share.RequestAsync(new ShareFileRequest
+                    {
+                        Title = "TimeClock App SQLite3 Database",
+                        File = new ShareFile(file),
+                    });
 
-                ExportLog += "FINISHED\n";
+#else
+                    // Copy file to public accessible download folder, outside of app sandbox
+                    string filePublic = Path.Combine(fhs.GetDownloadPath(), dbFileName);
+                    if (File.Exists(filePublic))
+                    {
+                        ExportLog += "Old Backup File Exists, Deleting filename: " + file + "\n";
+                        File.Delete(filePublic);
+                        ExportLog += "Old Backup File Deleted.\n";
+                    }
+                    byte[] bytes = await File.ReadAllBytesAsync(file);
+                    ExportLog += "Copy backup database file to: " + filePublic + "\n";
+                    await File.WriteAllBytesAsync(filePublic, bytes);
+                    ExportLog += "Back up complete, start share file...\n";
+                    await Share.RequestAsync(new ShareFileRequest
+                    {
+                        Title = "TimeClock App SQLite3 Database",
+                        File = new ShareFile(filePublic),
+                    });
+#endif
+                    ExportLog += "FINISHED\n";
+                }
+                else
+                {
+                    ExportLog += "ABORT due to cant delete temp file. Database NOT backed up.\n";
+                }
             }
-            catch
+            catch (IOException io)
             {
                 HasError = true;
+                Log.WriteLine(io.Message + "\n" + io.InnerException + "\n", "Backup");
+                await dataService.ShowPopupErrorAsync(io.Message + "\n" + io.InnerException, "BACKUP1 ABORTING BACKUP DUE TO ERROR");
+            }
+            catch (AggregateException ax)
+            {
+                HasError = true;
+                string f = TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateExceptionForPopup(ax, "ExportPageViewModel");
+                await dataService.ShowPopupErrorAsync(f, "BACKUP2 ABORTING DUE TO ERROR");
+            }
+            catch (Exception ex)
+            {
+                HasError = true;
+                Log.WriteLine("\nEXCEPTION ERROR\n" + ex.Message + "\n" + ex.InnerException, "ExportPageViewModel");
+                await dataService.ShowPopupErrorAsync("EXCEPTION ERROR\n" + ex.Message + "\n" + ex.InnerException, "BACKUP3 ABORTING DUE TO ERROR");
             }
             finally
             {

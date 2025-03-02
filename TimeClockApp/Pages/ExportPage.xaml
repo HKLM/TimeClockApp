@@ -4,7 +4,8 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui" 
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
-    Title="BackUp and Export">
+    Title="BackUp and Export"
+    x:DataType="vm:ExportPageViewModel">
     <ContentPage.BindingContext>
         <vm:ExportPageViewModel x:Name="viewModel" />
     </ContentPage.BindingContext>
@@ -13,14 +14,13 @@
     </ContentPage.ToolbarItems>
     <ScrollView VerticalScrollBarVisibility="Always">
         <StackLayout>
-            <ActivityIndicator IsRunning="{Binding Loading}" Color="DarkRed" />
+            <ActivityIndicator IsRunning="True" IsVisible="{Binding Loading}" Color="DarkRed" />
             <VerticalStackLayout IsVisible="{Binding HasError}">
                 <Label Text="ERROR-CHECK LOG" />
             </VerticalStackLayout>
             <Border
                 x:Name="helpbox"
                 Padding="8"
-                HorizontalOptions="FillAndExpand"
                 IsVisible="{Binding HelpInfoBoxVisible}"
                 VerticalOptions="Center">
                 <Border.StrokeShape>
@@ -34,7 +34,6 @@
                 IsVisible="{Binding WarningBoxVisible}"
                 Padding="8"
                 Style="{StaticResource WarnFrame}" 
-                HorizontalOptions="FillAndExpand"
                 VerticalOptions="Center">
                 <Border.StrokeShape>
                     <RoundRectangle CornerRadius="10"/>
@@ -59,7 +58,7 @@
                 <Label Text="Output Log:" />
                 <ScrollView>
                     <Label
-                        HorizontalOptions="StartAndExpand" LineBreakMode="WordWrap" MaxLines="200"
+                        LineBreakMode="WordWrap" MaxLines="200"
                         Text="{Binding ExportLog}" />
                 </ScrollView>
                 <Label Text="Type of data import:" />

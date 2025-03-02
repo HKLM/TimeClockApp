@@ -4,10 +4,10 @@ using CsvHelper.Configuration;
 
 namespace TimeClockApp.Shared.Models
 {
-    public class Expense : BaseEntity
+    public class Expense
     {
         public Expense() { }
-        public Expense(int ProjectId, int PhaseId, double Amount, DateOnly ExpenseDate, string ExpenseProject = "", string ExpensePhase = "", string Memo = "", int ExpenseTypeId = 2, string ExpenseType_CategoryName = "")
+        public Expense(int ProjectId, int PhaseId, double Amount, DateOnly ExpenseDate, string ExpenseProject = "", string ExpensePhase = "", string Memo = "", int ExpenseTypeId = 2, string ExpenseTypeCategoryName = "")
         {
             this.ProjectId = ProjectId;
             this.PhaseId = PhaseId;
@@ -18,7 +18,7 @@ namespace TimeClockApp.Shared.Models
             this.Memo = Memo;
             this.ExpenseProject = string.IsNullOrEmpty(ExpenseProject) ? string.Empty : ExpenseProject;
             this.ExpensePhase = string.IsNullOrEmpty(ExpensePhase) ? string.Empty : ExpensePhase;
-            this.ExpenseType_CategoryName = string.IsNullOrEmpty(ExpenseType_CategoryName) ? string.Empty : ExpenseType_CategoryName;
+            this.ExpenseTypeCategoryName = string.IsNullOrEmpty(ExpenseTypeCategoryName) ? string.Empty : ExpenseTypeCategoryName;
         }
 
         [Key]
@@ -40,9 +40,9 @@ namespace TimeClockApp.Shared.Models
         public int ExpenseTypeId { get; set; }
 
         /// <summary>
-        /// Saved ExpenseType_CategoryName at the time this expense was made.
+        /// Saved ExpenseTypeCategoryName at the time this expense was made.
         /// </summary>
-        public string ExpenseType_CategoryName { get; set; }
+        public string ExpenseTypeCategoryName { get; set; }
 
         /// <summary>
         /// Date of expense
@@ -76,28 +76,9 @@ namespace TimeClockApp.Shared.Models
         /// </summary>
         public string ExpensePhase { get; set; } = string.Empty;
 
-        public virtual Project Project { get; set; } 
+        public virtual Project Project { get; set; }
         public virtual Phase Phase { get; set; }
         public virtual ExpenseType ExpenseType { get; set; }
-
-#if DEBUG
-        public override string ToString()
-        {
-            string rv = "\n--------------[  ExpenseId: " + ExpenseId + "  ]---------------------\n";
-            rv += "ProjectId:       " + ProjectId + Environment.NewLine;
-            rv += "PhaseId:         " + PhaseId + Environment.NewLine;
-            rv += "ExpenseTypeId:   " + ExpenseTypeId + Environment.NewLine;
-            rv += "ExpenseType_CategoryName:   " + ExpenseType_CategoryName + Environment.NewLine;
-            rv += "ExpenseDate:     " + ExpenseDate.ToString() + Environment.NewLine;
-            rv += "Memo:            " + Memo + Environment.NewLine;
-            rv += "Amount:          " + Amount.ToString() + Environment.NewLine;
-            rv += "IsRecent:        " + IsRecent.ToString() + Environment.NewLine;
-            rv += "ExpenseProject:  " + ExpenseProject + Environment.NewLine;
-            rv += "ExpensePhase:    " + ExpensePhase + Environment.NewLine;
-            rv += "------------------------------------------------------\n";
-            return rv;
-        }
-#endif
     }
 
     public sealed class ExpenseMap : ClassMap<Expense>
@@ -110,7 +91,7 @@ namespace TimeClockApp.Shared.Models
             Map(m => m.ProjectId);
             Map(m => m.PhaseId);
             Map(m => m.ExpenseTypeId);
-            Map(m => m.ExpenseType_CategoryName);
+            Map(m => m.ExpenseTypeCategoryName).Name("ExpenseTypeCategoryName", "ExpenseType_CategoryName");
             Map(m => m.ExpenseDate);
             Map(m => m.Memo).Optional();
             Map(m => m.Amount);

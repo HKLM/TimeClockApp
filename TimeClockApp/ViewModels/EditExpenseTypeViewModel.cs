@@ -1,11 +1,10 @@
-﻿using CommunityToolkit.Maui.Core.Extensions;
-#nullable enable
+﻿#nullable enable
 
 namespace TimeClockApp.ViewModels
 {
-    public partial class EditExpenseTypeViewModel(EditExpenseTypeService service) : TimeStampViewModel, IQueryAttributable
+    public partial class EditExpenseTypeViewModel : BaseViewModel, IQueryAttributable
     {
-        protected readonly EditExpenseTypeService dataService = service;
+        protected readonly EditExpenseTypeService dataService = new ();
 
         public void ApplyQueryAttributes(IDictionary<string, object> query)
         {
@@ -17,7 +16,7 @@ namespace TimeClockApp.ViewModels
         }
 
         [ObservableProperty]
-        private int expenseId = 0;
+        public partial int ExpenseId { get; set; } = 0;
         partial void OnExpenseIdChanged(int value)
         {
             if (value > 0)
@@ -27,11 +26,11 @@ namespace TimeClockApp.ViewModels
         }
 
         [ObservableProperty]
-        private ObservableCollection<ExpenseType> expenseTypeList = [];
+        public partial ObservableCollection<ExpenseType> ExpenseTypeList { get; set; } = new();
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(EnableDeleteButton))]
-        private ExpenseType? selectedExpenseType = new();
+        public partial ExpenseType? SelectedExpenseType { get; set; } = new();
         partial void OnSelectedExpenseTypeChanged(global::TimeClockApp.Shared.Models.ExpenseType? oldValue, global::TimeClockApp.Shared.Models.ExpenseType? newValue)
         {
             if (newValue == null)
@@ -46,14 +45,13 @@ namespace TimeClockApp.ViewModels
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(EnableAddButton))]
-        private string newCategoryName = string.Empty;
+        public partial string NewCategoryName { get; set; } = string.Empty;
 
         public bool EnableAddButton => !string.IsNullOrEmpty(NewCategoryName);
         public bool EnableDeleteButton => SelectedExpenseType != null;
 
         public async Task OnAppearing()
         {
-            ExpenseTypeList ??= [];
             List<ExpenseType> x = await dataService.GetExpenseTypeListAsync();
             ExpenseTypeList = x.ToObservableCollection();
         }
@@ -63,7 +61,7 @@ namespace TimeClockApp.ViewModels
         {
             if (string.IsNullOrEmpty(NewCategoryName))
             {
-                await App.AlertSvc.ShowAlertAsync("NOTICE", "ExpenseType must have a name.");
+                await App.AlertSvc!.ShowAlertAsync("NOTICE", "ExpenseType must have a name.");
                 return;
             }
 
@@ -76,14 +74,14 @@ namespace TimeClockApp.ViewModels
                 List<ExpenseType> x = await dataService.GetExpenseTypeListAsync();
                 ExpenseTypeList = x.ToObservableCollection();
                 NewCategoryName = string.Empty;
-                await App.AlertSvc.ShowAlertAsync("NOTICE", "Saved");
+                await App.AlertSvc!.ShowAlertAsync("NOTICE", "Saved");
             }
             else if (i == 2)
             {
-                await App.AlertSvc.ShowAlertAsync("DUPLICATE", newName + " already exists in database. Failed to add new ExpenseType.");
+                await App.AlertSvc!.ShowAlertAsync("DUPLICATE", newName + " already exists in database. Failed to add new ExpenseType.");
             }
             else
-                await App.AlertSvc.ShowAlertAsync("NOTICE", "Failed to add new ExpenseType");
+                await App.AlertSvc!.ShowAlertAsync("NOTICE", "Failed to add new ExpenseType");
         }
 
         [RelayCommand]
@@ -100,14 +98,18 @@ namespace TimeClockApp.ViewModels
                     List<ExpenseType> x = await dataService.GetExpenseTypeListAsync();
                     ExpenseTypeList = x.ToObservableCollection();
 
-                    await App.AlertSvc.ShowAlertAsync("NOTICE", "Saved");
+                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "Saved");
                 }
                 else
-                    await App.AlertSvc.ShowAlertAsync("NOTICE", "Failed to save ExpenseType");
+                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "Failed to save ExpenseType");
+            }
+            catch (AggregateException ax)
+            {
+                TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateException(ax);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Trace.WriteLine(ex.Message + "\n" + ex.InnerException);
+                Log.WriteLine(ex.Message + "\n" + ex.InnerException);
             }
         }
 
@@ -119,8 +121,8 @@ namespace TimeClockApp.ViewModels
 
             try
             {
-                System.Diagnostics.Debug.WriteLine("User is attempting to delete a ExpenseType record");
-                if (await App.AlertSvc.ShowConfirmationAsync("CONFIRMATION", "Are you sure you want to Delete this ExpenseType?"))
+                Log.WriteLine("User is attempting to delete a ExpenseType record");
+                if (await App.AlertSvc!.ShowConfirmationAsync("CONFIRMATION", "Are you sure you want to Delete this ExpenseType?"))
                 {
                     if (await dataService.DeleteExpenseTypeAsync(SelectedExpenseType.ExpenseTypeId))
                     {
@@ -128,16 +130,20 @@ namespace TimeClockApp.ViewModels
                         List<ExpenseType> x = await dataService.GetExpenseTypeListAsync();
                         ExpenseTypeList = x.ToObservableCollection();
 
-                        await App.AlertSvc.ShowAlertAsync("NOTICE", "Deleted");
+                        await App.AlertSvc!.ShowAlertAsync("NOTICE", "Deleted");
                         //await Shell.Current.GoToAsync("..");
                     }
                     else
-                        await App.AlertSvc.ShowAlertAsync("NOTICE", "Failed to delete ExpenseType");
+                        await App.AlertSvc!.ShowAlertAsync("NOTICE", "Failed to delete ExpenseType");
                 }
+            }
+            catch (AggregateException ax)
+            {
+                TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateException(ax);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Trace.WriteLine(ex.Message + "\n" + ex.InnerException);
+                Log.WriteLine(ex.Message + "\n" + ex.InnerException);
             }
         }
 

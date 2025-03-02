@@ -89,7 +89,7 @@ namespace TimeClockApp.Shared.Models
             TimeCard_bReadOnly = false;
         }
 
-        public TimeCard(Employee Employee, int ProjectId, int PhaseId, string ProjectName, string PhaseTitle)
+        public TimeCard(Employee Employee, int ProjectId, int PhaseId, string ProjectName, string PhaseTitle, TimeOnly TimeCard_StartTime)
         {
             ArgumentNullException.ThrowIfNull(Employee);
             EmployeeId = Employee.EmployeeId;
@@ -98,7 +98,8 @@ namespace TimeClockApp.Shared.Models
             this.Employee = Employee ?? throw new ArgumentNullException(nameof(Employee));
             TimeCard_DateTime = DateTime.Now;
             TimeCard_Date = DateOnly.FromDateTime(DateTime.Now);
-            TimeCard_Status = ShiftStatus.NA;
+            this.TimeCard_StartTime = TimeCard_StartTime;
+            TimeCard_Status = ShiftStatus.ClockedIn;
             this.ProjectId = ProjectId;
             this.ProjectName = string.IsNullOrEmpty(ProjectName) ? ".None" : ProjectName;
             this.PhaseId = PhaseId;
@@ -254,29 +255,6 @@ namespace TimeClockApp.Shared.Models
         public virtual Employee Employee { get; set; }
         public virtual Project Project { get; set; }
         public virtual Phase Phase { get; set; }
-
-#if DEBUG
-        public override string ToString()
-        {
-            string rv = "\n--------------[  TimeCardId: " + TimeCardId + "  ]---------------------\n";
-            rv += "EmployeeId:  " + EmployeeId + Environment.NewLine;
-            rv += "EmployeeName:" + TimeCard_EmployeeName + Environment.NewLine;
-            rv += "Status:      " + TimeCard_Status.ToString() + Environment.NewLine;
-            rv += "DateTime:    " + TimeCard_DateTime.ToShortDateString() + Environment.NewLine;
-            rv += "Date:        " + TimeCard_Date.ToShortDateString() + Environment.NewLine;
-            rv += "StartTime:  [" + TimeCard_StartTime.ToShortTimeString() + "]\n";
-            rv += "EndTime:    [" + TimeCard_EndTime.ToShortTimeString() + "]\n";
-            rv += "WorkHours:   " + TimeCard_WorkHours + Environment.NewLine;
-            rv += "PayRate:     " + TimeCard_EmployeePayRate.ToString("C", System.Globalization.CultureInfo.CurrentCulture) + Environment.NewLine;
-            rv += "ProjectId:   " + ProjectId + Environment.NewLine;
-            rv += "ProjectName: " + ProjectName + Environment.NewLine;
-            rv += "PhaseId:     " + PhaseId + Environment.NewLine;
-            rv += "PhaseTitle:  " + PhaseTitle + Environment.NewLine;
-            rv += "bReadOnly:  [" + TimeCard_bReadOnly.ToString() + "]\n";
-            rv += "------------------------------------------------------\n";
-            return rv;
-        }
-#endif
     }
 
     public sealed class TimeCardMap : ClassMap<TimeCard>

@@ -1,17 +1,16 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
-    x:Class="TimeClockApp.Pages.ReportPage" 
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
-    xmlns:controls="clr-namespace:TimeClockApp.Controls"
-    xmlns:converter="clr-namespace:TimeClockApp.Converters" 
-    xmlns:models="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
-    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit" 
-    xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
-    Title="Report Page" 
-    x:DataType="vm:ReportPageViewModel">
+        x:Class="TimeClockApp.Pages.ReportPage" 
+        xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
+        xmlns:controls="clr-namespace:TimeClockApp.Controls"
+        xmlns:converter="clr-namespace:TimeClockApp.Converters" 
+        xmlns:models="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
+        xmlns:lv="clr-namespace:TimeClockApp.Controls.MultiSelectListView"
+        xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
+        Title="Report Page">
     <ContentPage.ToolbarItems>
-        <ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
+        <ToolbarItem x:DataType="vm:ReportPageViewModel" Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
     </ContentPage.ToolbarItems>
     <ContentPage.Resources>
         <ResourceDictionary>
@@ -21,9 +20,9 @@
     <ScrollView>
         <VerticalStackLayout>
             <Border
+                x:DataType="vm:ReportPageViewModel"
                 x:Name="helpbox" 
                 Padding="8"
-                HorizontalOptions="FillAndExpand"
                 IsVisible="{Binding HelpInfoBoxVisible}"
                 VerticalOptions="Center">
                 <Border.StrokeShape>
@@ -33,6 +32,39 @@
                     LineBreakMode="WordWrap"
                     Style="{StaticResource LabelSmall}"
                     Text="Report of the overall cost of projects. &#10;&#10;Report of total labor (hours worked, wages paid etc) per Project. &#10;&#10;Can filter by Project, Phase, per Employee and or by Date range" />
+            </Border>
+            <Border
+                x:Name="employeebox" 
+                x:DataType="vm:ReportPageViewModel"
+                Padding="10"
+                IsVisible="{Binding UseEmployeeFilter}"
+                VerticalOptions="Center">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="10"/>
+                </Border.StrokeShape>
+                <ListView x:Name="lvwUsers" 
+                            HasUnevenRows="False"
+                            SeparatorVisibility="Default" 
+                            ItemsSource="{Binding EmployeeList}"
+                            lv:MultiSelect.Enable="true">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <lv:SelectableCell x:Name="SelectableCell" x:DataType="models:Employee">
+                                <lv:SelectableCell.CheckView>
+                                    <Image Source="check_box_white.png" />
+                                </lv:SelectableCell.CheckView>
+                                <lv:SelectableCell.DataView>
+                                    <StackLayout Orientation="Vertical" Padding="30,0,30,0">
+                                        <Label Text="{Binding Employee_Name}" />
+                                    </StackLayout>
+                                </lv:SelectableCell.DataView>
+                            </lv:SelectableCell>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                    <ListView.Behaviors>
+                        <lv:SelectedItemBehavior Command="{Binding ClickedEmployeeListCommand}" PropertyName="EmployeeId"/>
+                    </ListView.Behaviors>
+                </ListView>
             </Border>
             <Border>
                 <Grid
@@ -77,17 +109,10 @@
                         Text="Employee: " 
                         VerticalTextAlignment="Center" />
                     <CheckBox
+                        x:DataType="vm:ReportPageViewModel"
                         Grid.Row="4" 
                         Grid.Column="1"
                         IsChecked="{Binding UseEmployeeFilter, Mode=TwoWay}" />
-                    <Picker
-                        Grid.Row="5" 
-                        Grid.ColumnSpan="2"
-                        HorizontalOptions="Fill"
-                        IsEnabled="{Binding UseEmployeeFilter}"
-                        ItemDisplayBinding="{Binding Employee_Name}"
-                        ItemsSource="{Binding EmployeeList}"
-                        SelectedItem="{Binding SelectedEmployee, Mode=TwoWay}" />
                     <Label
                         Grid.Row="6"
                         Style="{StaticResource LabelSmallCenter}"
@@ -98,12 +123,14 @@
                         Grid.Column="1"
                         IsChecked="{Binding UseDateFilter, Mode=TwoWay}" />
                     <Label
+                        x:DataType="vm:ReportPageViewModel"
                         Grid.Row="7"
                         IsEnabled="{Binding UseDateFilter}"
                         Style="{StaticResource LabelSmallCenter}"
                         Text="Begin Date: " 
                         VerticalTextAlignment="Center" />
                     <DatePicker
+                        x:DataType="vm:ReportPageViewModel"
                         Grid.Row="7" 
                         Grid.Column="1"
                         Date="{Binding StartDate, Converter={StaticResource dateOnlyToDateTimeConverter}, Mode=TwoWay}"
@@ -111,12 +138,14 @@
                         MaximumDate="{Binding PickerMaxDate}"
                         MinimumDate="{Binding PickerMinDate}" />
                     <Label
+                        x:DataType="vm:ReportPageViewModel"
                         Grid.Row="8"
                         IsEnabled="{Binding UseDateFilter}"
                         Style="{StaticResource LabelSmallCenter}"
                         Text="End Date: " 
                         VerticalTextAlignment="Center" />
                     <DatePicker
+                        x:DataType="vm:ReportPageViewModel"
                         Grid.Row="8" 
                         Grid.Column="1"
                         Date="{Binding EndDate, Converter={StaticResource dateOnlyToDateTimeConverter}, Mode=TwoWay}"
@@ -124,6 +153,7 @@
                         MaximumDate="{Binding PickerMaxDate}"
                         MinimumDate="{Binding PickerMinDate}" />
                     <Button
+                        x:DataType="vm:ReportPageViewModel"
                         Grid.Row="9" 
                         Grid.Column="1"
                         Command="{Binding MakeReportCommand}"
@@ -172,7 +202,6 @@
                         Style="{StaticResource LabelSmallCenter}"
                         FontAttributes="Bold"
                         Text="{Binding TotalLaborBurden, StringFormat='{0:C}'}" />
-
                     <Label 
                         Grid.Row="4" 
                         Style="{StaticResource LabelSmallCenter}"

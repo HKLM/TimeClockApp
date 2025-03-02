@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using CsvHelper.Configuration;
 using Microsoft.EntityFrameworkCore;
+#nullable enable
 
 namespace TimeClockApp.Shared.Models
 {
@@ -43,16 +44,16 @@ namespace TimeClockApp.Shared.Models
     {
         public Employee()
         {
-            //TimeCards = new List<TimeCard>();
-            //TimeSheets = new HashSet<TimeSheet>();
+            TimeCards = new HashSet<TimeCard>();
         }
 
         public Employee(string employee_Name, double employee_PayRate, EmploymentStatus employee_Employed, string jobTitle)
         {
-            Employee_Name = employee_Name ?? throw new ArgumentNullException(nameof(employee_Name));
+            Employee_Name = employee_Name;
             Employee_PayRate = employee_PayRate;
             Employee_Employed = employee_Employed;
             JobTitle = jobTitle ?? string.Empty;
+            TimeCards = [];
         }
 
         [Key]
@@ -79,19 +80,6 @@ namespace TimeClockApp.Shared.Models
         public string JobTitle { get; set; } = string.Empty;
 
         public virtual ICollection<TimeCard> TimeCards { get; set; }
-
-#if DEBUG
-        public override string ToString()
-        {
-            string rv = "\n--------------[  EmployeeId: " + EmployeeId + "  ]---------------------\n";
-            rv += "Employee_Name:     " + Employee_Name + Environment.NewLine;
-            rv += "Employee_PayRate:  " + Employee_PayRate.ToString("C", System.Globalization.CultureInfo.CurrentCulture) + Environment.NewLine;
-            rv += "Employee_Employed: " + Employee_Employed.ToString() + Environment.NewLine;
-            rv += "JobTitle:          " + JobTitle + Environment.NewLine;
-            rv += "------------------------------------------------------\n";
-            return rv;
-        }
-#endif
     }
 
     public sealed class EmployeeMap : ClassMap<Employee>

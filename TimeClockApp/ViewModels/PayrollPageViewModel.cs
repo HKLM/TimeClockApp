@@ -1,19 +1,20 @@
 ﻿namespace TimeClockApp.ViewModels
 {
-    public partial class PayrollPageViewModel : TimeStampViewModel
+    public partial class PayrollPageViewModel : BaseViewModel
     {
         protected readonly PayrollService payrollData;
 
         [ObservableProperty]
-        private ObservableCollection<TimeSheet> sheetList = new ObservableCollection<TimeSheet>();
+        public partial ObservableCollection<TimeSheet> SheetList { get; set; } = [];
         [ObservableProperty]
-        private ObservableCollection<Employee> employeeList = [];
-        [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(PayPeriod))]
-        private DateTime startDate;
+        public partial ObservableCollection<Employee> EmployeeList { get; set; } = [];
+
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(PayPeriod))]
-        private DateTime endDate = DateTime.Now;
+        public partial DateTime StartDate { get; set; }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(PayPeriod))]
+        public partial DateTime EndDate { get; set; } = DateTime.Now;
 #region "DatePicker Min/Max Bindings"
         public DateTime PickerMinDate { get; set; }
         private readonly DateTime pickerMaxDate = DateTime.Now;
@@ -26,7 +27,7 @@
         /// Tracks if the filter options are displayed or not
         /// </summary>
         [ObservableProperty]
-        private bool showFilterOptions = false;
+        public partial bool ShowFilterOptions { get; set; } = false;
 
         public PayrollPageViewModel(PayrollService service)
         {
@@ -34,23 +35,8 @@
             ErrorMsg = string.Empty;
         }
 
-        public void OnAppearing()
-        {
-            if (initDone)
-            {
-                try
-                {
-                    Refresh_Cards();
-                }
-                catch
-                {
-                    HasError = true;
-                }
-            }
-        }
-
         [RelayCommand]
-        private async Task InitAsync()
+        public async Task OnAppearing()
         {
             Loading = true;
             HasError = false;
@@ -60,7 +46,22 @@
                 StartDate = payrollData.GetStartOfPayPeriod(DateTime.Now);
                 PickerMinDate = payrollData.GetAppFirstRunDate();
 
-                await RefreshEverythingAsync();
+                List<Employee> g = await payrollData.GetEmployeeListAsync();
+                EmployeeList = g.ToObservableCollection();
+                if (g.Count > 0)
+                {
+                    foreach (Employee e in EmployeeList)
+                    {
+                        TimeSheet t = payrollData.GetPayrollTimeSheetForEmployee(e.EmployeeId, DateOnly.FromDateTime(StartDate), DateOnly.FromDateTime(EndDate), e.Employee_Name, null);
+                        if (t != null)
+                            SheetList.Add(t);
+                    }
+                }
+            }
+            catch (AggregateException ax)
+            {
+                HasError = true;
+                TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateException(ax);
             }
             catch (Exception ex)
             {
@@ -76,22 +77,23 @@
 
         private async Task RefreshEmployeesAsync()
         {
-            EmployeeList ??= [];
-            if (EmployeeList.Count > 0)
+            if (App.NoticeUserHasChanged || EmployeeList.Count > 0)
+            {
                 EmployeeList.Clear();
-
-            Task<ObservableCollection<Employee>> g = payrollData.GetEmployeesAsync();
-            EmployeeList = await g;
+                List<Employee> g = await payrollData.GetEmployeeListAsync();
+                EmployeeList =  g.ToObservableCollection();
+            }
         }
 
-        private void Refresh_Cards()
+        [RelayCommand]
+        private async Task RefreshCardsAsync()
         {
             if (DateOnly.FromDateTime(StartDate) > DateOnly.FromDateTime(EndDate))
             {
-                App.AlertSvc.ShowAlert("VALIDATION ERROR", "StartDate must be before EndDate");
+                await App.AlertSvc!.ShowAlertAsync("VALIDATION ERROR", "StartDate must be before EndDate");
                 return;
             }
-            ResetSheets();
+            SheetList.Clear();
             foreach (Employee e in EmployeeList)
             {
                 TimeSheet t = payrollData.GetPayrollTimeSheetForEmployee(e.EmployeeId, DateOnly.FromDateTime(StartDate), DateOnly.FromDateTime(EndDate), e.Employee_Name, null);
@@ -101,28 +103,12 @@
         }
 
         [RelayCommand]
-        private Task RefreshCardsAsync()
-        {
-            return Task.Run(() =>
-            {
-                Refresh_Cards();
-                return Task.CompletedTask;
-            });
-        }
-
-        [RelayCommand]
         private async Task RefreshEverythingAsync()
         {
             Task A = RefreshEmployeesAsync();
             Task B = RefreshCardsAsync();
             await A;
             await B;
-        }
-
-        private void ResetSheets()
-        {
-            SheetList ??= new();
-            SheetList.Clear();
         }
 
         [RelayCommand]
@@ -136,7 +122,7 @@
                     {
                         Task<bool> b = payrollData.MarkTimeCardAsPaidAsync(item);
                         if (await b)
-                            System.Diagnostics.Debug.WriteLine("Marked card as paid");
+                            Log.WriteLine("Marked card as paid");
                     }
                 }
 

@@ -1,22 +1,22 @@
-﻿using System.Xml.Linq;
-using CommunityToolkit.Maui.Core.Extensions;
+﻿#nullable enable
 
 namespace TimeClockApp.ViewModels
 {
-    public partial class ExpenseViewModel : TimeStampViewModel
+    public partial class ExpenseViewModel : BaseViewModel
     {
         protected readonly ExpenseService dataService;
 
         [ObservableProperty]
-        private Expense expenseItem = new();
+        public partial Expense ExpenseItem { get; set; } = new();
 
         [ObservableProperty]
-        private ObservableCollection<Expense> expenseList = [];
+        public partial ObservableCollection<Expense> ExpenseList { get; set; } = new ();
 
         [ObservableProperty]
-        private ObservableCollection<Project> projectList = [];
+        public partial ObservableCollection<Project> ProjectList { get; set; } = new();
+
         [ObservableProperty]
-        private Project selectedProject = new();
+        public partial Project SelectedProject { get; set; } = new();
         partial void OnSelectedProjectChanged(global::TimeClockApp.Shared.Models.Project value)
         {
             if (value != null && dataService != null && value.ProjectId != 0)
@@ -24,41 +24,59 @@ namespace TimeClockApp.ViewModels
         }
 
         [ObservableProperty]
-        private ObservableCollection<Phase> phaseList = [];
+        public partial ObservableCollection<Phase> PhaseList { get; set; } = new();
         [ObservableProperty]
-        private Phase selectedPhase;
+        public partial Phase SelectedPhase { get; set; } = new();
         partial void OnSelectedPhaseChanging(global::TimeClockApp.Shared.Models.Phase value)
         {
-            if (value != null && SelectedPhase != null && SelectedPhase.PhaseId != value.PhaseId)
-                dataService.SaveCurrentPhase(value.PhaseId);
+            if (value != null)
+            {
+                if (!App.CurrentPhaseId.HasValue || App.CurrentPhaseId.HasValue && value.PhaseId != App.CurrentPhaseId.Value)
+                    Task.Run(async () => await dataService.SaveCurrentPhaseAsync(value.PhaseId).ConfigureAwait(false));
+            }
         }
 
         [ObservableProperty]
-        private ObservableCollection<ExpenseType> expenseTypeList = [];
+        public partial ObservableCollection<ExpenseType> ExpenseTypeList { get; set; } = new();
         [ObservableProperty]
-        private ExpenseType selectedExpenseType = new();
+        public partial ExpenseType SelectedExpenseType { get; set; } = new();
 
         [ObservableProperty]
-        private DateOnly expenseDate;
-#region "DatePicker Min/Max Bindings"
+        public partial DateOnly ExpenseDate { get; set; }
+        #region "DatePicker Min/Max Bindings"
         public DateTime PickerMinDate { get; set; }
         private readonly DateTime pickerMaxDate = DateTime.Now;
+
         public DateTime PickerMaxDate { get => pickerMaxDate; }
-#endregion
+        #endregion
 
         [ObservableProperty]
-        private Double amount;
+        public partial Double Amount { get; set; }
         [ObservableProperty]
-        private bool isRefreshingList;
+        public partial bool IsRefreshingList { get; set; }
         [ObservableProperty]
-        private bool showArchived;
+        public partial bool ShowArchived { get; set; }
         private bool ShowRecent => !ShowArchived;
 
         [ObservableProperty]
-        private bool showAll = true;
+        public partial bool ShowOnlyProject { get; set; }
 
         [ObservableProperty]
-        private string memo = string.Empty;
+        [NotifyPropertyChangedFor(nameof(LastSelectedNumberOfResults))]
+        public partial int SelectedNumberOfResults { get; set; } = 5;
+        partial void OnSelectedNumberOfResultsChanged(int value)
+        {
+            if (value != LastSelectedNumberOfResults)
+            {
+                LastSelectedNumberOfResults = value;
+                Refresh();
+            }
+        }
+
+        private int LastSelectedNumberOfResults { get; set; } = 5;
+
+        [ObservableProperty]
+        public partial string Memo { get; set; } = string.Empty;
 
         public ExpenseViewModel(ExpenseService service)
         {
@@ -69,41 +87,60 @@ namespace TimeClockApp.ViewModels
         }
 
         [RelayCommand]
-        private async Task InitAsync()
-        {
-            Loading = true;
-            HasError = false;
-
-            ExpenseList ??= new();
-            ExpenseDate = DateOnly.FromDateTime(DateTime.Now);
-            ShowAll = true;
-            try
-            {
-                await GetExpenseListAsync();
-
-                RefreshProjectPhases();
-            }
-            catch (Exception e)
-            {
-                HasError = true;
-                System.Diagnostics.Trace.WriteLine(e.Message + "\n  -- " + e.Source + "\n  -- " + e.InnerException);
-            }
-            finally
-            {
-                Loading = false;
-            }
-        }
-
         public async Task OnAppearing()
         {
-            Refresh();
-
             Loading = true;
             HasError = false;
 
             try
             {
-                await GetExpenseListAsync();
+                ExpenseDate = DateOnly.FromDateTime(DateTime.Now);
+                //Only get data from DB once, unless it has been notified that it has changed
+                if (ProjectList.Count == 0 || App.NoticeProjectHasChanged)
+                {
+                    Task<List<Project>> tp = dataService.GetProjectsListAsync();
+                    List<Project> p = await tp;
+                    ProjectList = p.ToObservableCollection();
+                }
+
+                if (PhaseList.Count == 0 || App.NoticePhaseHasChanged)
+                {
+                    Task<List<Phase>> tph = dataService.GetPhaseListAsync();
+                    List<Phase> ph = await tph;
+                    PhaseList = ph.ToObservableCollection();
+                }
+
+                if (App.NoticeProjectHasChanged || SelectedProject == null || SelectedProject.ProjectId == 0)
+                {
+                    var tcp = dataService.GetCurrentProjectEntityAsync();
+                    Project cp = await tcp;
+                    SelectedProject = cp;
+                }
+
+                if (SelectedPhase == null || SelectedPhase.PhaseId == 0 || App.NoticePhaseHasChanged)
+                {
+                    var tcph = dataService.GetCurrentPhaseEntityAsync();
+                    Phase cph = await tcph;
+                    SelectedPhase = cph;
+                }
+
+                List<ExpenseType> x = dataService.GetExpenseTypeList();
+                ExpenseTypeList = x.ToObservableCollection();
+
+                SelectedExpenseType = dataService.GetExpenseType(5);
+                SelectedNumberOfResults = 5;
+            }
+            catch (AggregateException ax)
+            {
+                HasError = true;
+                string z = FlattenAggregateException.ShowAggregateExceptionForPopup(ax, "TimeCardPageViewModel");
+                await App.AlertSvc!.ShowAlertAsync("Exception", z);
+            }
+            catch (Exception ex)
+            {
+                HasError = true;
+                Log.WriteLine($"EXCEPTION ERROR\n{ex.Message}\n{ex.InnerException}", "TimeCardPageViewModel");
+                await App.AlertSvc!.ShowAlertAsync("Exception", $"{ex.Message}\n{ex.InnerException}");
             }
             finally
             {
@@ -113,83 +150,29 @@ namespace TimeClockApp.ViewModels
 
         private void Refresh()
         {
-            RefreshProjectPhases();
-            if (SelectedProject?.ProjectId > 0)
-                ExpenseList = dataService.GetAllExpenses(SelectedProject.ProjectId, ShowRecent);
-        }
-
-        private void RefreshProjectPhases()
-        {
-            //Only get data from DB once, unless it has been notified that it has changed
-            ProjectList ??= [];
-            if (!ProjectList.Any() || App.NoticeProjectHasChanged)
-                ProjectList = dataService.GetProjectsList();
-
-            PhaseList ??= [];
-            if (!PhaseList.Any() || App.NoticePhaseHasChanged)
-                PhaseList = dataService.GetPhaseList();
-
-            if (SelectedProject == null || SelectedProject.ProjectId == 0)
-                SelectedProject = dataService.GetCurrentProjectEntity();
-
-            if (SelectedPhase == null || SelectedPhase.PhaseId == 0)
-                SelectedPhase = dataService.GetCurrentPhaseEntity();
-
-            ExpenseTypeList ??= [];
-
-            List<ExpenseType> x = dataService.GetExpenseTypeList();
-            ExpenseTypeList = x.ToObservableCollection();
-
-            //default to materials
-            //TODO make this user configurable
-            SelectedExpenseType = dataService.GetExpenseType(5);
-        }
-
-        [RelayCommand]
-        private async Task RefreshExpenseList()
-        {
-            IsRefreshingList = true;
             try
             {
-                if (SelectedProject?.ProjectId > 0)
-                    ExpenseList = dataService.GetAllExpenses(SelectedProject.ProjectId, ShowRecent);
+                if (ShowOnlyProject && SelectedProject?.ProjectId > 0 || !ShowOnlyProject && ShowRecent)
+                {
+                    Task.Run(async () =>
+                    {
+                        List<Expense> L = await dataService.GetExpenseListAsync(SelectedProject?.ProjectId, ShowRecent, false, SelectedNumberOfResults);
+                        ExpenseList = L.ToObservableCollection();
+                    });
+                }
+                else if (!ShowOnlyProject)
+                {
+                    Task.Run(async () =>
+                    {
+                        List<Expense> L = await dataService.ExpensesListAsync(SelectedNumberOfResults);
+                        ExpenseList = L.ToObservableCollection();
+                    });
+                }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
-                IsRefreshingList = false;
-                //TODO remove this
-                await App.AlertSvc.ShowAlertAsync("ERROR", ex.Message + "\n" + ex.InnerException);
+                Log.WriteLine(ex.Message + "\n" + ex.InnerException);
             }
-            IsRefreshingList = false;
-        }
-
-        [RelayCommand]
-        private async Task GetExpenseListAsync()
-        {
-            await Task.Run(async () => await ExpenseListAsync(SelectedProject.ProjectId, ShowRecent, ShowAll));
-        }
-        private async Task ExpenseListAsync(int? projectId = null, bool useRecent = true, bool useShowAll = false)
-        {
-            IsRefreshingList = true;
-            try
-            {
-                if (useShowAll)
-                {
-                    var L = await dataService.GetAllExpensesListAsync(20);
-                    ExpenseList = L.ToObservableCollection();
-                }
-                else if (SelectedProject?.ProjectId > 0)
-                {
-                   var L  = await dataService.GetExpenseListAsync(projectId, useRecent, useShowAll);
-                    ExpenseList = L.ToObservableCollection();
-                }
-            }
-            finally
-            {
-                IsRefreshingList = false;
-            }
-
         }
 
         [RelayCommand]
@@ -200,7 +183,7 @@ namespace TimeClockApp.ViewModels
 
             if (Amount == 0)
             {
-                await App.AlertSvc.ShowAlertAsync("ERROR", "Amount can not be 0");
+                await App.AlertSvc!.ShowAlertAsync("ERROR", "Amount can not be 0");
                 return;
             }
 
@@ -209,16 +192,21 @@ namespace TimeClockApp.ViewModels
                 string expenseNewMemo = Memo.Trim();
                 if (dataService.AddNewExpense(SelectedProject.ProjectId, SelectedPhase.PhaseId, Amount, expenseNewMemo, SelectedProject.Name, SelectedPhase.PhaseTitle, SelectedExpenseType.ExpenseTypeId, SelectedExpenseType.CategoryName))
                 {
-                    await App.AlertSvc.ShowAlertAsync("NOTICE", "Saved");
+                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "Saved");
                     Amount = 0;
                     Refresh();
                 }
                 else
-                    await App.AlertSvc.ShowAlertAsync("NOTICE", "Failed to save Expense");
+                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "Failed to save Expense");
+            }
+            catch (AggregateException ax)
+            {
+                HasError = true;
+                TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateException(ax);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Trace.WriteLine(ex.Message + "\n" + ex.InnerException);
+                Log.WriteLine(ex.Message + "\n" + ex.InnerException);
             }
         }
 
@@ -229,35 +217,50 @@ namespace TimeClockApp.ViewModels
             try
             {
                 if (ExpenseList?.Any() == true)
+                {
                     if (dataService.ArchiveExpense(ExpenseList))
                         ExpenseList = dataService.GetAllExpenses(SelectedProject.ProjectId, ShowRecent);
+                }
+            }
+            catch (AggregateException ax)
+            {
+                TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateException(ax);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Trace.WriteLine(ex.Message + "\n" + ex.InnerException);
+                Log.WriteLine(ex.Message + "\n" + ex.InnerException);
                 IsRefreshingList = false;
             }
-            IsRefreshingList = false;
+            finally
+            {
+                IsRefreshingList = false;
+            }
         }
 
         [RelayCommand]
         private void ToggleShowArchived(bool ToggledValue)
         {
-            try
-            {
-                ShowArchived = ToggledValue;
-                ExpenseList = dataService.GetAllExpenses(SelectedProject.ProjectId, ShowRecent);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Trace.WriteLine(ex.Message + "\n" + ex.InnerException);
-            }
+            ShowArchived = ToggledValue;
+            Refresh();
+        }
+
+        [RelayCommand]
+        private void ToggleShowOnlyProject(bool ToggledValue)
+        {
+            ShowOnlyProject = ToggledValue;
+            Refresh();
         }
 
         [RelayCommand]
         private void OnToggleHelpInfoBox()
         {
             HelpInfoBoxVisible = !HelpInfoBoxVisible;
+        }
+
+        [RelayCommand]
+        private void OnToggleOptionsBoxVisible()
+        {
+            OptionsBoxVisible = !OptionsBoxVisible;
         }
     }
 }

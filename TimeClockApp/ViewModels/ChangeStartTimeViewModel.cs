@@ -1,8 +1,9 @@
 ﻿using TimeClockApp.Shared.Helpers;
+#nullable enable
 
 namespace TimeClockApp.ViewModels
 {
-    public partial class ChangeStartTimeViewModel(EditTimeCardService service) : TimeStampViewModel, IQueryAttributable
+    public partial class ChangeStartTimeViewModel(EditTimeCardService service) : BaseViewModel, IQueryAttributable
     {
         protected readonly EditTimeCardService cardService = service;
 
@@ -16,19 +17,19 @@ namespace TimeClockApp.ViewModels
         }
 
         [ObservableProperty]
-        private int timeCardID = 0;
+        public partial int TimeCardID { get; set; } = 0;
         partial void OnTimeCardIDChanged(int value)
         {
-            RefreshCard();
+            MainThread.BeginInvokeOnMainThread(async () => { await RefreshCard(); });
         }
 
         [ObservableProperty]
-        private TimeCard timeCardEditing = new();
+        public partial TimeCard? TimeCardEditing { get; set; } = null;
         [ObservableProperty]
-        private DateOnly timeCard_Date;
+        public partial DateOnly TimeCard_Date { get; set; }
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(StartTime))]
-        private TimeOnly timeCard_StartTime = new(0);
+        public partial TimeOnly TimeCard_StartTime { get; set; } = new(0);
         public TimeOnly StartTime
         {
             get => TimeCard_StartTime;
@@ -36,32 +37,36 @@ namespace TimeClockApp.ViewModels
         }
 
         [ObservableProperty]
-        private string timeCard_EmployeeName = "";
-        #region "DatePicker Min/Max Bindings"
+        public partial string TimeCard_EmployeeName { get; set; } = string.Empty;
+
+#region "DatePicker Min/Max Bindings"
         public DateTime PickerMinDate { get; set; }
         private readonly DateTime pickerMaxDate = DateTime.Now;
         public DateTime PickerMaxDate { get => pickerMaxDate; }
-        #endregion
+#endregion
         [ObservableProperty]
-        private ObservableCollection<Project> projectList = [];
+        public partial ObservableCollection<Project> ProjectList { get; set; } = [];
         [ObservableProperty]
-        private Project selectedProject;
+        public partial Project? SelectedProject { get; set; } = null;
         [ObservableProperty]
-        private ObservableCollection<Phase> phaseList = [];
+        public partial ObservableCollection<Phase> PhaseList { get; set; } = [];
         [ObservableProperty]
-        private Phase selectedPhase;
+        public partial Phase? SelectedPhase { get; set; } = null;
 
-        public void OnAppearing()
+        public async Task OnAppearing()
         {
             PickerMinDate = cardService.GetAppFirstRunDate();
             RefreshProjectPhases();
-            RefreshCard();
+            await RefreshCard();
         }
 
         [RelayCommand]
-        private void SaveTimeCard()
+        private async Task SaveTimeCard()
         {
-            if (TimeCardEditing != null && TimeCardEditing.TimeCardId != 0)
+            if (TimeCardEditing == null || TimeCardEditing.TimeCardId == 0 || SelectedProject == null || SelectedPhase == null)
+                return;
+
+            try
             {
                 TimeCardEditing.TimeCard_StartTime = TimeCard_StartTime;
                 TimeCardEditing.ProjectId = SelectedProject.ProjectId;
@@ -69,10 +74,18 @@ namespace TimeClockApp.ViewModels
                 TimeCardEditing.PhaseId = SelectedPhase.PhaseId;
                 TimeCardEditing.PhaseTitle = SelectedPhase.PhaseTitle;
 
-                cardService.UpdateTimeCard(TimeCardEditing);
-                App.AlertSvc.ShowAlert("NOTICE", "TimeCard saved");
+                if (cardService.UpdateTimeCard(TimeCardEditing))
+                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "TimeCard saved");
 
-                RefreshCard();
+                await RefreshCard();
+            }
+            catch (AggregateException ax)
+            {
+                TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateException(ax);
+            }
+            catch (Exception ex)
+            {
+                Log.WriteLine(ex.Message + "\n" + ex.InnerException);
             }
         }
 
@@ -98,11 +111,11 @@ namespace TimeClockApp.ViewModels
             }
         }
 
-        private void RefreshCard()
+        private async Task RefreshCard()
         {
             if (TimeCardID > 0)
             {
-                TimeCardEditing = cardService.GetTimeCardByID(TimeCardID);
+                TimeCardEditing = await cardService.GetTimeCardByIDAsync(TimeCardID);
                 if (TimeCardEditing != null && TimeCardEditing.TimeCardId != 0)
                 {
                     StartTime = TimeCardEditing.TimeCard_StartTime;

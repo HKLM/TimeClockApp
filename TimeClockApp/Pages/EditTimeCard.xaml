@@ -7,25 +7,24 @@
 	xmlns:models="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
 	xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
 	x:Name="PageEditTimeCard"
-	Title="{Binding Title}"
-	x:DataType="vm:EditTimeCardViewModel">
-	<ContentPage.ToolbarItems>
-		<ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
-	</ContentPage.ToolbarItems>
-	<ContentPage.Resources>
-		<ResourceDictionary>
-			<Converter:TimeOnlyToTimeSpanConverter x:Key="timeOnlyToTimeSpanConverter" />
-			<Converter:DateOnlyConverter x:Key="dateOnlyConverter" />
-			<Converter:DateOnlyToDateTimeConverter x:Key="dateOnlyToDateTimeConverter" />
-			<Converter:EnumToIntConverter x:Key="enumToIntConverter" />
-		</ResourceDictionary>
-	</ContentPage.Resources>
-	<ScrollView>
-		<StackLayout Margin="10">
-			<Border
+	Title="{Binding PageTitle}">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem x:DataType="vm:EditTimeCardViewModel" Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
+    </ContentPage.ToolbarItems>
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <Converter:TimeOnlyToTimeSpanConverter x:Key="timeOnlyToTimeSpanConverter" />
+            <Converter:DateOnlyConverter x:Key="dateOnlyConverter" />
+            <Converter:DateOnlyToDateTimeConverter x:Key="dateOnlyToDateTimeConverter" />
+            <Converter:EnumToIntConverter x:Key="enumToIntConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <ScrollView>
+        <StackLayout Margin="10">
+            <Border
 				x:Name="helpbox"
+                x:DataType="vm:EditTimeCardViewModel"
 				Padding="8"
-				HorizontalOptions="FillAndExpand"
 				IsVisible="{Binding HelpInfoBoxVisible}"
 				VerticalOptions="Center">
                 <Border.StrokeShape>
@@ -35,101 +34,103 @@
 					LineBreakMode="WordWrap"
 					Style="{StaticResource LabelSmall}"
 					Text="TimeCard Editor &#10;&#10;Change the time cards date, start time, end time, associated project and/or phase. &#10;&#10;Note: Once a time card has been marked as paid, it is ReadOnly, and can not be changed." />
-			</Border>
+            </Border>
 
-			<Label
+            <Label
 				Style="{StaticResource LabelSmallCenter}"
 				Text="{Binding TimeCardID, StringFormat='Id={0}'}"
 				VerticalTextAlignment="Center" />
-			<Label
+            <Label
 				FontSize="Title"
 				Text="{Binding TimeCard_EmployeeName}"
 				VerticalTextAlignment="Center" />
 
-			<Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
-				<Label
+            <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+                <Label
 					Style="{StaticResource LabelSmallCenter}"
 					Text="Project: "
 					VerticalTextAlignment="Center" />
-				<Picker
+                <Picker
 					Grid.Column="1"
-					HorizontalOptions="FillAndExpand"
 					ItemDisplayBinding="{Binding Name}"
 					ItemsSource="{Binding ProjectList}"
 					SelectedItem="{Binding SelectedProject, Mode=TwoWay}"
 					VerticalOptions="Center" />
-				<Label
+                <Label
 					Grid.Row="1"
 					Style="{StaticResource LabelSmallCenter}"
 					Text="Phase: "
 					VerticalTextAlignment="Center" />
-				<Picker
+                <Picker
 					Grid.Row="1"
 					Grid.Column="1"
-					HorizontalOptions="FillAndExpand"
 					ItemDisplayBinding="{Binding PhaseTitle}"
 					ItemsSource="{Binding PhaseList}"
 					SelectedItem="{Binding SelectedPhase, Mode=TwoWay}"
 					VerticalOptions="Center" />
 
-				<Label
+                <Label
 					Grid.Row="2"
 					Style="{StaticResource LabelSmallCenter}"
 					Text="Date:"
 					VerticalTextAlignment="Center" />
-				<DatePicker
+                <DatePicker
+                    x:DataType="vm:EditTimeCardViewModel"
 					Grid.Row="2"
 					Grid.Column="1"
 					Date="{Binding TimeCard_Date, Converter={StaticResource dateOnlyToDateTimeConverter}, Mode=TwoWay}"
 					MaximumDate="{Binding PickerMaxDate}"
 					MinimumDate="{Binding PickerMinDate}" />
-				<Label
+                <Label
 					Grid.Row="3"
 					Style="{StaticResource LabelSmallCenter}"
 					Text="Clock In:"
 					VerticalTextAlignment="Center" />
-				<TimePicker
+                <TimePicker
 					Grid.Row="3"
 					Grid.Column="1"
 					Time="{Binding StartTime, Converter={StaticResource timeOnlyToTimeSpanConverter}, Mode=TwoWay}" />
-				<Label
+                <Label
 					Grid.Row="4"
 					Style="{StaticResource LabelSmallCenter}"
 					Text="Clock Out:"
 					VerticalTextAlignment="Center" />
-				<TimePicker
+                <TimePicker
 					Grid.Row="4"
 					Grid.Column="1"
 					Time="{Binding EndTime, Converter={StaticResource timeOnlyToTimeSpanConverter}, Mode=TwoWay}" />
-				<Label
+                <Label
 					Grid.Row="5"
 					Style="{StaticResource LabelSmallCenter}"
 					Text="Status:"
 					VerticalTextAlignment="Center" />
-				<Picker
+                <Picker
+                    x:DataType="vm:EditTimeCardViewModel"
 					Grid.Row="5"
 					Grid.Column="1"
 					IsEnabled="{Binding IsAdmin}"
 					ItemsSource="{Binding AllShiftStatus}"
 					SelectedIndex="{Binding TimeCard_Status, Converter={StaticResource enumToIntConverter}}" />
-				<Label
+                <Label
 					Grid.Row="6"
 					Style="{StaticResource LabelSmallCenter}"
 					Text="Read Only:"
 					VerticalTextAlignment="Center" />
-				<CheckBox
+                <CheckBox
+                    x:DataType="vm:EditTimeCardViewModel"
 					Grid.Row="6"
 					Grid.Column="1"
 					Margin="0,5"
 					IsChecked="{Binding TimeCard_bReadOnly}"
 					IsEnabled="{Binding IsAdmin}"
 					VerticalOptions="Center" />
-			</Grid>
+            </Grid>
 
-			<Button
+            <Button
+                x:DataType="vm:EditTimeCardViewModel"
 				Margin="20,0"
 				Command="{Binding SaveTimeCardCommand}"
 				Text="Save" />
-		</StackLayout>
-	</ScrollView>
+        </StackLayout>
+    </ScrollView>
 </ContentPage>

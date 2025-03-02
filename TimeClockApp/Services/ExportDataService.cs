@@ -9,7 +9,6 @@ using TimeClockApp.Shared;
 
 namespace TimeClockApp.Services
 {
-    //TODO Make class content async
     public class ExportDataService : SQLiteDataStore
     {
         // import data must be this version or newer
@@ -132,39 +131,52 @@ namespace TimeClockApp.Services
             return records;
         }
 
-#endregion READCSV
+        #endregion READCSV
 
         public async Task BackupDatabase(string? savePath = null)
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("BEGIN BACKUP OF SQLITE DATABASE", "Backup");
-                savePath ??= $"{SQLiteSetting.SQLiteDBPath}.bk";
-                System.Diagnostics.Debug.WriteLine("Back file name: " + savePath + "\n", "Backup");
+                Log.WriteLine("BEGIN BACKUP OF SQLITE DATABASE", "Backup");
+
+                savePath ??= Path.Combine(Microsoft.Maui.Storage.FileSystem.CacheDirectory, "TimeClockApp", DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss"));
+                Log.WriteLine("Back file name: " + savePath + "\n", "Backup");
                 if (File.Exists(savePath))
                 {
-                    System.Diagnostics.Debug.WriteLine("Existing backup file found. Deleting old file.\n", "Backup");
+                    Log.WriteLine("Existing backup file found. Deleting old file.\n", "Backup");
                     File.Delete(savePath);
+                    Log.WriteLine("File Deleted.\n", "Backup");
                 }
-                System.Diagnostics.Debug.WriteLine("Opening SQLiteConnection and begin backing up...\n", "Backup");
-                using (SqliteConnection source = new($"Data Source = {SQLiteSetting.SQLiteDBPath};"))
+                Log.WriteLine("Opening SQLiteConnection and begin backing up...\n", "Backup");
+                using (SqliteConnection source = new($"Data Source = {SQLiteSetting.GetSQLiteDBPath()};"))
                 using (SqliteConnection target = new($"Data Source = {savePath};"))
                 {
                     await source.OpenAsync();
                     await target.OpenAsync();
                     source.BackupDatabase(target);
-                    System.Diagnostics.Debug.WriteLine("Successfully completed SQLite file backup.\n", "Backup");
+                    Log.WriteLine("Successfully completed SQLite file backup.\n", "Backup");
+                    target.Close();
                 }
+            }
+            catch (IOException io)
+            {
+                Log.WriteLine(io.Message + "\n" + io.InnerException + "\n", "Backup");
+                ShowPopupError(io.Message + "\n" + io.InnerException, "ABORTING BACKUP DUE TO ERROR");
+            }
+            catch (AggregateException ax)
+            {
+                Log.WriteLine("BACKUP NOT COMPLETED!!\n", "Backup");
+                TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateException(ax);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine("BACKUP NOT COMPLETED!!\n", "Backup");
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException + "\n", "Backup");
-                ShowPopupError(ex.Message + "\n" + ex.InnerException, "ABORTING DUE TO ERROR");
+                Log.WriteLine("BACKUP NOT COMPLETED!!\n", "Backup");
+                Log.WriteLine(ex.Message + "\n" + ex.InnerException + "\n", "Backup");
+                ShowPopupError(ex.Message + "\n" + ex.InnerException, "ABORTING BACKUP DUE TO ERROR");
             }
             finally
             {
-                System.Diagnostics.Debug.WriteLine("BACKUP COMPLETE.\n", "Backup");
+                Log.WriteLine("BACKUP COMPLETE.\n", "Backup");
             }
         }
 
@@ -259,7 +271,7 @@ namespace TimeClockApp.Services
                         if (dataModel.bExpenseType)
                         {
                             ExportLog += "Importing ExpenseType\n";
-                            dataModel.ImExpenseType = ReadCSVExpenseType(dataModel.FileExpense);
+                            dataModel.ImExpenseType = ReadCSVExpenseType(dataModel.FileExpenseType);
                             for (int i = 0; i < dataModel.ImExpenseType.Count; i++)
                             {
                                 if (ImportExpenseType(dataModel.ImExpenseType[i], overWriteData))
@@ -283,7 +295,7 @@ namespace TimeClockApp.Services
                     {
                         //To prevent saving in the finally block of this try-catch
                         dataModel.ReadyToSave = 0;
-                        System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException + "\nUNDOING CHANGES\n", "Import");
+                        Log.WriteLine(ex.Message + "\n" + ex.InnerException + "\nUNDOING CHANGES\n", "Import");
 
                         transaction.RollbackToSavepoint("optimistic-update");
 
@@ -342,7 +354,7 @@ namespace TimeClockApp.Services
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException + "\n", "Import");
+                Log.WriteLine(ex.Message + "\n" + ex.InnerException + "\n", "Import");
                 ShowPopupError(ex.Message + "\n" + ex.InnerException, "ABORTING DUE TO ERROR");
             }
             return false;
@@ -371,12 +383,12 @@ namespace TimeClockApp.Services
             }
             catch (InvalidDataException x)
             {
-                System.Diagnostics.Debug.WriteLine(x.Message + "\n" + x.InnerException + "\n", "Import");
+                Log.WriteLine(x.Message + "\n" + x.InnerException + "\n", "Import");
                 ShowPopupError(x.Message + "\n" + x.InnerException, "ABORTING DUE TO InvalidDataException");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException + "\n", "Import");
+                Log.WriteLine(ex.Message + "\n" + ex.InnerException + "\n", "Import");
                 ShowPopupError(ex.Message + "\n" + ex.InnerException, "ABORTING DUE TO ERROR");
             }
             return false;
@@ -404,7 +416,7 @@ namespace TimeClockApp.Services
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException + "\n", "Import");
+                Log.WriteLine(ex.Message + "\n" + ex.InnerException + "\n", "Import");
                 ShowPopupError(ex.Message + "\n" + ex.InnerException, "ABORTING DUE TO ERROR");
             }
             return false;
@@ -430,7 +442,7 @@ namespace TimeClockApp.Services
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException + "\n", "Import");
+                Log.WriteLine(ex.Message + "\n" + ex.InnerException + "\n", "Import");
                 ShowPopupError(ex.Message + "\n" + ex.InnerException, "ABORTING DUE TO ERROR");
             }
             return false;
@@ -459,7 +471,7 @@ namespace TimeClockApp.Services
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException + "\n", "Import");
+                Log.WriteLine(ex.Message + "\n" + ex.InnerException + "\n", "Import");
                 ShowPopupError(ex.Message + "\n" + ex.InnerException, "ABORTING DUE TO ERROR");
             }
             return false;
@@ -476,7 +488,7 @@ namespace TimeClockApp.Services
                     updateCard.ProjectId = card.ProjectId;
                     updateCard.PhaseId = card.PhaseId;
                     updateCard.ExpenseTypeId = card.ExpenseTypeId;
-                    updateCard.ExpenseType_CategoryName = card.ExpenseType_CategoryName ?? string.Empty;
+                    updateCard.ExpenseTypeCategoryName = card.ExpenseTypeCategoryName ?? string.Empty;
                     updateCard.ExpenseDate = card.ExpenseDate;
                     updateCard.Memo = card.Memo ?? string.Empty;
                     updateCard.Amount = card.Amount;
@@ -494,7 +506,7 @@ namespace TimeClockApp.Services
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException + "\n", "Import");
+                Log.WriteLine(ex.Message + "\n" + ex.InnerException + "\n", "Import");
                 ShowPopupError(ex.Message + "\n" + ex.InnerException, "ABORTING DUE TO ERROR");
             }
             return false;
@@ -520,7 +532,7 @@ namespace TimeClockApp.Services
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException + "\n", "Import");
+                Log.WriteLine(ex.Message + "\n" + ex.InnerException + "\n", "Import");
                 ShowPopupError(ex.Message + "\n" + ex.InnerException, "ABORTING DUE TO ERROR");
             }
             return false;

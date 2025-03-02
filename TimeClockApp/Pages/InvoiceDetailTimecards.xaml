@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converter="clr-namespace:TimeClockApp.Converters"
+	         xmlns:controls="clr-namespace:TimeClockApp.Controls"
+             xmlns:models="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
+             xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
+             x:Class="TimeClockApp.Pages.InvoiceDetailTimecards"
+             Title="Detail-Timecards">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Command="{Binding AppearingCommand}" IconImageSource="refresh.png" />
+        <ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
+    </ContentPage.ToolbarItems>
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converter:DateOnlyWithYearConverter x:Key="dateOnlyConverter" />
+            <converter:TimeOnlyConverter x:Key="timeOnlyConverter" />
+        </ResourceDictionary>
+
+        <DataTemplate x:Key="expenseTemplate" x:DataType="vm:InvoiceDetailTimecardsViewModel">
+            <Border Padding="6">
+                <VerticalStackLayout x:DataType="models:TimeCard">
+                    <Grid ColumnDefinitions="*,*,*,*,*" ColumnSpacing="4" RowDefinitions="auto">
+                        <Label Style="{StaticResource LabelMicro}" Text="{Binding TimeCard_Date, Converter={StaticResource dateOnlyConverter}, StringFormat='{0:MMM d ddd yyyy}'}" />
+                        <Label
+                            Grid.Column="1"
+                            LineBreakMode="WordWrap" MaxLines="2"
+                            Style="{StaticResource LabelMicro}">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="{Binding ProjectName}" />
+                                    <Span Text="&#10;" />
+                                    <Span Text="{Binding PhaseTitle}" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                        <Label
+                            Grid.Column="2"
+                            LineBreakMode="WordWrap" MaxLines="2"
+                            Style="{StaticResource LabelMicro}"
+                            Text="{Binding TimeCard_EmployeeName}" />
+                        <Label Grid.Column="3" Style="{StaticResource LabelMicro}">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="{Binding TimeCard_StartTime, Converter={StaticResource timeOnlyConverter}}" />
+                                    <Span Text="&#10;- " />
+                                    <Span Text="{Binding TimeCard_EndTime, Converter={StaticResource timeOnlyConverter}}" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                        <Label Grid.Column="4" Style="{StaticResource LabelMicro}" Text="{Binding TimeCard_Duration, StringFormat='{}{0:hh\\:mm}'}" />
+                    </Grid>
+
+                </VerticalStackLayout>
+            </Border>
+        </DataTemplate>
+
+        <controls:SingleDataTemplateSelector x:Key="singletemplatesel" TheTemplate="{StaticResource expenseTemplate}" />
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <StackLayout Spacing="4">
+            <Border
+				x:Name="helpbox"
+				Padding="8"
+				IsVisible="{Binding HelpInfoBoxVisible}"
+				VerticalOptions="Center">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="10"/>
+                </Border.StrokeShape>
+                <Label
+					LineBreakMode="WordWrap"
+					Style="{StaticResource LabelSmall}"
+					Text="Invoice Detail, Labor. &#10;&#10;View list of TimeCards that makes up the Labor burden for the invoice." />
+            </Border>
+            <CollectionView
+				Margin="0,2"
+				EmptyView="No items to display"
+				ItemTemplate="{StaticResource singletemplatesel}"
+				ItemsSource="{Binding CardList}" />
+        </StackLayout>
+    </ScrollView>
+</ContentPage>

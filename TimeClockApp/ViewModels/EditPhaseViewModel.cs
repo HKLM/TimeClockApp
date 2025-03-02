@@ -1,21 +1,21 @@
 ﻿namespace TimeClockApp.ViewModels
 {
-    public partial class EditPhaseViewModel : TimeStampViewModel
+    public partial class EditPhaseViewModel : BaseViewModel
     {
         protected readonly EditPhaseService phaseService;
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(EnableSaveButton))]
-        private int phaseId = 0;
+        public partial int PhaseId { get; set; } = 0;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(EnableAddDelButtons))]
-        private string phaseTitle;
+        public partial string PhaseTitle { get; set; }
 
         [ObservableProperty]
-        private ObservableCollection<Phase> phaseList = [];
+        public partial ObservableCollection<Phase> PhaseList { get; set; } = [];
 
         [ObservableProperty]
-        private Phase selectedPhase;
+        public partial Phase SelectedPhase { get; set; }
         partial void OnSelectedPhaseChanged(global::TimeClockApp.Shared.Models.Phase value)
         {
             PhaseId = value.PhaseId;
@@ -55,12 +55,12 @@
                     phaseService.AddNewPhase(phaseNewTitle);
                     App.NoticePhaseHasChanged = true;
                     RefreshPhases();
-                    App.AlertSvc.ShowAlert("NOTICE", phaseNewTitle + " saved");
+                    App.AlertSvc!.ShowAlert("NOTICE", phaseNewTitle + " saved");
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Trace.WriteLine(ex.Message + "\n" + ex.InnerException);
+                Log.WriteLine(ex.Message + "\n" + ex.InnerException);
             }
         }
 
@@ -71,19 +71,23 @@
             {
                 if (SelectedPhase != null)
                 {
-                    if (await App.AlertSvc.ShowConfirmationAsync("CONFIRMATION", "Are you sure you want to Delete this expense?"))
+                    if (await App.AlertSvc!.ShowConfirmationAsync("CONFIRMATION", "Are you sure you want to Delete this expense?"))
                     {
                         string pTitle = SelectedPhase.PhaseTitle;
                         await phaseService.DeletePhase(SelectedPhase);
                         App.NoticePhaseHasChanged = true;
                         RefreshPhases();
-                        await App.AlertSvc.ShowAlertAsync("NOTICE", pTitle + " deleted");
+                        await App.AlertSvc!.ShowAlertAsync("NOTICE", pTitle + " deleted");
                     }
                 }
             }
+            catch (AggregateException ax)
+            {
+                TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateException(ax);
+            }
             catch (Exception ex)
             {
-                System.Diagnostics.Trace.WriteLine(ex.Message + "\n" + ex.InnerException);
+                Log.WriteLine(ex.Message + "\n" + ex.InnerException);
             }
         }
 
@@ -98,14 +102,14 @@
                     phaseService.UpdatePhase(phaseNewTitle, PhaseId);
                     App.NoticePhaseHasChanged = true;
                     RefreshPhases();
-                    App.AlertSvc.ShowAlert("NOTICE", phaseNewTitle + " saved");
+                    App.AlertSvc!.ShowAlert("NOTICE", phaseNewTitle + " saved");
                 }
                 else if (PhaseId == 0)
-                    App.AlertSvc.ShowAlert("Notice", "You must select a Phase before it can be updated");
+                    App.AlertSvc!.ShowAlert("Notice", "You must select a Phase before it can be updated");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Trace.WriteLine(ex.Message + "\n" + ex.InnerException);
+                Log.WriteLine(ex.Message + "\n" + ex.InnerException);
             }
         }
 

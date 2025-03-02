@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:TimeClockApp.Controls"
+             xmlns:converter="clr-namespace:TimeClockApp.Converters" 
+             xmlns:models="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
+             x:Class="TimeClockApp.Pages.InvoicePage"             
+             Title="Invoice">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" x:DataType="vm:InvoiceViewModel" />
+    </ContentPage.ToolbarItems>
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converter:DateOnlyToDateTimeConverter x:Key="dateOnlyToDateTimeConverter" />
+        </ResourceDictionary>
+        <Style x:Key="InvalidEntryStyle" TargetType="Entry">
+            <Setter Property="TextColor" Value="Red" />
+        </Style>
+        <Style x:Key="ValidEntryStyle" TargetType="Entry">
+            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+        </Style>
+
+    </ContentPage.Resources>
+    <ScrollView>
+        <VerticalStackLayout>
+            <ActivityIndicator IsRunning="True" IsVisible="{Binding MakeInvoiceCommand.IsRunning}" x:DataType="vm:InvoiceViewModel" />
+            <Border
+                x:Name="helpbox" 
+                x:DataType="vm:InvoiceViewModel"
+                Padding="8"
+                HorizontalOptions="Fill"
+                IsVisible="{Binding HelpInfoBoxVisible}"
+                VerticalOptions="Center">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="10"/>
+                </Border.StrokeShape>
+                <Label
+                    LineBreakMode="WordWrap"
+                    Style="{StaticResource LabelSmall}"
+                    Text="Invoice the overall cost of a project to be billed to a client. &#10;&#10;Totals the cost of materials, labor, overhead, and apply a profit percentage.;&#10;Project selection is required. Filter by Phase and Date range is optional." />
+            </Border>
+            <Border Padding="8">
+                <Grid
+                    ColumnDefinitions="Auto,*" 
+                    ColumnSpacing="3"
+                    RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" 
+                    RowSpacing="3">
+                    <Label
+                        HorizontalOptions="Start" 
+                        Text="Project: "
+                        VerticalTextAlignment="Center" />
+                    <Picker
+                        Grid.Row="1" Grid.ColumnSpan="2"
+                        HorizontalOptions="Fill"
+                        ItemDisplayBinding="{Binding Name}"
+                        ItemsSource="{Binding ProjectList}"
+                        SelectedItem="{Binding SelectedProject, Mode=TwoWay}" />
+                    <Label
+                        Grid.Row="2" 
+                        HorizontalOptions="Start"
+                        Text="Phase: " 
+                        VerticalTextAlignment="Center" />
+                    <CheckBox
+                        Grid.Row="2" 
+                        Grid.Column="1"
+                        x:DataType="vm:InvoiceViewModel"
+                        IsChecked="{Binding UsePhaseFilter, Mode=TwoWay}" />
+                    <Picker
+                        Grid.Row="3" 
+                        Grid.ColumnSpan="2"
+                        HorizontalOptions="Fill"
+                        IsEnabled="{Binding UsePhaseFilter}"
+                        ItemDisplayBinding="{Binding PhaseTitle}"
+                        ItemsSource="{Binding PhaseList}"
+                        SelectedItem="{Binding SelectedPhase, Mode=TwoWay}" />
+                    <Label
+                        Grid.Row="4"
+                        Style="{StaticResource LabelSmallCenter}"
+                        Text="Fiilter by Dates: " 
+                        VerticalTextAlignment="Center" />
+                    <CheckBox
+                        Grid.Row="4" 
+                        Grid.Column="1"
+                        x:DataType="vm:InvoiceViewModel"
+                        IsChecked="{Binding UseDateFilter, Mode=TwoWay}" />
+                    <Label
+                        Grid.Row="5"
+                        x:DataType="vm:InvoiceViewModel"
+                        IsEnabled="{Binding UseDateFilter}"
+                        Style="{StaticResource LabelSmallCenter}"
+                        Text="Begin Date: " 
+                        VerticalTextAlignment="Center" />
+                    <DatePicker
+                        Grid.Row="5" 
+                        Grid.Column="1"
+                        Date="{Binding StartDate, Converter={StaticResource dateOnlyToDateTimeConverter}, Mode=TwoWay}"
+                        IsEnabled="{Binding UseDateFilter}"
+                        MaximumDate="{Binding PickerMaxDate}"
+                        MinimumDate="{Binding PickerMinDate}" />
+                    <Label
+                        Grid.Row="6"
+                        x:DataType="vm:InvoiceViewModel"
+                        IsEnabled="{Binding UseDateFilter}"
+                        Style="{StaticResource LabelSmallCenter}"
+                        Text="End Date: " 
+                        VerticalTextAlignment="Center" />
+                    <DatePicker
+                        Grid.Row="6" 
+                        Grid.Column="1"
+                        Date="{Binding EndDate, Converter={StaticResource dateOnlyToDateTimeConverter}, Mode=TwoWay}"
+                        IsEnabled="{Binding UseDateFilter}"
+                        MaximumDate="{Binding PickerMaxDate}"
+                        MinimumDate="{Binding PickerMinDate}" />
+                    <Label
+                        Grid.Row="7" 
+                        HorizontalOptions="Start"
+                        Text="Markup: " 
+                        VerticalTextAlignment="Center" />
+                    <Entry
+                        Grid.Row="7" 
+                        Grid.Column="1"
+                        x:Name="entryMarkupBox"
+                        x:DataType="vm:InvoiceViewModel"
+                        Text="{Binding TotalOtherFee,Mode=TwoWay}"  Keyboard="Numeric">
+                        <Entry.Behaviors>
+                            <toolkit:NumericValidationBehavior
+                                BindingContext="{Binding Path=BindingContext, Source={x:Reference entryMarkupBox}, x:DataType=Entry}"
+								Flags="ValidateOnUnfocused"
+								InvalidStyle="{StaticResource InvalidEntryStyle}"
+                                ValidStyle="{StaticResource ValidEntryStyle}"
+								MaximumDecimalPlaces="0"
+								MinimumValue="0.0" />
+                        </Entry.Behaviors>
+                    </Entry>
+                    <Button
+                        x:DataType="vm:InvoiceViewModel"
+                        Grid.Row="8" 
+                        Grid.Column="1"
+                        Command="{Binding MakeInvoiceCommand}"
+                        Text="Run Report" />
+                </Grid>
+            </Border>
+            <Border Padding="8" Margin="0,20,0,0">
+                <Grid
+                    ColumnDefinitions="Auto, *" 
+                    ColumnSpacing="35"
+                    RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+                    <Label
+                        Grid.ColumnSpan="2" 
+                        FontAttributes="Bold"
+                        FontSize="Medium" 
+                        HorizontalTextAlignment="Center"
+                        Text="Invoice Totals" />
+                    <Label 
+                        Grid.Row="1"                
+                        Style="{StaticResource LabelSmallCenter}"
+                        Text="Materials" />
+                    <Button
+                        Grid.Row="1" 
+                        Grid.Column="1"
+                        x:DataType="vm:InvoiceViewModel"
+                        Command="{Binding GoToInvoiceDetailExpensesCommand}"
+                        Text="{Binding TotalExpenses, StringFormat='{0:C}'}"  />
+                    <Label 
+                        Grid.Row="2"
+                        Style="{StaticResource LabelSmallCenter}"
+                        Text="Labor" />
+                    <Button
+                        Grid.Row="2" 
+                        Grid.Column="1"
+                        x:DataType="vm:InvoiceViewModel"
+                        Command="{Binding GoToInvoiceDetailTimecardsCommand}"
+                        Text="{Binding GetTotalLaborBurden, StringFormat='{0:C}'}"  />
+                    <Label 
+                        Grid.Row="3"
+                        Style="{StaticResource LabelSmallCenter}"
+                        Text="Overhead" />
+                    <Label
+                        Grid.Row="3" 
+                        Grid.Column="1"
+                        x:DataType="vm:InvoiceViewModel"
+                        Style="{StaticResource LabelSmallCenter}" LineBreakMode="NoWrap">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="{Binding OverheadRate, StringFormat='{0:P1}'}" />
+                                <Span Text="&#160;=&#160;" />
+                                <Span Text="{Binding TotalOverhead, StringFormat='{0:C}'}" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                    <Label 
+                        Grid.Row="4" 
+                        Style="{StaticResource LabelSmallCenter}"
+                        Text="Profit" />
+                    <Label
+                        Grid.Row="4" 
+                        Grid.Column="1"
+                        Style="{StaticResource LabelSmallCenter}"
+                        x:DataType="vm:InvoiceViewModel"
+                        Text="{Binding TotalProfit, StringFormat='{0:C}'}" LineBreakMode="NoWrap">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="{Binding ProfitRate, StringFormat='{0:P1}'}" />
+                                <Span Text="&#160;=&#160;" />
+                                <Span Text="{Binding TotalProfit, StringFormat='{0:C}'}" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                    <Label 
+                        Grid.Row="5" 
+                        Style="{StaticResource LabelSmallCenter}"
+                        Text="Other fee" />
+                    <Label
+                        Grid.Row="5" 
+                        Grid.Column="1"
+                        Style="{StaticResource LabelSmallCenter}"
+                        x:DataType="vm:InvoiceViewModel"
+                        Text="{Binding GetTotalOtherFee, StringFormat='{0:C}'}" />
+                    <Label 
+                        Grid.Row="6" 
+                        FontAttributes="Bold"
+                        Style="{StaticResource LabelSmallCenter}"
+                        Text="Total Due" />
+                    <Label
+                        Grid.Row="6" 
+                        Grid.Column="1"
+                        FontAttributes="Bold"
+                        Style="{StaticResource LabelSmallCenter}"
+                        x:DataType="vm:InvoiceViewModel"
+                        Text="{Binding GetTotalInvoice, StringFormat='{0:C}'}" />
+                </Grid>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

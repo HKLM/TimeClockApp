@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 #nullable enable
 
@@ -7,23 +6,16 @@ namespace TimeClockApp.Services
 {
     public class ReportPageService : PayrollService
     {
-        [RequiresUnreferencedCode("Enumerating in-memory collections as IQueryable can require unreferenced code because expressions referencing IQueryable extension methods can get rebound to IEnumerable extension methods. The IEnumerable extension methods could be trimmed causing the application to fail at runtime.")]
-        public async Task<List<TimeSheet>> RunFullReportAsync(bool useEmployeeFilter, bool useProjectFilter, bool usePhaseFilter, bool useDateFilter, Employee? employee, Project? project, Phase? phase, DateOnly? start, DateOnly? end)
+        public async Task<List<TimeSheet>> RunFullReportAsync(bool useEmployeeFilter, bool useProjectFilter, bool usePhaseFilter, bool useDateFilter, List<Employee> employeeList, Project? project, Phase? phase, DateOnly? start, DateOnly? end)
         {
             List<TimeSheet> t = [];
-            List<Employee> e = [];
-            if (useEmployeeFilter && employee != null)
+            if (!useEmployeeFilter || !employeeList.Any())
             {
-                Employee employ = GetEmployee(employee.EmployeeId);
-                e.Add(employ);
-            }
-            else
-            {
-               e = GetEmployeesList();
+                employeeList = GetEmployeesList();
             }
             start ??= DateOnly.FromDateTime(GetAppFirstRunDate());
             end ??= DateOnly.FromDateTime(DateTime.Now);
-            foreach (Employee emp in e)
+            foreach (Employee emp in employeeList)
             {
                 TimeSheet sheet = new TimeSheet(emp.EmployeeId, start.Value, end.Value, emp.Employee_Name);
                 sheet.TimeCards = await ReportListPaidTimeCardsForPayPeriodAsync(useProjectFilter, usePhaseFilter, useDateFilter, emp, project, phase, start, end);
@@ -44,12 +36,12 @@ namespace TimeClockApp.Services
                             }
                         }
 
-                        //TODO fix
+                        //TODO fix situation if being paid a differant amount. e.g. paid X amount on monday-wed, gets a raise to Z amount on thurs. Currently it will then pay out all days as Z amount.
                         pay = g.Select(x => x.TimeCard_EmployeePayRate).First();
 
                         //dont include any cards ClockedIn. They wreak havoc on the calculations.
                         TimeCardDayTotal dayHours = new TimeCardDayTotal(g
-                            .Where(x => 
+                            .Where(x =>
                             x.TimeCard_Status == ShiftStatus.ClockedOut
                             || x.TimeCard_Status == ShiftStatus.Paid)
                             .Sum(x => x.TimeCard_WorkHours));
@@ -71,14 +63,19 @@ namespace TimeClockApp.Services
             return t;
         }
 
-        public List<Employee> GetEmployeesList() => Context.Employee.AsNoTrackingWithIdentityResolution()
+        public List<Employee> GetEmployeesList() => Context.Employee
+            .AsNoTrackingWithIdentityResolution()
             .Where(e => e.Employee_Employed != EmploymentStatus.Deleted)
             .ToList();
 
-        protected async Task<List<TimeCard>> ReportListPaidTimeCardsForPayPeriodAsync(bool useProjectFilter, bool usePhaseFilter, bool useDateFilter, Employee employee, Project? project, Phase? phase, DateOnly? start, DateOnly? end)
+        protected Task<List<TimeCard>> ReportListPaidTimeCardsForPayPeriodAsync(bool useProjectFilter, bool usePhaseFilter, bool useDateFilter, Employee employee, Project? project, Phase? phase, DateOnly? start, DateOnly? end)
         {
-            IQueryable<TimeCard> q = Context.TimeCard.AsNoTrackingWithIdentityResolution().AsQueryable();
-            q = q.Distinct()
+            IQueryable<TimeCard> q = Context.TimeCard
+                .TagWith("ReportListPaidTimeCardsForPayPeriodAsync")
+                .AsNoTrackingWithIdentityResolution()
+                .AsQueryable();
+
+            q = q
                 .Where(item => item.EmployeeId == employee.EmployeeId
                     && (item.TimeCard_Status == ShiftStatus.ClockedOut
                     || item.TimeCard_Status == ShiftStatus.Paid));
@@ -87,11 +84,9 @@ namespace TimeClockApp.Services
             {
                 q = q.Where(item => item.ProjectId == project.ProjectId);
             }
-            if (useProjectFilter && usePhaseFilter && project != null && phase != null)
+            if (usePhaseFilter && phase != null)
             {
-                q = q.Where(item =>
-                        item.ProjectId == project.ProjectId
-                        && item.PhaseId == phase.PhaseId);
+                q = q.Where(item => item.PhaseId == phase.PhaseId);
             }
             if (useDateFilter && start.HasValue && end.HasValue)
             {
@@ -100,7 +95,7 @@ namespace TimeClockApp.Services
                      && item.TimeCard_Date <= end!.Value);
             }
 
-            return await q.Distinct().ToListAsync().ConfigureAwait(false);
+            return q.Distinct().OrderBy(item => item.TimeCard_Date).ToListAsync();
         }
     }
 }

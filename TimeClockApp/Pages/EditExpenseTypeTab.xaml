@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
+             x:Class="TimeClockApp.Pages.EditExpenseTypeTab"
+             Title="Edit ExpenseTypes">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem x:DataType="vm:EditExpenseTypeViewModel" Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
+    </ContentPage.ToolbarItems>
+    <ContentPage.Resources>
+        <Style x:Key="InvalidEntryStyle" TargetType="Entry">
+            <Setter Property="TextColor" Value="Red" />
+        </Style>
+        <Style x:Key="ValidEntryStyle" TargetType="Entry">
+            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+        </Style>
+    </ContentPage.Resources>
+    <ScrollView>
+        <StackLayout>
+            <Border
+                x:Name="helpbox"
+                x:DataType="vm:EditExpenseTypeViewModel"
+                Padding="8"
+                IsVisible="{Binding HelpInfoBoxVisible}"
+                VerticalOptions="Center">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="10"/>
+                </Border.StrokeShape>
+                <Label
+                    LineBreakMode="WordWrap"
+                    Style="{StaticResource LabelSmall}"
+                    Text="ExpenseType Editor Page. &#10;&#10;ExpenseTypes are a way to label what this record of money is for. Helpful for taxes and project summary reports.&#10;&#10;To Add a new ExpenseType, enter it in the 'ExpenseType Name' box and then click 'Add New' button.&#10;&#10;To make changes to an existing ExpenseType, select it in the 'ExpenseType List' and then use the 'ExpenseType Name' box to edit the name and then click 'Save Change' or 'Delete' to permanently remove that ExpenseType." />
+            </Border>
+
+            <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,4,Auto,6,Auto" RowSpacing="15">
+                <Label
+                    Text="Select ExpenseType To Edit: "
+                    VerticalOptions="Center"
+                    VerticalTextAlignment="Center" />
+                <Picker
+                    Grid.Row="1"
+                    ItemDisplayBinding="{Binding CategoryName}"
+                    ItemsSource="{Binding ExpenseTypeList}"
+                    SelectedItem="{Binding SelectedExpenseType, Mode=TwoWay}"
+                    VerticalOptions="Center" />
+                <Button 
+                    x:DataType="vm:EditExpenseTypeViewModel"
+                    Grid.Row="2"
+                    Text="Clear Selection"
+                    Command="{Binding ClearSelectionCommand}"/>
+                <Label
+                    Grid.Row="3"
+                    Text="ExpenseType Name: "
+                    VerticalOptions="Center"
+                    VerticalTextAlignment="Center" />
+                <Entry
+                    x:Name="CategoryNameBox"
+                    x:DataType="vm:EditExpenseTypeViewModel"
+                    Grid.Row="4"
+                    Keyboard="Text"
+                    Text="{Binding NewCategoryName, Mode=TwoWay}">
+                    <Entry.Behaviors>
+                        <toolkit:TextValidationBehavior 
+                            BindingContext="{Binding Path=BindingContext, Source={x:Reference CategoryNameBox}, x:DataType=Entry}"
+							InvalidStyle="{StaticResource InvalidEntryStyle}"
+                            ValidStyle="{StaticResource ValidEntryStyle}"
+							Flags="ValidateOnValueChanged"
+                            DecorationFlags="NormalizeWhiteSpace"
+							MinimumLength="1"
+							MaximumLength="50"
+                            RegexPattern="[A-Za-z0-9]*-*/*\s*[A-Za-z0-9]+" 
+                            RegexOptions="IgnoreCase" />
+                    </Entry.Behaviors>
+                </Entry>
+                <Button
+                    Grid.Row="5"
+                    Command="{Binding EditExpenseTypeCommand}"
+                    Text="Save Change">
+                    <Button.Triggers>
+                        <DataTrigger
+                            Binding="{Binding Source={x:Reference CategoryNameBox}, Path=Text.Length}"
+                            TargetType="Button"
+                            Value="0">
+                            <Setter Property="IsEnabled" Value="False" />
+                        </DataTrigger>
+                    </Button.Triggers>
+                </Button>
+                <BoxView
+                    Grid.Row="6"
+                    HeightRequest="2"
+                    HorizontalOptions="Fill" />
+                <Button
+                    Grid.Row="7"
+                    x:DataType="vm:EditExpenseTypeViewModel"
+                    Command="{Binding AddExpenseTypeCommand}"
+                    IsEnabled="{Binding EnableAddButton}"
+                    Text="Add New" />
+                <BoxView
+                    Grid.Row="8"
+                    HeightRequest="2"
+                    HorizontalOptions="Fill" />
+                <Button
+                    Grid.Row="9"
+                    x:DataType="vm:EditExpenseTypeViewModel"
+                    Command="{Binding DelExpenseTypeCommand}"
+                    IsEnabled="{Binding EnableDeleteButton}"
+                    Text="Delete" />
+            </Grid>
+        </StackLayout>
+    </ScrollView>
+</ContentPage>

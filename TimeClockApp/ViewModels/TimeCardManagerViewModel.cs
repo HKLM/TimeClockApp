@@ -1,34 +1,37 @@
-﻿using CommunityToolkit.Maui.Core.Extensions;
-
-namespace TimeClockApp.ViewModels
+﻿namespace TimeClockApp.ViewModels
 {
-    public partial class TimeCardManagerViewModel(EditTimeCardService cardService) : TimeStampViewModel
+    public partial class TimeCardManagerViewModel(EditTimeCardService cardService) : BaseViewModel
     {
         protected readonly EditTimeCardService cardService = cardService;
 
         [ObservableProperty]
-        private ObservableCollection<TimeCard> timeCards = new();
+        public partial ObservableCollection<TimeCard> TimeCards { get; set; } = new();
 
         [ObservableProperty]
-        private int selectedNumberOfResults = 10;
+        public partial int SelectedNumberOfResults { get; set; } = 20;
 
         [RelayCommand]
-        private async Task InitAsync()
+        public async Task OnAppearing()
         {
+            if (Loading) 
+                return;
+
             Loading = true;
             HasError = false;
 
-            SelectedNumberOfResults = 20;
-
-            TimeCards ??= new();
             try
             {
                 await GetCardsAsync();
             }
+            catch (AggregateException ax)
+            {
+                HasError = true;
+                TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateException(ax);
+            }
             catch (Exception e)
             {
                 HasError = true;
-                System.Diagnostics.Trace.WriteLine(e.Message + "\n  -- " + e.Source + "\n  -- " + e.InnerException);
+                Log.WriteLine(e.Message + "\n  -- " + e.Source + "\n  -- " + e.InnerException);
             }
             finally
             {
@@ -36,16 +39,18 @@ namespace TimeClockApp.ViewModels
             }
         }
 
-        private async Task GetCardsAsync() => await Task.Run(async () =>
+        private Task GetCardsAsync() => Task.Run(async () =>
                                                        {
                                                            List<TimeCard> t = await cardService.GetTimeCards(SelectedNumberOfResults);
-                                                           if (t?.Count > 0)
-                                                               TimeCards = t.ToObservableCollection();
+                                                           TimeCards = t.ToObservableCollection();
                                                        });
 
         [RelayCommand]
         private async Task RefreshAllCards()
         {
+            if (Loading) 
+                return;
+
             Loading = true;
             HasError = false;
 
@@ -55,10 +60,15 @@ namespace TimeClockApp.ViewModels
             {
                 await GetCardsAsync();
             }
+            catch (AggregateException ax)
+            {
+                HasError = true;
+                TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateException(ax);
+            }
             catch (Exception e)
             {
                 HasError = true;
-                System.Diagnostics.Trace.WriteLine(e.Message + "\n  -- " + e.Source + "\n  -- " + e.InnerException);
+                Log.WriteLine(e.Message + "\n  -- " + e.Source + "\n  -- " + e.InnerException);
             }
             finally
             {

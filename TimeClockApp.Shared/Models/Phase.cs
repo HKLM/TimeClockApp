@@ -31,15 +31,6 @@ namespace TimeClockApp.Shared.Models
 
         public virtual ICollection<TimeCard> TimeCards { get; set; } = new HashSet<TimeCard>();
         public virtual ICollection<Expense> Expenses { get; set; } = new HashSet<Expense>();
-#if DEBUG
-        public override string ToString()
-        {
-            string rv = "\n--------------[  PhaseId: " + PhaseId + "  ]---------------------\n";
-            rv += "PhaseTitle:  " + PhaseTitle + Environment.NewLine;
-            rv += "------------------------------------------------------\n";
-            return rv;
-        }
-#endif
     }
 
     public sealed class PhaseMap : ClassMap<Phase>

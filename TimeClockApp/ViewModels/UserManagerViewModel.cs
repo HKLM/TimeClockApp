@@ -1,27 +1,27 @@
 ﻿namespace TimeClockApp.ViewModels
 {
-    public partial class UserManagerViewModel : TimeStampViewModel
+    public partial class UserManagerViewModel : BaseViewModel
     {
         protected readonly UserManagerService HRService;
         [ObservableProperty]
-        private int employeeId = 0;
+        public partial int EmployeeId { get; set; } = 0;
         [ObservableProperty]
-        private string employeeName = string.Empty;
+        public partial string EmployeeName { get; set; } = string.Empty;
         partial void OnEmployeeNameChanging(string value)
         {
             EnableAddButton = !string.IsNullOrEmpty(EmployeeName);
         }
 
         [ObservableProperty]
-        private string jobTitle = string.Empty;
+        public partial string JobTitle { get; set; } = string.Empty;
         [ObservableProperty]
-        private double payRate;
+        public partial double PayRate { get; set; }
 
         [ObservableProperty]
-        private ObservableCollection<Employee> employeeList = [];
+        public partial ObservableCollection<Employee> EmployeeList { get; set; } = [];
 
         [ObservableProperty]
-        private Employee selectedEmployee;
+        public partial Employee SelectedEmployee { get; set; }
         partial void OnSelectedEmployeeChanged(global::TimeClockApp.Shared.Models.Employee value)
         {
             RefreshInfo();
@@ -29,13 +29,13 @@
         }
 
         [ObservableProperty]
-        private EmploymentStatus isEmployed;
+        public partial EmploymentStatus IsEmployed { get; set; }
         public IReadOnlyList<string> AllCategory { get; } = Enum.GetNames(typeof(EmploymentStatus));
         [ObservableProperty]
-        public bool enableSaveDelButton;
+        public partial bool EnableSaveDelButton { get; set; }
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(Enable_AddButton))]
-        public bool enableAddButton;
+        public partial bool EnableAddButton { get; set; }
         public bool Enable_AddButton
         {
             get => EnableAddButton;
@@ -77,9 +77,14 @@
             {
                 await RefreshEmployeesAsync(false);
             }
+            catch (AggregateException ax)
+            {
+                HasError = true;
+                TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateException(ax);
+            }
             catch (Exception ex)
             {
-                System.Diagnostics.Trace.WriteLine(ex.Message + "\n" + ex.InnerException);
+                Log.WriteLine(ex.Message + "\n" + ex.InnerException);
             }
         }
 
@@ -110,12 +115,17 @@
                     string employeeNewJobTitle = JobTitle.Trim();
                     HRService.AddNewEmployee(employeeNewName, PayRate, employeeNewJobTitle, IsEmployed);
                     await RefreshEmployeesAsync(true);
-                    await App.AlertSvc.ShowAlertAsync("NOTICE", "Added new employee " + employeeNewName);
+                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "Added new employee " + employeeNewName);
                 }
+            }
+            catch (AggregateException ax)
+            {
+                HasError = true;
+                TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateException(ax);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Trace.WriteLine(ex.Message + "\n" + ex.InnerException);
+                Log.WriteLine(ex.Message + "\n" + ex.InnerException);
             }
         }
 
@@ -129,16 +139,20 @@
                     string eName = SelectedEmployee.Employee_Name;
                     HRService.FireEmployee(SelectedEmployee.EmployeeId);
                     await RefreshEmployeesAsync(true);
-                    await App.AlertSvc.ShowAlertAsync("NOTICE", eName + " is Fired!");
+                    await App.AlertSvc!.ShowAlertAsync("NOTICE", eName + " is Fired!");
                     RefreshInfo();
                 }
             }
+            catch (AggregateException ax)
+            {
+                HasError = true;
+                TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateException(ax);
+            }
             catch (Exception ex)
             {
-                System.Diagnostics.Trace.WriteLine(ex.Message + "\n" + ex.InnerException);
+                Log.WriteLine(ex.Message + "\n" + ex.InnerException);
             }
         }
-
 
         [RelayCommand]
         private void SaveEditEmployee()
@@ -154,12 +168,12 @@
                 {
 
                     RefreshEmployees(true);
-                    App.AlertSvc.ShowAlert("NOTICE", "Saved " + employeeNewName);
+                    App.AlertSvc!.ShowAlert("NOTICE", "Saved " + employeeNewName);
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Trace.WriteLine(ex.Message + "\n" + ex.InnerException);
+                Log.WriteLine(ex.Message + "\n" + ex.InnerException);
             }
         }
 

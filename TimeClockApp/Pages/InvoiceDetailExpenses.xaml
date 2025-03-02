@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:Converter="clr-namespace:TimeClockApp.Converters"
+	         xmlns:controls="clr-namespace:TimeClockApp.Controls"
+             xmlns:models="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
+             xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
+             x:Class="TimeClockApp.Pages.InvoiceDetailExpenses"
+             Title="Detail-Expenses">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Command="{Binding AppearingCommand}" IconImageSource="refresh.png" />
+        <ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
+    </ContentPage.ToolbarItems>
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <Converter:DateOnlyConverter x:Key="dateOnlyConverter" />
+        </ResourceDictionary>
+
+        <DataTemplate x:Key="expenseTemplate" x:DataType="vm:InvoiceDetailExpensesViewModel">
+            <Border Padding="6">
+                <VerticalStackLayout x:DataType="models:Expense">
+                    <Grid
+						ColumnDefinitions="*,*,*"
+						ColumnSpacing="10"
+						RowDefinitions="Auto"
+                        RowSpacing="15">
+                        <Label
+							Style="{StaticResource LabelSmall}"
+							Text="{Binding ExpenseDate, Converter={StaticResource dateOnlyConverter}, StringFormat='{0:MMM d ddd}'}"
+							VerticalTextAlignment="Center" />
+                        <Label
+							Grid.Column="1"
+							Style="{StaticResource LabelSmall}"
+							Text="{Binding ExpenseTypeCategoryName}"
+							VerticalTextAlignment="Center" />
+                        <Label
+							Grid.Column="2"
+							Style="{StaticResource LabelSmall}"
+							Text="{Binding Amount, StringFormat='{0:C}'}"
+							VerticalTextAlignment="Center" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+        </DataTemplate>
+
+        <controls:SingleDataTemplateSelector x:Key="singletemplatesel" TheTemplate="{StaticResource expenseTemplate}" />
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <StackLayout Spacing="4">
+            <Border
+				x:Name="helpbox"
+				Padding="8"
+				IsVisible="{Binding HelpInfoBoxVisible}"
+				VerticalOptions="Center">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="10"/>
+                </Border.StrokeShape>
+                <Label
+					LineBreakMode="WordWrap"
+					Style="{StaticResource LabelSmall}"
+					Text="Invoice Detail, Expenses. &#10;&#10;View list of expenses that is included for the invoice." />
+            </Border>
+            <CollectionView
+				Margin="0,2"
+				EmptyView="No items to display"
+				ItemTemplate="{StaticResource singletemplatesel}"
+				ItemsSource="{Binding ExpenseList}" />
+        </StackLayout>
+    </ScrollView>
+</ContentPage>

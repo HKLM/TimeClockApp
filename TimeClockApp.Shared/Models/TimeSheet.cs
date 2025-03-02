@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using TimeClockApp.Shared.Helpers;
+#nullable enable
 
 namespace TimeClockApp.Shared.Models
 {
@@ -85,7 +86,6 @@ namespace TimeClockApp.Shared.Models
         //[NotMapped]
         public string TimeCard_EmployeeName { get; set; } = string.Empty;
 
-#nullable enable
         public virtual IList<TimeCard> TimeCards { get; set; } = [];
 
         [NotMapped]

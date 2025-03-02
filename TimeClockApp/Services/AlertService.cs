@@ -6,14 +6,14 @@
 
         /// <summary>
         /// Example showing that the "fire and forget" methods can be called from anywhere
-        /// 
+        ///
         /// <code>
         /// Task.Run(async () =>
         ///{
         ///    await Task.Delay(2000);
-        ///    App.AlertSvc.ShowConfirmation("Title", "Confirmation message.", (result =>
+        ///    App.AlertSvc!.ShowConfirmation("Title", "Confirmation message.", (result =>
         ///    {
-        ///        App.AlertSvc.ShowAlert("Result", $"{result}");
+        ///        App.AlertSvc!.ShowAlert("Result", $"{result}");
         ///    }));
         ///});
         /// </code>
@@ -27,23 +27,23 @@
         /// <returns></returns>
         public Task ShowAlertAsync(string title, string message, string cancel = "OK")
         {
-            return Application.Current.MainPage.DisplayAlert(title, message, cancel);
+            return App.Current.Windows[0].Page.DisplayAlert(title, message, cancel);
         }
 
         public Task<bool> ShowConfirmationAsync(string title, string message, string accept = "Yes", string cancel = "No")
         {
-            return Application.Current.MainPage.DisplayAlert(title, message, accept, cancel);
+            return App.Current.Windows[0].Page.DisplayAlert(title, message, accept, cancel);
         }
 
 #region  "'Fire and forget' calls"
 
         /// <summary>
         /// "Fire and forget". Method returns BEFORE showing alert.
-        /// 
+        ///
         /// </summary>
         public void ShowAlert(string title, string message, string cancel = "OK")
         {
-            Application.Current.MainPage.Dispatcher.Dispatch(async () =>
+            App.Current.Windows[0].Page.Dispatcher.Dispatch(async () =>
                 await ShowAlertAsync(title, message, cancel)
             );
         }
@@ -54,12 +54,23 @@
         /// <param name="callback">Action to perform afterwards.</param>
         public void ShowConfirmation(string title, string message, Action<bool> callback, string accept = "Yes", string cancel = "No")
         {
-            Application.Current.MainPage.Dispatcher.Dispatch(async () =>
+            try
+            {
+                App.Current.Windows[0].Page.Dispatcher.Dispatch(async () =>
             {
                 bool answer = await ShowConfirmationAsync(title, message, accept, cancel);
                 callback(answer);
             });
+            }
+            catch (AggregateException ax)
+            {
+                TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateException(ax);
+            }
+            catch (Exception ex)
+            {
+                Log.WriteLine($"{ex.Message}\n{ex.InnerException}");
+            }
         }
-#endregion
+        #endregion
     }
 }

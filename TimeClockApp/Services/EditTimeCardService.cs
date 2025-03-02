@@ -7,20 +7,17 @@ namespace TimeClockApp.Services
 {
     public class EditTimeCardService : TimeCardDataStore
     {
-        public TimeCard? GetTimeCardByID(int cardId) =>
-            Context.TimeCard
-                .Include(item => item.Employee)
-                .Where(item => item.TimeCardId == cardId
-                    && item.TimeCard_Status != ShiftStatus.Deleted)
-                .FirstOrDefault();
+        public async Task<TimeCard?> GetTimeCardByIDAsync(int cardId) =>
+            await Context.TimeCard.FindAsync(cardId);
 
-        public async Task<List<TimeCard>> GetTimeCards(int NumResults) => 
-            await Context.TimeCard
+        public Task<List<TimeCard>> GetTimeCards(int NumResults) =>
+            Context.TimeCard
                 .AsNoTracking()
+                .TagWithCallSite()
                 .Where(item => item.TimeCard_Status != ShiftStatus.Deleted)
                 .OrderByDescending(item => item.TimeCard_DateTime)
                 .Take(NumResults)
-                .ToListAsync().ConfigureAwait(false);
+                .ToListAsync();
 
         public bool UpdateTimeCard(TimeCard newTimeCard, bool isAdmin = false, bool bChangedDate = false)
         {

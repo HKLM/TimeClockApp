@@ -39,4 +39,14 @@ public partial class ExpensePage : ContentPage
     {
         viewModel?.ToggleShowArchivedCommand.Execute(e.Value);
     }
+
+    private void ShowOnlyProjectChkBox_CheckedChanged(object sender, CheckedChangedEventArgs e)
+    {
+        viewModel?.ToggleShowOnlyProjectCommand.Execute(e.Value);
+    }
+
+    private async void AddExpenseTypeBtn_Clicked(object sender, EventArgs e)
+    {
+        await Shell.Current.GoToAsync($"EditExpenseTypePage");
+    }
 }

@@ -11,9 +11,15 @@ public partial class EditTimeCard : ContentPage
         BindingContext = viewModel = ViewModel;
     }
 
-    protected override void OnAppearing()
+    protected override async void OnAppearing()
     {
         base.OnAppearing();
-        viewModel.OnAppearing();
+        await viewModel.OnAppearing();
+    }
+
+    protected override void OnDisappearing()
+    {
+        viewModel.OnDisappearing();
+        base.OnDisappearing();
     }
 }

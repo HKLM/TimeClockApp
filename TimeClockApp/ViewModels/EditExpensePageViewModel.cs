@@ -1,8 +1,6 @@
-﻿using CommunityToolkit.Maui.Core.Extensions;
-
-namespace TimeClockApp.ViewModels
+﻿namespace TimeClockApp.ViewModels
 {
-    public partial class EditExpensePageViewModel : TimeStampViewModel, IQueryAttributable
+    public partial class EditExpensePageViewModel : BaseViewModel, IQueryAttributable
     {
         protected readonly ExpenseService dataService;
 
@@ -16,51 +14,47 @@ namespace TimeClockApp.ViewModels
         }
 
         [ObservableProperty]
-        private int expenseId = 0;
+        public partial int ExpenseId { get; set; } = 0;
         partial void OnExpenseIdChanged(int value)
         {
             Refresh();
         }
 
         [ObservableProperty]
-        private Expense expenseItem = new();
+        public partial Expense ExpenseItem { get; set; } = new();
 
         [ObservableProperty]
-        private ObservableCollection<Project> projectList = [];
+        public partial ObservableCollection<Project> ProjectList { get; set; } = [];
         [ObservableProperty]
-        private Project selectedProject = new();
+        public partial Project SelectedProject { get; set; } = new();
 
         [ObservableProperty]
-        private ObservableCollection<Phase> phaseList = [];
+        public partial ObservableCollection<Phase> PhaseList { get; set; } = [];
         [ObservableProperty]
-        private Phase selectedPhase = new();
+        public partial Phase SelectedPhase { get; set; } = new();
 
         [ObservableProperty]
-        private ObservableCollection<ExpenseType> expenseTypeList = [];
+        public partial ObservableCollection<ExpenseType> ExpenseTypeList { get; set; } = [];
         [ObservableProperty]
-        private ExpenseType selectedExpenseType = new();
-
-        //[ObservableProperty]
-        //private string expenseType_CategoryName;
+        public partial ExpenseType SelectedExpenseType { get; set; } = new();
 
         [ObservableProperty]
-        private DateOnly expenseDate;
-#region "DatePicker Min/Max Bindings"
+        public partial DateOnly ExpenseDate { get; set; }
+        #region "DatePicker Min/Max Bindings"
         public DateTime PickerMinDate { get; set; }
         private readonly DateTime pickerMaxDate = DateTime.Now;
         public DateTime PickerMaxDate { get => pickerMaxDate; }
 #endregion
         [ObservableProperty]
-        private Double amount;
+        public partial Double Amount { get; set; }
         [ObservableProperty]
-        private string memo;
+        public partial string Memo { get; set; }
         [ObservableProperty]
-        private bool isRefreshingList;
+        public partial bool IsRefreshingList { get; set; }
 
         public EditExpensePageViewModel()
         {
             dataService = new();
-            pickerMaxDate = DateTime.Now;
         }
 
         public void OnAppearing()
@@ -111,7 +105,7 @@ namespace TimeClockApp.ViewModels
                 return;
             if (string.IsNullOrEmpty(SelectedProject.Name))
             {
-                await App.AlertSvc.ShowAlertAsync("NOTICE", "This record can not be edited. This maybe due to the Project has been archived and only a Admin can edit this record.");
+                await App.AlertSvc!.ShowAlertAsync("NOTICE", "This record can not be edited. This maybe due to the Project has been archived and only a Admin can edit this record.");
                 return;
             }
 
@@ -126,19 +120,23 @@ namespace TimeClockApp.ViewModels
                 ExpenseItem.ExpenseProject = SelectedProject.Name;
                 ExpenseItem.ExpensePhase = SelectedPhase.PhaseTitle;
                 ExpenseItem.ExpenseTypeId = SelectedExpenseType.ExpenseTypeId;
-                ExpenseItem.ExpenseType_CategoryName = SelectedExpenseType.CategoryName;
+                ExpenseItem.ExpenseTypeCategoryName = SelectedExpenseType.CategoryName;
 
                 if (dataService.UpdateExpense(ExpenseItem))
                 {
-                    await App.AlertSvc.ShowAlertAsync("NOTICE", "Saved");
+                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "Saved");
                     Refresh();
                 }
                 else
-                    await App.AlertSvc.ShowAlertAsync("NOTICE", "Failed to save Expense");
+                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "Failed to save Expense");
+            }
+            catch (AggregateException ax)
+            {
+                TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateException(ax);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Trace.WriteLine(ex.Message + "\n" + ex.InnerException);
+                Log.WriteLine(ex.Message + "\n" + ex.InnerException);
             }
         }
 
@@ -150,21 +148,25 @@ namespace TimeClockApp.ViewModels
 
             try
             {
-                System.Diagnostics.Debug.WriteLine("User is attempting to delete a Expense record");
-                if (await App.AlertSvc.ShowConfirmationAsync("CONFIRMATION", "Are you sure you want to Delete this expense?"))
+                Log.WriteLine("User is attempting to delete a Expense record");
+                if (await App.AlertSvc!.ShowConfirmationAsync("CONFIRMATION", "Are you sure you want to Delete this expense?"))
                 {
                     if (await dataService.DeleteExpense(ExpenseItem))
                     {
-                        await App.AlertSvc.ShowAlertAsync("NOTICE", "Deleted");
+                        await App.AlertSvc!.ShowAlertAsync("NOTICE", "Deleted");
                         await Shell.Current.GoToAsync("..");
                     }
                     else
-                        await App.AlertSvc.ShowAlertAsync("NOTICE", "Failed to delete Expense");
+                        await App.AlertSvc!.ShowAlertAsync("NOTICE", "Failed to delete Expense");
                 }
+            }
+            catch (AggregateException ax)
+            {
+                TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateException(ax);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Trace.WriteLine(ex.Message + "\n" + ex.InnerException);
+                Log.WriteLine(ex.Message + "\n" + ex.InnerException);
             }
         }
 

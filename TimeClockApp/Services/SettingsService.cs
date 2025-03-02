@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.Maui.Core.Extensions;
-#nullable enable
+﻿#nullable enable
 
 namespace TimeClockApp.Services
 {

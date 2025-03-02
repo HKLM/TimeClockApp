@@ -36,8 +36,8 @@
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
-                App.AlertSvc.ShowAlert("Exception", ex.Message + "\n" + ex.InnerException, "ERROR");
+                Log.WriteLine(ex.Message + "\n" + ex.InnerException);
+                App.AlertSvc!.ShowAlert("Exception", ex.Message + "\n" + ex.InnerException, "ERROR");
             }
             return bReplaceExisting;
         }
@@ -60,7 +60,7 @@
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
+                Log.WriteLine(ex.Message + "\n" + ex.InnerException);
             }
             return false;
         }
@@ -76,7 +76,7 @@
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
+                Log.WriteLine(ex.Message + "\n" + ex.InnerException);
             }
             return false;
         }

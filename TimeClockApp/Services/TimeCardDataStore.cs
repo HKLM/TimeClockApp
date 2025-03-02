@@ -1,5 +1,4 @@
 ﻿using System.Data;
-using CommunityToolkit.Maui.Core.Extensions;
 using Microsoft.EntityFrameworkCore;
 using TimeClockApp.Shared.Helpers;
 
@@ -14,14 +13,24 @@ namespace TimeClockApp.Services
         /// <returns></returns>
         public DateTime GetStartOfPayPeriod(DateTime day)
         {
-            if (day.DayOfWeek == DayOfWeek.Saturday)
+            DayOfWeek p = GetPayDayOfWeek();
+            if (day.DayOfWeek == p)
                 return DateTime.Now.AddDays(-7);
 
-            while (day.DayOfWeek != DayOfWeek.Saturday)
+            while (day.DayOfWeek != p)
             {
                 day = day.AddDays(-1);
             }
             return day;
+        }
+
+        private DayOfWeek GetPayDayOfWeek()
+        {
+            int i = 11;
+            Config c = Context.Config.Find(i);
+            int x = c.IntValue.Value + 1 == 7 ? 0 : c.IntValue.Value;
+            DayOfWeek p = (DayOfWeek)x;
+            return p;
         }
 
         public DateTime GetAppFirstRunDate()
@@ -33,15 +42,28 @@ namespace TimeClockApp.Services
             return d.ToDateTime(new TimeOnly(0, 0));
         }
 
+#region PROJECTS_PHASES
         public Project GetProject(int projectID) => Context.Project.Find(projectID);
 
         public Phase GetPhase(int phaseID) => Context.Phase.Find(phaseID);
 
-        public ObservableCollection<Project> GetProjectsList() => 
+        public ObservableCollection<Project> GetProjectsList() =>
             Context.Project
                 .Where(item => item.Status < ProjectStatus.Completed)
                 .OrderBy(e => e.Name)
                 .ToObservableCollection();
+
+        public List<Project> GetProjects_List() =>
+            Context.Project
+                .Where(item => item.Status < ProjectStatus.Completed)
+                .OrderBy(e => e.Name)
+                .ToList();
+
+        public Task<List<Project>> GetProjectsListAsync() =>
+            Context.Project
+                .Where(item => item.Status < ProjectStatus.Completed)
+                .OrderBy(e => e.Name)
+                .ToListAsync();
 
         public ObservableCollection<Project> GetAllProjectsList(bool bShowAll) =>
             (bShowAll) ? Get_AllProjectsList() : Get_NotAllProjectsList();
@@ -51,14 +73,123 @@ namespace TimeClockApp.Services
                 .Where(item => item.Status != ProjectStatus.Deleted)
                 .OrderBy(e => e.Name)
                 .ToObservableCollection();
-        private ObservableCollection<Project> Get_NotAllProjectsList() => 
+        private ObservableCollection<Project> Get_NotAllProjectsList() =>
             Context.Project
                 .Where(item => item.Status < ProjectStatus.Completed)
                 .OrderBy(e => e.Name)
                 .ToObservableCollection();
 
         public ObservableCollection<Phase> GetPhaseList() => Context.Phase.OrderBy(e => e.PhaseTitle).ToObservableCollection();
+        public List<Phase> GetPhase_List() => 
+            Context.Phase
+                .OrderBy(e => e.PhaseTitle)
+                .ToList();
 
+        public Task<List<Phase>> GetPhaseListAsync() => Context.Phase.OrderBy(e => e.PhaseTitle).ToListAsync();
+
+        public int GetCurrentProject()
+        {
+            if (!App.CurrentProjectId.HasValue || App.CurrentProjectId.Value == 0)
+                App.CurrentProjectId = GetConfigInt(3, 1);
+
+            return App.CurrentProjectId.Value;
+        }
+
+        public async Task GetCurrentProjectIdAsync()
+        {
+            if (App.CurrentProjectId == null || !App.CurrentProjectId.HasValue || App.CurrentProjectId.Value == 0)
+                App.CurrentProjectId = await GetConfigIntAsync(3, 1);
+        }
+
+        public int GetCurrentPhase()
+        {
+            if (!App.CurrentPhaseId.HasValue || App.CurrentPhaseId.Value == 0)
+                App.CurrentPhaseId = GetConfigInt(4, 1);
+
+            return App.CurrentPhaseId.Value;
+        }
+
+        public async Task GetCurrentPhaseIdAsync()
+        {
+            if (App.CurrentPhaseId == null || !App.CurrentPhaseId.HasValue || App.CurrentPhaseId.Value == 0)
+                App.CurrentPhaseId = await GetConfigIntAsync(4, 1);
+        }
+
+        public Project GetCurrentProjectEntity() => Context.Project.Find(GetCurrentProject());
+        public async Task<Project> GetCurrentProjectEntityAsync()
+        {
+            if (App.CurrentProjectId == null || !App.CurrentProjectId.HasValue || App.CurrentProjectId.Value == 0)
+            {
+                int? c = await GetConfigIntAsync(3, 1);
+                if (!c.HasValue || c.Value == 0)
+                    c = 1;
+
+                App.CurrentProjectId = c.Value;
+            }
+
+            int i = App.CurrentProjectId.Value;
+            return await Context.Project.FindAsync(i);
+        }
+
+        public Phase GetCurrentPhaseEntity() => Context.Phase.Find(GetCurrentPhase());
+
+        public async Task<Phase> GetCurrentPhaseEntityAsync()
+        {
+            if (App.CurrentPhaseId == null || !App.CurrentPhaseId.HasValue || App.CurrentPhaseId.Value == 0)
+            {
+                int? c = await GetConfigIntAsync(4, 1);
+                if (!c.HasValue || c.Value == 0)
+                    c = 1;
+
+                App.CurrentPhaseId = c.Value;
+            }
+
+            int i = App.CurrentPhaseId.Value;
+            return await Context.Phase.FindAsync(i);
+        }
+
+        public async Task SaveCurrentProjectAsync(int projectId)
+        {
+            int i = 3;
+            var C = await Context.Config.FindAsync(i).ConfigureAwait(false);
+            if (C.IntValue.HasValue && C.IntValue.Value != projectId)
+            {
+                C.IntValue = projectId;
+                Context.Update<Config>(C);
+                await Context.SaveChangesAsync().ConfigureAwait(false);
+                App.CurrentProjectId = projectId;
+            }
+        }
+
+        public void SaveCurrentPhase(int phaseId)
+        {
+            int i = 4;
+            Config C = Context.Config.Find(i);
+            if (C.IntValue.HasValue && C.IntValue.Value != phaseId)
+            {
+                C.IntValue = phaseId;
+                Context.Update<Config>(C);
+                Context.SaveChanges();
+                App.CurrentPhaseId = phaseId;
+            }
+        }
+
+        public async Task SaveCurrentPhaseAsync(int phaseId)
+        {
+            int i = 4;
+            Config C = await Context.Config.FindAsync(i).ConfigureAwait(false);
+            if (C.IntValue.HasValue && C.IntValue.Value != phaseId)
+            {
+                C.IntValue = phaseId;
+                Context.Update<Config>(C);
+                await Context.SaveChangesAsync().ConfigureAwait(false);
+                App.CurrentPhaseId = phaseId;
+            }
+        }
+
+#endregion
+
+#region EMPLOYEES
         public ObservableCollection<Employee> GetAllEmployees(bool includeNotEmployed = false)
         {
             EmploymentStatus es = includeNotEmployed ? EmploymentStatus.Deleted : EmploymentStatus.NotEmployed;
@@ -77,19 +208,24 @@ namespace TimeClockApp.Services
                 .ToListAsync().ConfigureAwait(false));
         }
 
-        public async Task<ObservableCollection<Employee>> GetEmployeesAsync() => 
-            new ObservableCollection<Employee>(await Context.Employee
+        public Task<List<Employee>> GetEmployeeListAsync() =>
+            Context.Employee
                 .Where(e => e.Employee_Employed == EmploymentStatus.Employed)
                 .OrderBy(e => e.Employee_Name)
-                .ToListAsync().ConfigureAwait(false));
+                .ToListAsync();
 
-        public async Task<List<Employee>> GetEmployeesGroupInStatusAsync() => 
-            await Context.Employee
+        public Task<List<Employee>> GetEmployeesGroupInStatusAsync() =>
+            Context.Employee
                 .Where(e => e.Employee_Employed < EmploymentStatus.NotEmployed)
                 .OrderBy(e => e.Employee_Employed)
                 .ThenBy(e => e.Employee_Name)
-                .ToListAsync().ConfigureAwait(false);
+                .ToListAsync();
 
+        public Employee GetEmployee(int employeeID) => Context.Employee.Find(employeeID);
+
+#endregion
+
+#region TIMECARDS
         public TimeCard GetTimeCard(int timeCardID) => Context.TimeCard.Find(timeCardID);
 
         /// <summary>
@@ -110,7 +246,7 @@ namespace TimeClockApp.Services
             int dateCheck = timeCard.TimeCard_Date.CompareTo(dateNow);
             if (dateCheck < 0)
             {
-                System.Diagnostics.Debug.WriteLine("ERROR! Card Time needs to be checked before saving. Most likely this card was ClockedIn on a prior date and not clockedOut on said date.");
+                Log.WriteLine("ERROR! Card Time needs to be checked before saving. Most likely this card was ClockedIn on a prior date and not clockedOut on said date.");
                 await Shell.Current.GoToAsync($"EditTimeCard?id={timeCard.TimeCardId}&e=1");
                 return false;
             }
@@ -119,7 +255,7 @@ namespace TimeClockApp.Services
                 if (CheckIfTimeIsCloseToNow(clockNowRndTime, timeCard.TimeCard_StartTime))
                     return true;
 
-                System.Diagnostics.Debug.WriteLine("ERROR! Card Time start time is greater than the current time.");
+                Log.WriteLine("ERROR! Card Time start time is greater than the current time.");
                 await Shell.Current.GoToAsync($"EditTimeCard?id={timeCard.TimeCardId}&e=2");
                 return false;
             }
@@ -133,9 +269,9 @@ namespace TimeClockApp.Services
             //timecard is in the future
             else if (dateCheck > 0)
             {
-                System.Diagnostics.Debug.WriteLine("ERROR! TimeCard Date is in the future: " + timeCard.TimeCard_Date.ToShortDateString() + "\nTIMECARD REDIRECTING TO EDIT TIMECARD PAGE");
+                Log.WriteLine($"ERROR! TimeCard Date is in the future: {timeCard.TimeCard_Date.ToShortDateString()}\nTIMECARD REDIRECTING TO EDIT TIMECARD PAGE");
                 //ERROR CODE V2
-                await App.AlertSvc.ShowAlertAsync("ERROR!", "ERROR! TimeCard Date is in the future: " + timeCard.TimeCard_Date.ToShortDateString() + "\nCan not save TimeCard until this is corrected.");
+                await App.AlertSvc!.ShowAlertAsync("ERROR!", $"ERROR! TimeCard Date is in the future: {timeCard.TimeCard_Date.ToShortDateString()}\nCan not save TimeCard until this is corrected.");
                 await Shell.Current.GoToAsync($"EditTimeCard?id={timeCard.TimeCardId}");
                 // refresh the timecard, and recheck if issue is fixed
                 timeCard = GetTimeCard(timeCard.TimeCardId);
@@ -166,105 +302,59 @@ namespace TimeClockApp.Services
             return timeChk < chkThreshold;
         }
 
-        public int GetCurrentProject()
-        {
-            if (App.CurrentProjectId == 0)
-                App.CurrentProjectId = GetConfigInt(3, 1);
-
-            return App.CurrentProjectId;
-        }
-
-        public int GetCurrentPhase()
-        {
-            if (App.CurrentPhaseId == 0)
-                App.CurrentPhaseId = GetConfigInt(4, 1);
-
-            return App.CurrentPhaseId;
-        }
-
-        public Project GetCurrentProjectEntity() => Context.Project.Find(GetCurrentProject());
-
-        public Phase GetCurrentPhaseEntity() => Context.Phase.Find(GetCurrentPhase());
-
-        public void SaveCurrentProject(int projectId)
-        {
-            int i = 3;
-            Config C = Context.Config.Find(i);
-            if (C.IntValue.HasValue && C.IntValue.Value != projectId)
-            {
-                C.IntValue = projectId;
-                Context.Update<Config>(C);
-                Context.SaveChanges();
-                App.CurrentProjectId = projectId;
-            }
-        }
-
-        public void SaveCurrentPhase(int phaseId)
-        {
-            int i = 4;
-            Config C = Context.Config.Find(i);
-            if (C.IntValue.HasValue && C.IntValue.Value != phaseId)
-            {
-                C.IntValue = phaseId;
-                Context.Update<Config>(C);
-                Context.SaveChanges();
-                App.CurrentPhaseId = phaseId;
-            }
-        }
-
-        public Employee GetEmployee(int employeeID) => Context.Employee.Find(employeeID);
-
         public List<TimeCard> GetTimeCardsForPayPeriod(int employeeId, DateOnly start, DateOnly end, bool showPaid = true) => showPaid
                 ? GetListPaidTimeCardsForPayPeriod(employeeId, start, end)
                 : GetListUnpaidTimeCardsForPayPeriod(employeeId);
 
-        private List<TimeCard> GetListUnpaidTimeCardsForPayPeriod(int employeeId) => 
-            Context.TimeCard
+        private List<TimeCard> GetListUnpaidTimeCardsForPayPeriod(int employeeId) =>
+                Context.TimeCard
                     .Where(item => item.EmployeeId == employeeId
                         && (item.TimeCard_Status == ShiftStatus.ClockedOut
                         || item.TimeCard_Status == ShiftStatus.ClockedIn))
                     .OrderBy(item => item.TimeCard_Date)
                     .ToList();
-        private List<TimeCard> GetListPaidTimeCardsForPayPeriod(int employeeId, DateOnly start, DateOnly end) => 
-            Context.TimeCard
+        private List<TimeCard> GetListPaidTimeCardsForPayPeriod(int employeeId, DateOnly start, DateOnly end) =>
+                Context.TimeCard
                     .Where(item => item.EmployeeId == employeeId
+                        && item.TimeCard_Status < ShiftStatus.Deleted
                         && item.TimeCard_Date >= start
-                        && item.TimeCard_Date <= end
-                        && item.TimeCard_Status < ShiftStatus.Deleted)
+                        && item.TimeCard_Date <= end)
                     .OrderBy(item => item.TimeCard_Date)
                     .ToList();
 
-        public async Task<List<TimeCard>> GetTimeCardsForPayPeriodAsync(int employeeId, DateOnly start, DateOnly end, bool showPaid = true) => showPaid
-                ? await Task.Run(() => GetListPaidTimeCardsForPayPeriodAsync(employeeId, start, end))
-                : await Task.Run(() => GetListUnpaidTimeCardsForPayPeriodAsync(employeeId));
+        public async Task<List<TimeCard>> GetTimeCardsForPayPeriodAsync(int employeeId, DateOnly start, DateOnly end, bool onlyUnpaid = false) => onlyUnpaid
+                ? await Task.Run(() => GetListUnpaidTimeCardsForPayPeriodAsync(employeeId))
+                : await Task.Run(() => GetListTimeCardsForPayPeriodAsync(employeeId, start, end));
 
-        private async Task<List<TimeCard>> GetListUnpaidTimeCardsForPayPeriodAsync(int employeeId) =>
-                await Context.TimeCard
+        private Task<List<TimeCard>> GetListUnpaidTimeCardsForPayPeriodAsync(int employeeId) =>
+                Context.TimeCard
                     .Where(item => item.EmployeeId == employeeId
                         && (item.TimeCard_Status == ShiftStatus.ClockedOut
                         || item.TimeCard_Status == ShiftStatus.ClockedIn))
                     .OrderBy(item => item.TimeCard_Date)
-                    .ToListAsync().ConfigureAwait(false);
-        private async Task<List<TimeCard>> GetListPaidTimeCardsForPayPeriodAsync(int employeeId, DateOnly start, DateOnly end) =>
-                await Context.TimeCard
+                    .ToListAsync();
+        private Task<List<TimeCard>> GetListTimeCardsForPayPeriodAsync(int employeeId, DateOnly start, DateOnly end) =>
+                Context.TimeCard
                     .Where(item => item.EmployeeId == employeeId
+                        && item.TimeCard_Status < ShiftStatus.Deleted
                         && item.TimeCard_Date >= start
-                        && item.TimeCard_Date <= end
-                        && item.TimeCard_Status < ShiftStatus.Deleted)
+                        && item.TimeCard_Date <= end)
                     .OrderBy(item => item.TimeCard_Date)
-                    .ToListAsync().ConfigureAwait(false);
+                    .ToListAsync();
+#endregion
 
+#region EXPENSES
         public ExpenseType GetExpenseType(int expenseTypeId) => Context.ExpenseType.Find(expenseTypeId);
         //public async Task<ExpenseType> GetExpenseTypeAsync(int expenseTypeId) => await Context.ExpenseType.FindAsync(expenseTypeId);
         public string GetExpenseType_CategoryName(int expenseTypeId) => Context.ExpenseType.First(z => z.ExpenseTypeId == expenseTypeId).CategoryName;
 
-        public bool AddNewExpense(int projectId, int phaseId, double amount, string memo, string projectName, string phaseTitle, int expenseTypeId = 2, string expenseType_CategoryName = "")
+        public bool AddNewExpense(int projectId, int phaseId, double amount, string memo, string projectName, string phaseTitle, int expenseTypeId = 2, string expenseTypeCategoryName = "")
         {
             string e;
-            if (string.IsNullOrEmpty(expenseType_CategoryName))
+            if (string.IsNullOrEmpty(expenseTypeCategoryName))
                 e = GetExpenseType_CategoryName(expenseTypeId);
             else
-                e = expenseType_CategoryName;
+                e = expenseTypeCategoryName;
 
             //make expenses (not income) a negative number
             if (expenseTypeId != 2)
@@ -277,13 +367,13 @@ namespace TimeClockApp.Services
         }
 
         // used to add new entry when marking a timecard as paid
-        public Task AddNewExpenseAsync(int projectId, int phaseId, double amount, string memo, string projectName, string phaseTitle, int expenseTypeId = 3, string expenseType_CategoryName = "")
+        public Task AddNewExpenseAsync(int projectId, int phaseId, double amount, string memo, string projectName, string phaseTitle, int expenseTypeId = 3, string expenseTypeCategoryName = "")
         {
             string e;
-            if (string.IsNullOrEmpty(expenseType_CategoryName))
+            if (string.IsNullOrEmpty(expenseTypeCategoryName))
                 e = GetExpenseType_CategoryName(expenseTypeId);
             else
-                e = expenseType_CategoryName;
+                e = expenseTypeCategoryName;
 
             //make expenses (not income) a negative number
             if (expenseTypeId != 2)
@@ -294,5 +384,6 @@ namespace TimeClockApp.Services
             Context.Add<Expense>(exp);
             return Task.FromResult(Context.SaveChangesAsync());
         }
+#endregion
     }
 }

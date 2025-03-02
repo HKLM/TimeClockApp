@@ -1,5 +1,8 @@
 namespace TimeClockApp.Pages;
 
+/// <summary>
+/// Popup type page for EditExpenseType
+/// </summary>
 [XamlCompilation(XamlCompilationOptions.Compile)]
 public partial class EditExpenseTypePage : ContentPage
 {

@@ -1,5 +1,4 @@
 ﻿using System.Data;
-using CommunityToolkit.Maui.Core.Extensions;
 
 namespace TimeClockApp.Services
 {
@@ -22,7 +21,7 @@ namespace TimeClockApp.Services
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
+                Log.WriteLine(ex.Message + "\n" + ex.InnerException);
             }
             return false;
         }
@@ -43,7 +42,7 @@ namespace TimeClockApp.Services
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
+                Log.WriteLine(ex.Message + "\n" + ex.InnerException);
             }
             return false;
         }
@@ -57,9 +56,13 @@ namespace TimeClockApp.Services
                 Context.Remove<Phase>(item);
                 return await Context.SaveChangesAsync() > 0;
             }
+            catch (AggregateException ax)
+            {
+                TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateException(ax);
+            }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message + "\n" + ex.InnerException);
+                Log.WriteLine(ex.Message + "\n" + ex.InnerException);
             }
             return false;
         }

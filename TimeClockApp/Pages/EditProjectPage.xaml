@@ -1,32 +1,38 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
-	x:Class="TimeClockApp.Pages.EditProjectPage"
-	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-	xmlns:Converter="clr-namespace:TimeClockApp.Converters"
-	xmlns:models="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
-	xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
-	Title="Projects Manager"
-	x:DataType="vm:EditProjectViewModel">
-	<ContentPage.BindingContext>
-		<vm:EditProjectViewModel x:Name="viewModel" />
-	</ContentPage.BindingContext>
-	<ContentPage.ToolbarItems>
-		<ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
-	</ContentPage.ToolbarItems>
-	<ContentPage.Resources>
-		<ResourceDictionary>
-			<Converter:ProjStatusEnumToIntConverter x:Key="projStatusEnumToIntConverter" />
-			<Converter:DateOnlyToDateTimeConverter x:Key="dateOnlyToDateTimeConverter" />
-		</ResourceDictionary>
-	</ContentPage.Resources>
-	<ScrollView>
-		<VerticalStackLayout>
-			<StackLayout Padding="12">
-				<Border
+		x:Class="TimeClockApp.Pages.EditProjectPage"
+		xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		xmlns:Converter="clr-namespace:TimeClockApp.Converters"
+		xmlns:models="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
+		xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+		xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
+		Title="Projects Manager">
+    <ContentPage.BindingContext>
+        <vm:EditProjectViewModel x:Name="viewModel" />
+    </ContentPage.BindingContext>
+    <ContentPage.ToolbarItems>
+        <ToolbarItem x:DataType="vm:EditProjectViewModel" Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
+    </ContentPage.ToolbarItems>
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <Converter:ProjStatusEnumToIntConverter x:Key="projStatusEnumToIntConverter" />
+            <Converter:DateOnlyToDateTimeConverter x:Key="dateOnlyToDateTimeConverter" />
+        </ResourceDictionary>
+        <Style x:Key="InvalidEntryStyle" TargetType="Entry">
+            <Setter Property="TextColor" Value="Red" />
+        </Style>
+        <Style x:Key="ValidEntryStyle" TargetType="Entry">
+            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+        </Style>
+    </ContentPage.Resources>
+    <ScrollView>
+        <VerticalStackLayout>
+            <StackLayout Padding="12">
+                <Border
 					x:Name="helpbox"
+                    x:DataType="vm:EditProjectViewModel"
 					Padding="8"
-					HorizontalOptions="FillAndExpand"
 					IsVisible="{Binding HelpInfoBoxVisible}"
 					VerticalOptions="Center">
                     <Border.StrokeShape>
@@ -36,113 +42,128 @@
 						LineBreakMode="WordWrap"
 						Style="{StaticResource LabelSmall}"
 						Text="Project Editor Page. &#10;&#10;Here you can add, archive, or rename projects. &#10;&#10;By archiving the project, it ends that project so that it is no longer a option to pick for TimeCards or expenses. You can have another project of the same name, but only one can be active at one time. " />
-				</Border>
+                </Border>
 
-				<Grid
+                <Grid
 					ColumnDefinitions="Auto, *"
 					RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,4,Auto,6,Auto"
 					RowSpacing="15">
-					<Label
+                    <Label
 						Style="{StaticResource LabelSmallCenter}"
 						Text="Select Project To Edit: "
 						VerticalOptions="Center" />
-					<Picker
+                    <Picker
 						x:Name="ProjectPicker"
 						Grid.Row="1"
 						Grid.ColumnSpan="2"
-						HorizontalOptions="FillAndExpand"
 						ItemDisplayBinding="{Binding Name}"
 						ItemsSource="{Binding ProjectList}"
 						SelectedIndexChanged="ProjectPicker_SelectedIndexChanged"
 						SelectedItem="{Binding SelectedProject, Mode=TwoWay}"
 						VerticalOptions="Center" />
-					<Label
+                    <Label
 						Grid.Row="2"
 						Style="{StaticResource LabelSmallCenter}"
 						Text="Show Archived Projects:"
 						VerticalOptions="Center" />
-					<CheckBox
+                    <CheckBox
 						Grid.Row="2"
 						Grid.Column="1"
 						IsChecked="{Binding ShowAll}"
 						VerticalOptions="Center" />
-					<Label
+                    <Label
 						Grid.Row="3"
 						Style="{StaticResource LabelSmallCenter}"
 						Text="ProjectId:" />
-					<Label
+                    <Label
 						Grid.Row="3"
 						Grid.Column="1"
 						HorizontalOptions="Center"
 						Style="{StaticResource LabelSmallCenter}"
 						Text="{Binding ProjectId}" />
-					<Label
+                    <Label
 						Grid.Row="4"
 						Grid.ColumnSpan="2"
 						Style="{StaticResource LabelSmallCenter}"
 						Text="Project Name: "
 						VerticalOptions="Center" />
-					<Entry
+                    <Entry
 						x:Name="ProjectNameBox"
 						Grid.Row="5"
 						Grid.ColumnSpan="2"
 						Keyboard="Text"
 						Text="{Binding Name, Mode=TwoWay}"
-						TextChanged="ProjectNameBox_TextChanged" />
-					<Label
+						TextChanged="ProjectNameBox_TextChanged">
+                        <Entry.Behaviors>
+                            <toolkit:TextValidationBehavior 
+                                BindingContext="{Binding Path=BindingContext, Source={x:Reference ProjectNameBox}, x:DataType=Entry}"
+								InvalidStyle="{StaticResource InvalidEntryStyle}"
+                                ValidStyle="{StaticResource ValidEntryStyle}"
+								Flags="ValidateOnValueChanged"
+                                DecorationFlags="NormalizeWhiteSpace"
+								MinimumLength="1"
+								MaximumLength="40"
+                                RegexPattern="[A-Za-z0-9]*-*/*\s*[A-Za-z0-9]+"
+                                RegexOptions="IgnoreCase" />
+                        </Entry.Behaviors>
+                    </Entry>
+                    <Label
 						Grid.Row="6"
 						Style="{StaticResource LabelSmallCenter}"
 						Text="Project Status: "
 						VerticalOptions="Center" />
-					<Picker
+                    <Picker
 						Grid.Row="6"
 						Grid.Column="1"
 						ItemsSource="{Binding AllProjectStatus}"
 						SelectedIndex="{Binding Project_Status, Converter={StaticResource projStatusEnumToIntConverter}, Mode=TwoWay}" />
-					<Label
+                    <Label
 						Grid.Row="7"
 						Style="{StaticResource LabelSmallCenter}"
 						Text="Project Date: "
 						VerticalOptions="Center" />
-					<DatePicker
+                    <DatePicker
 						Grid.Row="7"
 						Grid.Column="1"
 						Date="{Binding ProjectDate, Converter={StaticResource dateOnlyToDateTimeConverter}, Mode=TwoWay}"
 						MaximumDate="{Binding PickerMaxDate}"
 						MinimumDate="{Binding PickerMinDate}" />
-					<Button
+                    <Button
 						x:Name="buttonSave"
+                        x:DataType="vm:EditProjectViewModel"
 						Grid.Row="8"
 						Grid.ColumnSpan="2"
 						Command="{Binding SaveEditProjectCommand}"
 						IsEnabled="{Binding EnableSaveButton}"
 						Text="Save Change" />
-					<BoxView
+                    <BoxView
 						Grid.Row="9"
 						Grid.ColumnSpan="2"
 						HeightRequest="2"
 						HorizontalOptions="Fill" />
-					<Button
+                    <Button
 						x:Name="buttonNew"
+                        x:DataType="vm:EditProjectViewModel"
 						Grid.Row="10"
 						Grid.ColumnSpan="2"
 						Command="{Binding SaveNewProjectCommand}"
 						IsEnabled="{Binding EnableAddDelButtons}"
 						Text="Add New" />
-					<BoxView
+                    <BoxView
 						Grid.Row="11"
 						Grid.ColumnSpan="2"
 						HeightRequest="2"
 						HorizontalOptions="Fill" />
-					<Button
+                    <Button
 						x:Name="buttonDelete"
+                        x:DataType="vm:EditProjectViewModel"
 						Grid.Row="12"
 						Grid.ColumnSpan="2"
 						Command="{Binding DeleteProjectCommand}"
 						IsEnabled="{Binding EnableAddDelButtons}"
 						Text="Delete" />
-				</Grid>
-			</StackLayout>
-		</VerticalStackLayout>
-	</ScrollView>
+                </Grid>
+            </StackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>

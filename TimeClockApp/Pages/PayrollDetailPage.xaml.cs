@@ -32,7 +32,7 @@ public partial class PayrollDetailPage : ContentPage
         SwipeItem swipeItem = (SwipeItem)sender;
         if (swipeItem != null)
         {
-            if (int.TryParse(swipeItem.CommandParameter!.ToString(), out int i))
+            if (int.TryParse(swipeItem.CommandParameter?.ToString(), out int i))
             {
                 await Shell.Current.GoToAsync($"EditTimeCard?id={i}");
             }
@@ -55,5 +55,17 @@ public partial class PayrollDetailPage : ContentPage
     protected void LandscapeItemsVisibility(bool visible)
     {
         viewModel?.ChangeDisplayLandscapeModeCommand.Execute(visible);
+    }
+
+    private async void FlyItemEditCard_Clicked(object sender, EventArgs e)
+    {
+        MenuFlyoutItem swipeItem = (MenuFlyoutItem)sender;
+        if (swipeItem != null)
+        {
+            if (int.TryParse(swipeItem.CommandParameter?.ToString(), out int i))
+            {
+                await Shell.Current.GoToAsync($"EditTimeCard?id={i}");
+            }
+        }
     }
 }

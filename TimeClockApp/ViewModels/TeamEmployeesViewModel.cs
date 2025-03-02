@@ -1,15 +1,13 @@
-﻿using CommunityToolkit.Maui.Core.Extensions;
-
-#nullable enable
+﻿#nullable enable
 
 namespace TimeClockApp.ViewModels
 {
-    public partial class TeamEmployeesViewModel(UserManagerService service) : TimeStampViewModel
+    public partial class TeamEmployeesViewModel : BaseViewModel
     {
-        protected readonly UserManagerService employeeService = service;
+        protected readonly UserManagerService employeeService = new();
 
         [ObservableProperty]
-        private ObservableCollection<Employee> employee_List = [];
+        public partial ObservableCollection<Employee> Employee_List { get; set; } = [];
 
         public async Task OnAppearing()
         {
@@ -29,7 +27,7 @@ namespace TimeClockApp.ViewModels
                 Employee_List = e.ToObservableCollection<Employee>();
             }
             else
-                App.AlertSvc.ShowAlert("ERROR", "Data not saved. Error in saving the data.");
+                App.AlertSvc!.ShowAlert("ERROR", "Data not saved. Error in saving the data.");
         }
 
         [RelayCommand]
@@ -44,7 +42,7 @@ namespace TimeClockApp.ViewModels
                 Employee_List = e.ToObservableCollection<Employee>();
             }
             else
-                App.AlertSvc.ShowAlert("ERROR", "Something went wrong. Data not saved.");
+                App.AlertSvc!.ShowAlert("ERROR", "Something went wrong. Data not saved.");
         }
 
         [RelayCommand]

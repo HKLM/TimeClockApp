@@ -1,60 +1,42 @@
-﻿using CommunityToolkit.Maui.Core.Extensions;
-//#nullable enable
+﻿#nullable enable
 
 namespace TimeClockApp.ViewModels
 {
-    public partial class TimeCardPageViewModel(TimeCardService service) : TimeStampViewModel
+    public partial class TimeCardPageViewModel(TimeCardService service) : BaseViewModel
     {
         protected readonly TimeCardService cardService = service;
 
         [ObservableProperty]
-        private ObservableCollection<TimeCard> timeCards = new();
+        public partial ObservableCollection<TimeCard> TimeCards { get; set; } = new();
 
         [ObservableProperty]
-        private ObservableCollection<Project> projectList = new ();
+        public partial ObservableCollection<Project> ProjectList { get; set; } = new();
+
         [ObservableProperty]
-        private Project selectedProject;
-        partial void OnSelectedProjectChanging(global::TimeClockApp.Shared.Models.Project value)
+        public partial Project? SelectedProject { get; set; } = null;
+        partial void OnSelectedProjectChanging(global::TimeClockApp.Shared.Models.Project? value)
         {
             if (value != null)
             {
-                if (SelectedProject != null && SelectedProject.ProjectId != value.ProjectId)
-                    cardService.SaveCurrentProject(value.ProjectId);
+                if (!App.CurrentProjectId.HasValue || App.CurrentProjectId.HasValue && value.ProjectId != App.CurrentProjectId.Value)
+                    Task.Run(async () => await cardService.SaveCurrentProjectAsync(value.ProjectId).ConfigureAwait(false));
             }
         }
 
         [ObservableProperty]
-        private ObservableCollection<Phase> phaseList = new();
+        public partial ObservableCollection<Phase> PhaseList { get; set; } = new();
+
         [ObservableProperty]
-        private Phase selectedPhase;
-        partial void OnSelectedPhaseChanging(global::TimeClockApp.Shared.Models.Phase value)
+        public partial Phase? SelectedPhase { get; set; } = null;
+        partial void OnSelectedPhaseChanging(global::TimeClockApp.Shared.Models.Phase? value)
         {
-            if (value != null && SelectedPhase != null && SelectedPhase.PhaseId != value.PhaseId)
-                cardService.SaveCurrentPhase(value.PhaseId);
+            if (value != null)
+            {
+                if (!App.CurrentPhaseId.HasValue || App.CurrentPhaseId.HasValue && value.PhaseId != App.CurrentPhaseId.Value)
+                    Task.Run(async () => await cardService.SaveCurrentPhaseAsync(value.PhaseId).ConfigureAwait(false));
+            }
         }
 
-        //[RelayCommand]
-        //private async Task InitAsync()
-        //{
-        //    Loading = true;
-        //    HasError = false;
-
-        //    try
-        //    {
-        //        RefreshProjectPhases();
-        //        List<TimeCard> t = await cardService.GetLastTimeCardForAllEmployeesAsync();
-        //        if (t?.Count > 0)
-        //            TimeCards = t.ToObservableCollection();
-        //    }
-        //    catch
-        //    {
-        //        HasError = true;
-        //    }
-        //    finally
-        //    {
-        //        Loading = false;
-        //    }
-        //}
         [RelayCommand]
         public async Task OnAppearing()
         {
@@ -63,15 +45,48 @@ namespace TimeClockApp.ViewModels
 
             try
             {
-                RefreshProjectPhases();
-                var t = await cardService.GetLastTimeCardForAllEmployeesAsync();
-                if (t != null && t?.Count > 0)
-                    TimeCards = t.ToObservableCollection();
+                //Only get data from DB once, unless it has been notified that it has changed
+                if (ProjectList.Count == 0 || App.NoticeProjectHasChanged)
+                {
+                    Task<List<Project>> tp = cardService.GetProjectsListAsync();
+                    List<Project> p = await tp;
+                    ProjectList = p.ToObservableCollection();
+                }
+
+                if (PhaseList.Count == 0 || App.NoticePhaseHasChanged)
+                {
+                    Task<List<Phase>> tph = cardService.GetPhaseListAsync();
+                    List<Phase> ph = await tph;
+                    PhaseList = ph.ToObservableCollection();
+                }
+
+                if (App.NoticeProjectHasChanged || SelectedProject == null || SelectedProject.ProjectId == 0)
+                {
+                    var tcp = cardService.GetCurrentProjectEntityAsync();
+                    Project cp = await tcp;
+                    SelectedProject = cp;
+                }
+
+                if (SelectedPhase == null || SelectedPhase.PhaseId == 0 || App.NoticePhaseHasChanged)
+                {
+                    var tcph = cardService.GetCurrentPhaseEntityAsync();
+                    Phase cph = await tcph;
+                    SelectedPhase = cph;
+                }
+                List<TimeCard> t = await cardService.GetLastTimeCardForAllEmployeesAsync();
+                TimeCards = t.ToObservableCollection();
             }
-            catch
+            catch (AggregateException ax)
             {
                 HasError = true;
-                Debug.WriteLine("Error at TimeCardPageViewModel.OnAppearing()");
+                string z = FlattenAggregateException.ShowAggregateExceptionForPopup(ax, "TimeCardPageViewModel");
+                await App.AlertSvc!.ShowAlertAsync("Exception", z);
+            }
+            catch (Exception ex)
+            {
+                HasError = true;
+                Log.WriteLine($"EXCEPTION ERROR\n{ex.Message}\n{ex.InnerException}", "TimeCardPageViewModel");
+                await App.AlertSvc!.ShowAlertAsync("Exception", $"{ex.Message}\n{ex.InnerException}");
             }
             finally
             {
@@ -79,92 +94,76 @@ namespace TimeClockApp.ViewModels
             }
         }
 
-#nullable enable
         [RelayCommand]
         private async Task ClockIn(TimeCard? card)
         {
-            if (card == null || SelectedProject == null || SelectedPhase == null) return;
-            Task<bool> clockIn = cardService.EmployeeClockInAsync(card, SelectedProject.ProjectId, SelectedPhase.PhaseId, SelectedProject.Name, SelectedPhase.PhaseTitle);
-            if (await clockIn)
+            if (card != null && SelectedProject != null && SelectedPhase != null)
             {
-                List<TimeCard> t = await cardService.GetLastTimeCardForAllEmployeesAsync();
-                if (t.Count > 0)
+                Task<bool> clockIn = cardService.EmployeeClockInAsync(card, SelectedProject.ProjectId, SelectedPhase.PhaseId, SelectedProject.Name, SelectedPhase.PhaseTitle);
+                if (await clockIn)
+                {
+                    List<TimeCard> t = await cardService.GetLastTimeCardForAllEmployeesAsync();
                     TimeCards = t.ToObservableCollection();
+                }
             }
         }
 
         [RelayCommand]
         private async Task ClockOutAsync(TimeCard? card)
         {
-            if (card == null) return;
-            Task<bool> clockOut = cardService.EmployeeClockOutAsync(card);
-            if (await clockOut)
+            if (card != null)
             {
-                List<TimeCard> t = await cardService.GetLastTimeCardForAllEmployeesAsync();
-                if (t?.Count > 0)
+                Task<bool> clockOut = cardService.EmployeeClockOutAsync(card.TimeCardId);
+                if (await clockOut)
+                {
+                    List<TimeCard> t = await cardService.GetLastTimeCardForAllEmployeesAsync();
                     TimeCards = t.ToObservableCollection();
+                }
             }
-        }
-
-        private void RefreshProjectPhases()
-        {
-            //Only get data from DB once, unless it has been notified that it has changed
-            ProjectList ??= new ();
-            if (ProjectList.Count == 0 || App.NoticeProjectHasChanged)
-                ProjectList = cardService.GetProjectsList();
-
-            PhaseList ??= new();
-            if (PhaseList.Count == 0 || App.NoticePhaseHasChanged)
-                PhaseList = cardService.GetPhaseList();
-
-            if (SelectedProject == null || SelectedProject.ProjectId == 0 || App.NoticeProjectHasChanged)
-                SelectedProject = cardService.GetCurrentProjectEntity();
-
-            if (SelectedPhase == null || SelectedPhase.PhaseId == 0 || App.NoticePhaseHasChanged)
-                SelectedPhase = cardService.GetCurrentPhaseEntity();
         }
 
         [RelayCommand]
         private async Task ClockAll_InAsync()
         {
-            if (TimeCards == null || SelectedProject == null || SelectedPhase == null) return;
-            int i = 0;
-            foreach (TimeCard item in TimeCards)
+            if (TimeCards != null && SelectedProject != null && SelectedPhase != null)
             {
-                if (item.TimeCard_Status != ShiftStatus.ClockedIn)
+                int i = 0;
+                foreach (TimeCard item in TimeCards)
                 {
-                    if (await cardService.EmployeeClockInAsync(item, SelectedProject.ProjectId, SelectedPhase.PhaseId, SelectedProject.Name, SelectedPhase.PhaseTitle))
-                        i++;
+                    if (item.TimeCard_Status != ShiftStatus.ClockedIn)
+                    {
+                        if (await cardService.EmployeeClockInAsync(item, SelectedProject.ProjectId, SelectedPhase.PhaseId, SelectedProject.Name, SelectedPhase.PhaseTitle))
+                            i++;
+                    }
                 }
-            }
-            if (i > 0)
-            {
-                List<TimeCard> t = await cardService.GetLastTimeCardForAllEmployeesAsync();
-                if (t?.Count > 0)
+                if (i > 0)
+                {
+                    List<TimeCard> t = await cardService.GetLastTimeCardForAllEmployeesAsync();
                     TimeCards = t.ToObservableCollection();
+                }
             }
         }
 
         [RelayCommand]
         private async Task ClockAll_OutAsync()
         {
-            if (TimeCards == null) return;
-
-            int i = 0;
-            foreach (TimeCard item in TimeCards)
+            if (TimeCards != null)
             {
-                if (item.TimeCard_Status == ShiftStatus.ClockedIn)
+                int i = 0;
+                foreach (TimeCard item in TimeCards)
                 {
-                    if (await cardService.EmployeeClockOutAsync(item))
-                        i++;
+                    if (item.TimeCard_Status == ShiftStatus.ClockedIn)
+                    {
+                        if (await cardService.EmployeeClockOutAsync(item.TimeCardId))
+                            i++;
+                    }
                 }
-            }
 
-            if (i > 0)
-            {
-                List<TimeCard> t = await cardService.GetLastTimeCardForAllEmployeesAsync();
-                if (t?.Count > 0)
+                if (i > 0)
+                {
+                    List<TimeCard> t = await cardService.GetLastTimeCardForAllEmployeesAsync();
                     TimeCards = t.ToObservableCollection();
+                }
             }
         }
 

@@ -1,90 +1,110 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
-	x:Class="TimeClockApp.Pages.SettingsPage"
-	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-	xmlns:controls="clr-namespace:TimeClockApp.Controls"
-	xmlns:models="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
-	xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
-	x:Name="AppSettingsPage"
-	Title="Settings"
-	x:DataType="vm:SettingsPageViewModel">
-	<ContentPage.BindingContext>
-		<vm:SettingsPageViewModel x:Name="viewModel" />
-	</ContentPage.BindingContext>
-	<ContentPage.Resources>
+	    x:Class="TimeClockApp.Pages.SettingsPage"
+	    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	    xmlns:controls="clr-namespace:TimeClockApp.Controls"
+	    xmlns:models="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
+        xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+	    xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
+	    x:Name="AppSettingsPage"
+	    Title="Settings">
+    <ContentPage.BindingContext>
+        <vm:SettingsPageViewModel x:Name="viewModel" />
+    </ContentPage.BindingContext>
+    <ContentPage.Resources>
+        <Style x:Key="InvalidEntryStyle" TargetType="Entry">
+            <Setter Property="TextColor" Value="Red" />
+        </Style>
+        <Style x:Key="ValidEntryStyle" TargetType="Entry">
+            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+        </Style>
 
-		<DataTemplate
-            x:Key="intTemplate"
-            x:DataType="models:Config">
-			<Grid ColumnDefinitions="200,40,*,40" RowDefinitions="Auto">
-				<Label                   
+        <DataTemplate x:Key="intTemplate">
+            <Grid ColumnDefinitions="200,40,*,40" RowDefinitions="Auto">
+                <Label                   
 					StyleClass="LabelSmallCenter"
 					Text="{Binding Name}"
 					VerticalTextAlignment="Center" />
-				<ImageButton
-                    x:DataType="vm:SettingsPageViewModel"
+                <ImageButton
 					Grid.Column="1"
-                    Command="{Binding DisplayHintCommand, Source={RelativeSource AncestorType={x:Type vm:SettingsPageViewModel}}}"
+                    Command="{Binding Source={x:Reference AppSettingsPage}, Path=BindingContext.DisplayHintCommand}"
 					CommandParameter="{Binding}"
 					HorizontalOptions="Center"
 					Source="help_icon_blue.png" />
-				<Entry
+                <Entry
+                    x:Name="entryIntBox"
 					Grid.Column="2"
 					Keyboard="Numeric"
-					Text="{Binding IntValue, Mode=TwoWay}" />
-				<ImageButton
-                    x:DataType="vm:SettingsPageViewModel"
+					Text="{Binding IntValue, Mode=TwoWay}">
+                    <Entry.Behaviors>
+                        <toolkit:NumericValidationBehavior
+                            BindingContext="{Binding Path=BindingContext, Source={x:Reference entryIntBox}, x:DataType=Entry}"
+							Flags="ValidateOnUnfocused"
+							InvalidStyle="{StaticResource InvalidEntryStyle}"
+                            ValidStyle="{StaticResource ValidEntryStyle}"
+							MaximumDecimalPlaces="2"
+							MinimumValue="0.0" />
+                    </Entry.Behaviors>
+                </Entry>
+                <ImageButton
 					Grid.Column="3"
-                    Command="{Binding SaveSettingCommand, Source={RelativeSource AncestorType={x:Type vm:SettingsPageViewModel}}}"
+                    Command="{Binding Source={x:Reference AppSettingsPage}, Path=BindingContext.SaveSettingCommand}"
 					CommandParameter="{Binding}"
 					HorizontalOptions="Center"
 					Source="save.png" />
-			</Grid>
-		</DataTemplate>
+            </Grid>
+        </DataTemplate>
 
-		<DataTemplate 
-            x:Key="stringTemplate"
-            x:DataType="models:Config">
-			<Grid ColumnDefinitions="200,40,*,40" RowDefinitions="Auto">
-				<Label                    
+        <DataTemplate x:Key="stringTemplate">
+            <Grid ColumnDefinitions="200,40,*,40" RowDefinitions="Auto">
+                <Label                    
 					StyleClass="LabelSmallCenter"
 					Text="{Binding Name}"
 					VerticalTextAlignment="Center" />
-				<ImageButton
-                    x:DataType="vm:SettingsPageViewModel"
+                <ImageButton
 					Grid.Column="1"
-                    Command="{Binding DisplayHintCommand, Source={RelativeSource AncestorType={x:Type vm:SettingsPageViewModel}}}"
+                    Command="{Binding Source={x:Reference AppSettingsPage}, Path=BindingContext.DisplayHintCommand}"
 					CommandParameter="{Binding}"
 					HorizontalOptions="Center"
 					Source="help_icon_blue.png" />
-				<Entry
+                <Entry
+                    x:Name="entryStringBox"
 					Grid.Column="2"
 					Keyboard="Text"
-                    x:DataType="models:Config"
-					Text="{Binding StringValue, Mode=TwoWay}" />
-				<ImageButton
-                    x:DataType="vm:SettingsPageViewModel"
+					Text="{Binding StringValue, Mode=TwoWay}">
+                    <Entry.Behaviors>
+                        <toolkit:TextValidationBehavior 
+                            BindingContext="{Binding Path=BindingContext, Source={x:Reference entryStringBox}, x:DataType=Entry}"
+							InvalidStyle="{StaticResource InvalidEntryStyle}"
+                            ValidStyle="{StaticResource ValidEntryStyle}"
+							Flags="ValidateOnUnfocused"
+							MinimumLength="0"
+							MaximumLength="40"
+                            RegexPattern="[A-Za-z0-9\s\S]+"
+                            RegexOptions="Singleline" />
+                    </Entry.Behaviors>
+                </Entry>
+                <ImageButton
 					Grid.Column="3"
-                    Command="{Binding SaveSettingCommand, Source={RelativeSource AncestorType={x:Type vm:SettingsPageViewModel}}}"
+                    Command="{Binding Source={x:Reference AppSettingsPage}, Path=BindingContext.SaveSettingCommand}"
 					CommandParameter="{Binding}"
 					HorizontalOptions="Center"
 					Source="save.png" />
-			</Grid>
-		</DataTemplate>
+            </Grid>
+        </DataTemplate>
 
-		<controls:SettingsDataTemplateSelector
+        <controls:SettingsDataTemplateSelector
 			x:Key="configtemplatesel"
 			IntTemplate="{StaticResource intTemplate}"
 			StringTemplate="{StaticResource stringTemplate}" />
-	</ContentPage.Resources>
+    </ContentPage.Resources>
 
-	<ScrollView>
-		<VerticalStackLayout>
-			<Border
+    <ScrollView>
+        <VerticalStackLayout>
+            <Border
 				x:Name="helpbox"
 				Padding="8"
-				HorizontalOptions="FillAndExpand"
 				IsVisible="{Binding HelpInfoBoxVisible}"
 				VerticalOptions="Center">
                 <Border.StrokeShape>
@@ -94,13 +114,13 @@
 					LineBreakMode="WordWrap"
 					Style="{StaticResource LabelSmall}"
 					Text="{Binding HelpInfo}" />
-			</Border>
+            </Border>
 
-			<CollectionView
+            <CollectionView
 				x:Name="collectionView"
 				EmptyView="No items to display"
 				ItemTemplate="{StaticResource configtemplatesel}"
 				ItemsSource="{Binding SettingsList}" />
-		</VerticalStackLayout>
-	</ScrollView>
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>

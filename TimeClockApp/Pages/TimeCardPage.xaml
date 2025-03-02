@@ -5,18 +5,14 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
     xmlns:controls="clr-namespace:TimeClockApp.Controls"
     xmlns:converter="clr-namespace:TimeClockApp.Converters" 
-    xmlns:models="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
     xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
     x:Name="PageTimeCard" 
     Title="TimeCards">
-    <!--<ContentPage.Behaviors>
-        <toolkit:EventToCommandBehavior Command="{Binding AppearingCommand}" EventName="Appearing" x:DataType="vm:TimeCardPageViewModel" />
-    </ContentPage.Behaviors>-->
     <ContentPage.ToolbarItems>
-        <ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
-        <ToolbarItem x:Name="TeamPageToolbarButton" Clicked="TeamPageToolbarButton_Clicked" IconImageSource="manage_accounts.png" />
-        <ToolbarItem Command="{Binding ClockAll_InCommand}" IconImageSource="play_circle.png" />
-        <ToolbarItem Command="{Binding ClockAll_OutCommand}" IconImageSource="pause_circle_outline.png" />
+        <ToolbarItem x:DataType="vm:TimeCardPageViewModel" Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
+        <ToolbarItem x:DataType="vm:TimeCardPageViewModel" x:Name="TeamPageToolbarButton" Clicked="TeamPageToolbarButton_Clicked" IconImageSource="manage_accounts.png" />
+        <ToolbarItem x:DataType="vm:TimeCardPageViewModel" Command="{Binding ClockAll_InCommand}" IconImageSource="play_circle.png" />
+        <ToolbarItem x:DataType="vm:TimeCardPageViewModel" Command="{Binding ClockAll_OutCommand}" IconImageSource="pause_circle_outline.png" />
     </ContentPage.ToolbarItems>
     <ContentPage.Resources>
         <ResourceDictionary>
@@ -39,11 +35,19 @@
 
                 <Border                    
                     Padding="8" 
-                    HorizontalOptions="FillAndExpand" 
                     VerticalOptions="Center">
                     <Border.StrokeShape>
                         <RoundRectangle CornerRadius="10"/>
                     </Border.StrokeShape>
+                    <FlyoutBase.ContextFlyout>
+                        <MenuFlyout>
+                            <MenuFlyoutItem 
+                                x:Name="FlyItemStart"
+                                Text="Edit Card"
+                                CommandParameter="{Binding TimeCardId}"
+                                Clicked="FlyItemStart_Clicked"/>
+                        </MenuFlyout>
+                    </FlyoutBase.ContextFlyout>
                     <Grid RowDefinitions="75,4,Auto,Auto,Auto">
                         <VerticalStackLayout VerticalOptions="Center">
                             <Label
@@ -61,20 +65,6 @@
                         <BoxView Grid.Row="1" 
                                  HeightRequest="2" 
                                  HorizontalOptions="Fill" />
-                        <Label
-                            Grid.Row="2" 
-                            HorizontalOptions="Center" 
-                            VerticalOptions="Fill" 
-                            VerticalTextAlignment="Center">
-                            <Label.FormattedText>
-                                <FormattedString>
-                                    <FormattedString.Spans>
-                                        <Span Text="Total: " />
-                                        <Span Text="{Binding TotalWorkHours, StringFormat='{0:F1}'}" />
-                                    </FormattedString.Spans>
-                                </FormattedString>
-                            </Label.FormattedText>
-                        </Label>
                         <Button
                             Command="{Binding Source={x:Reference PageTimeCard}, Path=BindingContext.ClockInCommand}"
                             CommandParameter="{Binding}"
@@ -93,7 +83,7 @@
             </SwipeView>
         </DataTemplate>
 
-        <DataTemplate x:Key="endTemplate" >
+        <DataTemplate x:Key="endTemplate">
             <SwipeView>
                 <SwipeView.LeftItems>
                     <SwipeItems>
@@ -107,11 +97,19 @@
 
                 <Border
                     Padding="8" 
-                    HorizontalOptions="FillAndExpand" 
                     VerticalOptions="Center">
                     <Border.StrokeShape>
                         <RoundRectangle CornerRadius="10"/>
                     </Border.StrokeShape>
+                    <FlyoutBase.ContextFlyout>
+                        <MenuFlyout>
+                            <MenuFlyoutItem 
+                                x:Name="FlyItemEditStart"
+                                Text="Edit Start Time"
+                                CommandParameter="{Binding TimeCardId}"
+                                Clicked="FlyItemEditStart_Clicked"/>
+                        </MenuFlyout>
+                    </FlyoutBase.ContextFlyout>
                     <Grid RowDefinitions="75,4,Auto,Auto,Auto">
                         <VerticalStackLayout VerticalOptions="Center">
                             <Label
@@ -135,20 +133,6 @@
                             Text="{Binding TimeCard_Duration, StringFormat='{}{0:h\\:mm}'}"
                             VerticalOptions="Fill" 
                             VerticalTextAlignment="Start" />
-                        <Label
-                            Grid.Row="2" 
-                            HorizontalOptions="Center" 
-                            VerticalOptions="Fill" 
-                            VerticalTextAlignment="Center">
-                            <Label.FormattedText>
-                                <FormattedString>
-                                    <FormattedString.Spans>
-                                        <Span Text="Week: " />
-                                        <Span Text="{Binding TotalWorkHours, StringFormat='{0:F1}'}" />
-                                    </FormattedString.Spans>
-                                </FormattedString>
-                            </Label.FormattedText>
-                        </Label>
                         <Label
                             Grid.Row="2" 
                             HorizontalOptions="Start"
@@ -178,28 +162,43 @@
             StartTemplate="{StaticResource startTemplate}" />
     </ContentPage.Resources>
 
-    <ScrollView>
+    <ScrollView x:DataType="vm:TimeCardPageViewModel">
         <StackLayout>
             <ActivityIndicator IsRunning="True" IsVisible="{Binding Loading}" />
             <VerticalStackLayout IsVisible="{Binding HasError}">
                 <Label Text="Loading failed" />
                 <Button 
-                    Command="{Binding InitCommand}" 
+                    Command="{Binding AppearingCommand}" 
                     Text="Retry" />
             </VerticalStackLayout>
             <Border
                 x:Name="helpbox" 
                 Padding="8" 
-                HorizontalOptions="FillAndExpand"
                 IsVisible="{Binding HelpInfoBoxVisible}"
                 VerticalOptions="Center">
                 <Border.StrokeShape>
                     <RoundRectangle CornerRadius="10"/>
                 </Border.StrokeShape>
-                <Label 
-                    LineBreakMode="WordWrap" 
-                    Style="{StaticResource LabelSmall}" 
-                    Text="Time Card Page. &#10;&#10;Here clock-in and clock-out employees. &#10;&#10;Additional options for each Time Card by swiping the Time Card from the left edge to the right, will show Edit Time Card or Change Start Time options.  &#10;&#10;The toolbar has Manage Employee Status, Clock All In, and Clock All Out." />
+                <Grid RowDefinitions="*,*,*,*" ColumnDefinitions="100,*">
+                    <Label
+                        Grid.ColumnSpan="2"
+                        LineBreakMode="WordWrap" 
+                        Style="{StaticResource LabelSmall}" 
+                        Text="Time Card Page. &#10;&#10;Here clock-in and clock-out employees. &#10;&#10;Additional options for each Time Card by swiping the Time Card from the left edge to the right, will show Edit Time Card or Change Start Time options.  &#10;&#10;The toolbar has Manage Employee Status, Clock All In, and Clock All Out." />
+
+                        <Image Grid.Row="1" Source="manage_accounts.png" />
+                        <Label Grid.Row="1" Grid.Column="1"
+                               Style="{StaticResource LabelSmall}" 
+                               Text="Manage Employee Status" />
+                        <Image Grid.Row="2" Source="play_circle.png" />
+                        <Label Grid.Row="2" Grid.Column="1"
+                               Style="{StaticResource LabelSmall}" 
+                               Text="Clock All In" />
+                        <Image Grid.Row="3" Source="pause_circle_outline.png" />
+                        <Label Grid.Row="3" Grid.Column="1"
+                               Style="{StaticResource LabelSmall}" 
+                               Text="Clock All Out" />
+                </Grid>
             </Border>
 
             <StackLayout Margin="10" Spacing="8">
@@ -209,6 +208,7 @@
                         Text="Project: " 
                         VerticalTextAlignment="Center" />
                     <Picker
+                        x:DataType="{x:Null}"
                         HorizontalOptions="Fill"
                         ItemDisplayBinding="{Binding Name}"
                         ItemsSource="{Binding ProjectList}"
@@ -219,6 +219,7 @@
                            Text="Phase: " 
                            VerticalTextAlignment="Center" />
                     <Picker
+                        x:DataType="{x:Null}"
                         HorizontalOptions="Fill"
                         ItemDisplayBinding="{Binding PhaseTitle}"
                         ItemsSource="{Binding PhaseList}"

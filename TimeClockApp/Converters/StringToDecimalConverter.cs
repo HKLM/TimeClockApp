@@ -1,16 +1,19 @@
-﻿namespace TimeClockApp.Converters
+﻿#nullable enable
+
+namespace TimeClockApp.Converters
 {
     public class StringToDecimalConverter : IValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
-            if (value == null || string.IsNullOrEmpty(value.ToString()) || value.ToString() == "") return 0;
+            if (value == null || string.IsNullOrEmpty(value.ToString()) || value.ToString()?.Length == 0) return 0;
             if (value is decimal @decimal)
                 return @decimal.ToString("C");
+
             return "$" + value.ToString();
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value == null || string.IsNullOrEmpty(value.ToString()))
                 return 0;

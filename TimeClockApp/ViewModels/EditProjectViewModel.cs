@@ -1,29 +1,29 @@
 ﻿namespace TimeClockApp.ViewModels
 {
-    public partial class EditProjectViewModel : TimeStampViewModel
+    public partial class EditProjectViewModel : BaseViewModel
     {
         protected readonly EditProjectService projectService;
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(EnableSaveButton))]
-        private int projectId = 0;
+        public partial int ProjectId { get; set; } = 0;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(EnableAddDelButtons))]
-        private string name;
-#region "DatePicker Min/Max Bindings"
+        public partial string Name { get; set; }
+        #region "DatePicker Min/Max Bindings"
         public DateTime PickerMinDate { get; set; }
         private readonly DateTime pickerMaxDate = DateTime.Now;
         public DateTime PickerMaxDate { get => pickerMaxDate; }
 #endregion
 
         [ObservableProperty]
-        private DateOnly projectDate;
+        public partial DateOnly ProjectDate { get; set; }
 
         [ObservableProperty]
-        private ObservableCollection<Project> projectList = [];
+        public partial ObservableCollection<Project> ProjectList { get; set; } = [];
 
         [ObservableProperty]
-        private Project selectedProject;
+        public partial Project SelectedProject { get; set; }
         partial void OnSelectedProjectChanged(global::TimeClockApp.Shared.Models.Project value)
         {
             if (value != null)
@@ -36,14 +36,14 @@
         }
 
         [ObservableProperty]
-        private ProjectStatus project_Status = ProjectStatus.Active;
+        public partial ProjectStatus Project_Status { get; set; } = ProjectStatus.Active;
         public IReadOnlyList<string> AllProjectStatus { get; } = Enum.GetNames(typeof(ProjectStatus));
 
         /// <summary>
         /// Show all projects or the default, active projects
         /// </summary>
         [ObservableProperty]
-        private bool showAll = false;
+        public partial bool ShowAll { get; set; } = false;
         partial void OnShowAllChanged(bool value)
         {
             LoadProjects();
@@ -81,9 +81,9 @@
                 {
                     string projectNewName = Name.Trim();
                     if (projectService.AddNewProject(projectNewName))
-                        App.AlertSvc.ShowAlert("Notice", projectNewName + " saved.\nExisting project of same name has been archived.");
+                        App.AlertSvc!.ShowAlert("Notice", projectNewName + " saved.\nExisting project of same name has been archived.");
                     else
-                        App.AlertSvc.ShowAlert("Notice", projectNewName + " saved");
+                        App.AlertSvc!.ShowAlert("Notice", projectNewName + " saved");
 
                     App.NoticeProjectHasChanged = true;
                     LoadProjects();
@@ -92,7 +92,7 @@
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Trace.WriteLine(ex.Message + "\n" + ex.InnerException);
+                Log.WriteLine(ex.Message + "\n" + ex.InnerException);
             }
         }
 
@@ -108,16 +108,16 @@
                     App.NoticeProjectHasChanged = true;
                     LoadProjects();
                     Name = string.Empty;
-                    App.AlertSvc.ShowAlert("Notice", oldProject + " Deleted");
+                    App.AlertSvc!.ShowAlert("Notice", oldProject + " Deleted");
                 }
                 else if (ProjectId == 1)
-                    App.AlertSvc.ShowAlert("Notice", "This project can not be Deleted.");
+                    App.AlertSvc!.ShowAlert("Notice", "This project can not be Deleted.");
                 else
-                    App.AlertSvc.ShowAlert("Notice", "You must select a Project before it can be updated");
+                    App.AlertSvc!.ShowAlert("Notice", "You must select a Project before it can be updated");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Trace.WriteLine(ex.Message + "\n" + ex.InnerException);
+                Log.WriteLine(ex.Message + "\n" + ex.InnerException);
             }
         }
 
@@ -132,17 +132,17 @@
                     projectService.UpdateProject(projectNewName, ProjectId, ProjectDate, Project_Status);
                     App.NoticeProjectHasChanged = true;
                     LoadProjects();
-                    App.AlertSvc.ShowAlert("Notice", projectNewName + " saved");
+                    App.AlertSvc!.ShowAlert("Notice", projectNewName + " saved");
                     Name = string.Empty;
                 }
                 else if (ProjectId == 1)
-                    App.AlertSvc.ShowAlert("Notice", "Can not edit this project. It is a Read Only project.");
+                    App.AlertSvc!.ShowAlert("Notice", "Can not edit this project. It is a Read Only project.");
                 else
-                    App.AlertSvc.ShowAlert("Notice", "You must select a Project before it can be updated");
+                    App.AlertSvc!.ShowAlert("Notice", "You must select a Project before it can be updated");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Trace.WriteLine(ex.Message + "\n" + ex.InnerException);
+                Log.WriteLine(ex.Message + "\n" + ex.InnerException);
             }
         }
 

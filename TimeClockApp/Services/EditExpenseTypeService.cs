@@ -4,14 +4,14 @@ namespace TimeClockApp.Services
 {
     public class EditExpenseTypeService : TimeCardDataStore
     {
-        public async Task<List<ExpenseType>> GetExpenseTypeListAsync() =>
-                await Context.ExpenseType
+        public Task<List<ExpenseType>> GetExpenseTypeListAsync() =>
+                Context.ExpenseType
                     .Where(item => item.ExpenseTypeId > 1)
                     .OrderBy(item => item.CategoryName)
-                    .ToListAsync().ConfigureAwait(false);
+                    .ToListAsync();
 
         /// <summary>
-        /// 
+        /// Adds new CategoryName of ExpenseType type
         /// </summary>
         /// <param name="categoryName"></param>
         /// <returns>
@@ -24,12 +24,12 @@ namespace TimeClockApp.Services
             if (string.IsNullOrEmpty(categoryName))
                 return 0;
 
-            if (Context.ExpenseType.AsNoTracking().Where(x => x.CategoryName == categoryName).Any())
+            if (await Context.ExpenseType.AsNoTracking().Where(x => x.CategoryName == categoryName).AnyAsync())
             {
                 return 2;
             }
             else
-            { 
+            {
                 ExpenseType et = new()
                 {
                     CategoryName = categoryName
@@ -62,7 +62,7 @@ namespace TimeClockApp.Services
             ExpenseType origExpense = Context.ExpenseType.Find(expenseTypeId);
             if (origExpense != null)
             {
-                if (Context.ExpenseType.Count() > 2)
+                if (await Context.ExpenseType.CountAsync() > 2)
                 {
                     Context.Remove<ExpenseType>(origExpense);
                     return (await Context.SaveChangesAsync() > 0);

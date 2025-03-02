@@ -1,11 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using CsvHelper.Configuration;
-using Microsoft.EntityFrameworkCore;
+
+#nullable enable
 
 namespace TimeClockApp.Shared.Models
 {
-    [Index(nameof(CategoryName), IsUnique = true)]
     public class ExpenseType
     {
         [Key]
@@ -15,7 +15,7 @@ namespace TimeClockApp.Shared.Models
         [StringLength(50)]
         public string CategoryName { get; set; } = string.Empty;
 
-        public virtual ICollection<Expense> Expenses { get; set; }
+        public virtual ICollection<Expense> Expenses { get; set; } = new List<Expense>();
     }
 
     public sealed class ExpenseTypeMap : ClassMap<ExpenseType>
@@ -28,5 +28,4 @@ namespace TimeClockApp.Shared.Models
             Map(m => m.CategoryName);
         }
     }
-
 }

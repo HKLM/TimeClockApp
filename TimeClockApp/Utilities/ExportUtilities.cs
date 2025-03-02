@@ -3,10 +3,10 @@ using TimeClockApp.Shared;
 
 namespace TimeClockApp.Utilities
 {
-    public static class ExportUtilities
+    public class ExportUtilities
     {
-        private static readonly FileService fhs = new();
-        public static async Task<bool> CompressAndExportFolder(string folderToZipPath)
+        private readonly FileService fhs = new();
+        public async Task<bool> CompressAndExportFolder(string folderToZipPath)
         {
             // Get a temporary cache directory
             string exportZipTempDirectory = Path.Combine(Microsoft.Maui.Storage.FileSystem.CacheDirectory, "Export");
@@ -17,15 +17,18 @@ namespace TimeClockApp.Utilities
                 if (Directory.Exists(exportZipTempDirectory))
                     Directory.Delete(exportZipTempDirectory, true);
             }
+            catch (AggregateException ax)
+            {
+                TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateException(ax);
+            }
             catch (Exception ex)
             {
                 // Log things and move on, don't want to fail just because of a left over lock or something
-                System.Diagnostics.Trace.WriteLine(ex);
+                Log.WriteLine(ex.Message + "\n" + ex.InnerException);
             }
 
             // Get a timestamped filename
-            //string exportZipFilename = $"MyAppData_{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.zip";
-            string exportZipFilename = $"TimeClockAppData_{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.zip";            
+            string exportZipFilename = $"TimeClockAppData_{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.zip";
             Directory.CreateDirectory(exportZipTempDirectory);
 
             string exportZipFilePath = Path.Combine(exportZipTempDirectory, exportZipFilename);
@@ -56,7 +59,7 @@ namespace TimeClockApp.Utilities
             return true;
         }
 
-        public static ImportDataModel UnzipArchive(string fileToUNZipPath, string unZipTempDirectory)
+        public ImportDataModel UnzipArchive(string fileToUNZipPath, string unZipTempDirectory)
         {
             ImportDataModel dataModel = new();
             try
@@ -66,7 +69,7 @@ namespace TimeClockApp.Utilities
 
                 string versionFile = Path.Combine(unZipTempDirectory, "FILE_ID.DIZ");
                 dataModel.bVersion = File.Exists(versionFile);
-                if (dataModel.bVersion) 
+                if (dataModel.bVersion)
                     dataModel.FileVersion = versionFile;
 
                 string timecardFile = Path.Combine(unZipTempDirectory, "TimeCard.csv");
@@ -94,7 +97,7 @@ namespace TimeClockApp.Utilities
             catch (Exception ex)
             {
                 string ExportLog = "\nEXCEPTION ERROR\n" + ex.Message + "\n" + ex.InnerException;
-                Trace.WriteLine(ExportLog);
+                Log.WriteLine(ExportLog);
                 SQLiteDataStore dataService = new();
                 dataService.ShowPopupError(ExportLog, "ABORTING DUE TO ERROR");
             }

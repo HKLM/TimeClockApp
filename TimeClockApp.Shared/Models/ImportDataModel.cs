@@ -39,7 +39,7 @@ namespace TimeClockApp.Shared.Models
                 if (!string.IsNullOrEmpty(ImportVersionString) && double.TryParse(ImportVersionString, out double x))
                     return x;
                 else
-                    return importVersionNumber.HasValue ? importVersionNumber.Value : 0;
+                    return importVersionNumber ?? 0;
             }
             set
             {

@@ -21,13 +21,16 @@
         <Style x:Key="InvalidEntryStyle" TargetType="Entry">
             <Setter Property="TextColor" Value="Red" />
         </Style>
+        <Style x:Key="ValidEntryStyle" TargetType="Entry">
+            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+        </Style>
+
     </ContentPage.Resources>
     <ScrollView>
         <StackLayout>
             <Border
                 x:Name="helpbox"
                 Padding="8"
-                HorizontalOptions="FillAndExpand"
                 IsVisible="{Binding HelpInfoBoxVisible}"
                 VerticalOptions="Center">
                 <Border.StrokeShape>
@@ -99,12 +102,15 @@
                         HorizontalOptions="Fill"
                         Keyboard="Numeric"
                         Placeholder="Amount"
+                        x:Name="entryAmountBox"
                         Text="{Binding Amount, Mode=TwoWay}"
                         VerticalTextAlignment="Center">
                         <Entry.Behaviors>
                             <toolkit:NumericValidationBehavior
+                                BindingContext="{Binding Path=BindingContext, Source={x:Reference entryAmountBox}, x:DataType=Entry}"
                                 Flags="ValidateOnValueChanged"
                                 InvalidStyle="{StaticResource InvalidEntryStyle}"
+                                ValidStyle="{StaticResource ValidEntryStyle}"
                                 MaximumDecimalPlaces="2"
                                 MinimumValue="0.0" />
                         </Entry.Behaviors>
@@ -120,8 +126,21 @@
                         FontSize="Small"
                         HorizontalOptions="Fill"
                         Placeholder="Memo"
+                        x:Name="entryMemoBox"
                         Text="{Binding Memo, Mode=TwoWay}"
-                        VerticalTextAlignment="Center" />
+                        VerticalTextAlignment="Center">
+                        <Entry.Behaviors>
+                            <toolkit:TextValidationBehavior 
+                                BindingContext="{Binding Path=BindingContext, Source={x:Reference entryMemoBox}, x:DataType=Entry}"
+                                InvalidStyle="{StaticResource InvalidEntryStyle}"
+                                ValidStyle="{StaticResource ValidEntryStyle}"
+								Flags="ValidateOnValueChanged"
+                                DecorationFlags="NormalizeWhiteSpace"
+								MinimumLength="0"
+                                RegexPattern="[A-Za-z0-9\s\S]+"
+                                RegexOptions="Multiline" />
+                        </Entry.Behaviors>
+                    </Entry>
                     <Button
                         Grid.Row="6"
                         Grid.ColumnSpan="3"

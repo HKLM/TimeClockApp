@@ -11,18 +11,16 @@ namespace TimeClockApp.Services
         /// Gets the WorkersCompensation rate value.
         /// </summary>
         /// <returns></returns>
-        public double GetWCRate()
+        public double GetWCRate() => GetRate(5);
+
+        protected double GetRate(int i)
         {
-            int i = 5;
             Config? c = Context.Config.Find(i);
-            if (c != null && double.TryParse(c?.StringValue, out double wc))
-                return wc;
-            else
-                return 0;
+            return c != null && double.TryParse(c?.StringValue, out double wc) ? wc : 0;
         }
 
         [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-        public async Task<TimeSheet> GetPayrollTimeSheetForEmployeeAsync(int employeeId, DateOnly start, DateOnly end, string employeeName, TimeSheet? sheet = null, bool showPaid = true)
+        public async Task<TimeSheet> GetPayrollTimeSheetForEmployeeAsync(int employeeId, DateOnly start, DateOnly end, string employeeName, TimeSheet? sheet = null, bool onlyUnpaid = false)
         {
             if (sheet == null)
             {
@@ -33,8 +31,8 @@ namespace TimeClockApp.Services
                 sheet.Reset();
             }
 
-            sheet.TimeCards = await GetTimeCardsForPayPeriodAsync(employeeId, start, end, showPaid);
-            if (sheet.TimeCards == null || (sheet.TimeCards != null && sheet.TimeCards.Count == 0))
+            sheet.TimeCards = await GetTimeCardsForPayPeriodAsync(employeeId, start, end, onlyUnpaid);
+            if (sheet.TimeCards == null || sheet.TimeCards?.Count == 0)
                 return sheet;
 
             double pay = 0;
@@ -113,7 +111,7 @@ namespace TimeClockApp.Services
             }
             sheet.TimeCards = GetTimeCardsForPayPeriod(employeeId, start, end, showPaid);
 
-            if (sheet.TimeCards == null || (sheet.TimeCards != null && sheet.TimeCards.Count == 0))
+            if (sheet.TimeCards == null || sheet.TimeCards?.Count == 0)
                 return sheet;
 
             double pay = 0;
@@ -194,7 +192,7 @@ namespace TimeClockApp.Services
             }
 
             sheet.TimeCards = cards.ToList();
-            if (sheet.TimeCards == null || (sheet.TimeCards != null && sheet.TimeCards.Count == 0))
+            if (sheet.TimeCards == null || sheet.TimeCards?.Count == 0)
                 return 0;
 
             double pay = 0;

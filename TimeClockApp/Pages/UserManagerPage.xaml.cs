@@ -17,7 +17,7 @@ public partial class UserManagerPage : ContentPage
     private void NameBox_TextChanged(object sender, TextChangedEventArgs e)
     {
         Entry box = (Entry)sender;
-        if (box != null)
+        if (box != null && NewEmpButton != null)
         {
             if (string.IsNullOrEmpty(box.Text))
                 NewEmpButton.IsEnabled = false;

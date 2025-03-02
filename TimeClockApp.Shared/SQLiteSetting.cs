@@ -1,7 +1,4 @@
-﻿using System.IO;
-using Microsoft.Maui.Storage;
-
-#nullable enable
+﻿#nullable enable
 
 namespace TimeClockApp.Shared
 {
@@ -15,27 +12,18 @@ namespace TimeClockApp.Shared
         /// File name (only) of the SQLite Database used by the EFMigrator for setting up EF migrations.
         /// </summary>
         /// <remarks>Does not include path.</remarks>
-        private const string SQLiteDbFileName = "BaseTimeClock.db3";
+        private const string sQLiteDbFileName = "BaseTimeClock.db3";
 #else
         /// <summary>
         /// File name (only) of the SQLite Database used by the app.
         /// </summary>
         /// <remarks>Does not include path.</remarks>
-        private const string SQLiteDbFileName = "TimeClockAppDB-08.db3";
+        private const string sQLiteDbFileName = "TimeClockAppDB-2a.db3";
 #endif
-        /// <summary>
-        /// Backing field for <see cref="SQLiteDBPath"/>
-        /// </summary>
-        private static string? dBPath;
-
         /// <summary>
         /// Property for the full file path to the SQLite Database
         /// </summary>
-        public static string SQLiteDBPath
-        {
-            get => dBPath ??= GetSQLiteDBPath();
-            set => dBPath = value;
-        }
+        private static string SQLiteDBPath { get; set; } = string.Empty;
 
         /// <summary>
         /// Method for getting the full file path to SQLite Database
@@ -43,13 +31,15 @@ namespace TimeClockApp.Shared
         /// <returns>string value of the file path to the SQLite Database</returns>
         public static string GetSQLiteDBPath()
         {
-            string p;
+            if (SQLiteDBPath == string.Empty)
+            {
 #if MIGRATION
-            p = Path.Combine("../", SQLiteDbFileName);
+                SQLiteDBPath = System.IO.Path.Combine("../", sQLiteDbFileName);
 #else
-            p = Path.Combine(FileSystem.Current.AppDataDirectory, SQLiteDbFileName);
+                SQLiteDBPath = System.IO.Path.Combine(Microsoft.Maui.Storage.FileSystem.Current.AppDataDirectory, sQLiteDbFileName);
 #endif
-            return p;
+            }
+            return SQLiteDBPath;
         }
     }
 }

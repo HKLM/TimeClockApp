@@ -15,7 +15,6 @@
 		<DataTemplate x:Key="activeTeam">
 			<Border
 				Padding="8"
-				HorizontalOptions="FillAndExpand"
 				VerticalOptions="Center">
                 <Border.StrokeShape>
                     <RoundRectangle CornerRadius="10"/>
@@ -36,7 +35,6 @@
 		<DataTemplate x:Key="notActiveTeam">
 			<Border
 				Padding="8"
-				HorizontalOptions="FillAndExpand"
 				VerticalOptions="Center">
                 <Border.StrokeShape>
                     <RoundRectangle CornerRadius="10"/>
@@ -65,7 +63,6 @@
 				<Border
 					x:Name="helpbox"
 					Padding="8"
-					HorizontalOptions="FillAndExpand"
 					IsVisible="{Binding HelpInfoBoxVisible}"
 					VerticalOptions="Center">
                     <Border.StrokeShape>

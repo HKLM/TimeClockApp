@@ -23,19 +23,20 @@
             </StackLayout>
         </DataTemplate>
     </Shell.FlyoutFooterTemplate>
-    <ShellContent Title="TimeCard" ContentTemplate="{DataTemplate local:TimeCardPage}" Route="TimeCardPage" Icon="date_range.png" />
+    <ShellContent Title="TimeCard" ContentTemplate="{DataTemplate local:TimeCardPage}" Route="TimeCardPage" Icon="calendar_clock_24px.png" />
     <FlyoutItem Title="Payroll" FlyoutDisplayOptions="AsSingleItem" Icon="paid_outline.png">
         <ShellContent ContentTemplate="{DataTemplate local:PayrollDetailPage}" Route="PayrollDetailPage" />
     </FlyoutItem>
     <FlyoutItem Title="Payroll List" FlyoutDisplayOptions="AsSingleItem" Icon="payments.png">
         <ShellContent ContentTemplate="{DataTemplate local:PayrollPage}" Route="PayrollPage" />
     </FlyoutItem>
-    <FlyoutItem Title="Financial" FlyoutDisplayOptions="AsSingleItem" Icon="work_twotone.png">
-        <Tab Title="Expences" Icon="receipt_outline.png">
-            <ShellContent ContentTemplate="{DataTemplate local:ExpensePage}" Route="ExpensePage" />
-        </Tab>
+    <FlyoutItem Title="Expences" FlyoutDisplayOptions="AsSingleItem" Icon="receipt_outline.png">
+        <ShellContent ContentTemplate="{DataTemplate local:ExpensePage}" Route="ExpensePage" />
     </FlyoutItem>
-    <FlyoutItem Title="Reports" FlyoutDisplayOptions="AsSingleItem" Icon="assignment.png">
+    <FlyoutItem Title="Invoice" FlyoutDisplayOptions="AsSingleItem" Icon="assignment.png">
+        <ShellContent ContentTemplate="{DataTemplate local:InvoicePage}" Route="InvoicePage" />
+    </FlyoutItem>
+    <FlyoutItem Title="Reports" FlyoutDisplayOptions="AsSingleItem" Icon="bar_chart_24px.png">
         <ShellContent ContentTemplate="{DataTemplate local:ReportPage}" Route="ReportPage" />
     </FlyoutItem>
     <FlyoutItem Title="TimeCard Manager" FlyoutDisplayOptions="AsSingleItem" Icon="edit_calendar_twotone.png">
@@ -45,7 +46,7 @@
         <Tab Title="BackUp" Icon="backup.png">
             <ShellContent ContentTemplate="{DataTemplate local:ExportPage}" Route="ExportPage" />
         </Tab>
-        <Tab Title="Setting" Icon="settings.png">
+        <Tab Title="Settings" Icon="settings.png">
             <ShellContent ContentTemplate="{DataTemplate local:SettingsPage}" Route="SettingsPage" />
         </Tab>
     </FlyoutItem>
@@ -59,8 +60,8 @@
         <Tab Title="Phase" Icon="plumbing.png">
             <ShellContent ContentTemplate="{DataTemplate local:EditPhasePage}" Route="EditPhasePage" />
         </Tab>
-        <Tab Title="ExpenseType" Icon="folder_copy.png">
-            <ShellContent ContentTemplate="{DataTemplate local:EditExpenseTypePage}" Route="EditExpenseTypePage" />
+        <Tab Title="Expense Types" Icon="folder_copy.png">
+            <ShellContent ContentTemplate="{DataTemplate local:EditExpenseTypeTab}" Route="EditExpenseTypeTab" />
         </Tab>
     </FlyoutItem>
 </Shell>

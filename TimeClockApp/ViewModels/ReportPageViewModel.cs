@@ -1,43 +1,43 @@
-﻿using CommunityToolkit.Maui.Core.Extensions;
+﻿using TimeClockApp.Controls.MultiSelectListView;
 #nullable enable
 
 namespace TimeClockApp.ViewModels
 {
-    public partial class ReportPageViewModel(ReportPageService service) : TimeStampViewModel
+    public partial class ReportPageViewModel : BaseViewModel
     {
-        protected readonly ReportPageService reportData = service;
+        protected readonly ReportPageService reportData = new();
 
         private List<TimeSheet> TimeSheetList = [];
 
         [ObservableProperty]
-        private bool useDateFilter = false;
+        public partial bool UseDateFilter { get; set; } = false;
         [ObservableProperty]
-        private DateOnly startDate = DateOnly.FromDateTime(DateTime.Now);
+        public partial DateOnly StartDate { get; set; } = DateOnly.FromDateTime(DateTime.Now);
         [ObservableProperty]
-        private DateOnly endDate = DateOnly.FromDateTime(DateTime.Now);
+        public partial DateOnly EndDate { get; set; } = DateOnly.FromDateTime(DateTime.Now);
 #region "DatePicker Min/Max Bindings"
         public DateTime PickerMinDate { get; set; }
         private readonly DateTime pickerMaxDate = DateTime.Now;
         public DateTime PickerMaxDate { get => pickerMaxDate; }
-#endregion
+        #endregion
 
         [ObservableProperty]
-        private double regTotalHours = 0;
+        public partial double RegTotalHours { get; set; } = 0;
         [ObservableProperty]
-        private double totalOTHours = 0;
+        public partial double TotalOTHours { get; set; } = 0;
         [ObservableProperty]
-        private double totalOT2Hours = 0;
+        public partial double TotalOT2Hours { get; set; } = 0;
         [ObservableProperty]
-        private double totalWorkHours = 0;
+        public partial double TotalWorkHours { get; set; } = 0;
         [ObservableProperty]
-        private double totalGrossPay = 0.00;
+        public partial double TotalGrossPay { get; set; } = 0.00;
         partial void OnTotalGrossPayChanged(double value)
         {
             TotalEstimatedWC = value * WCRate;
         }
 
         [ObservableProperty]
-        private double totalEstimatedWC = 0.00;
+        public partial double TotalEstimatedWC { get; set; } = 0.00;
         partial void OnTotalEstimatedWCChanged(double value)
         {
             TotalLaborBurden = TotalEstimatedWC + TotalGrossPay;
@@ -45,79 +45,84 @@ namespace TimeClockApp.ViewModels
         public double WCRate { get; set; } = 0.00;
 
         [ObservableProperty]
-        private double totalLaborBurden = 0.00;
+        public partial double TotalLaborBurden { get; set; } = 0.00;
 
         [ObservableProperty]
-        private bool useEmployeeFilter = false;
+        public partial bool UseEmployeeFilter { get; set; } = false;
         partial void OnUseEmployeeFilterChanged(bool value)
         {
             if (value == true)
                 RefreshEmployees();
         }
         [ObservableProperty]
-        private ObservableCollection<Employee> employeeList = [];
-        [ObservableProperty]
-        private Employee? selectedEmployee = null;
+        public partial MultiSelectObservableCollection<Employee> EmployeeList { get; set; } = new();
+        /// <summary>
+        /// List of Employees to filter by
+        /// </summary>
+        private List<Employee> SelectedEmployeeList = new();
 
         [ObservableProperty]
-        private bool useProjectFilter = false;
+        public partial Employee? SelectedEmployee { get; set; } = null;
+
+        [ObservableProperty]
+        public partial bool UseProjectFilter { get; set; } = false;
         partial void OnUseProjectFilterChanged(bool value)
         {
             if (value == true)
                 RefreshProjects();
         }
         [ObservableProperty]
-        private ObservableCollection<Project> projectList = [];
+        public partial ObservableCollection<Project> ProjectList { get; set; } = [];
         [ObservableProperty]
-        private Project? selectedProject = null;
+        public partial Project? SelectedProject { get; set; } = null;
 
         [ObservableProperty]
-        private bool usePhaseFilter = false;
+        public partial bool UsePhaseFilter { get; set; } = false;
         partial void OnUsePhaseFilterChanged(bool value)
         {
             if (value == true)
                 RefreshPhases();
         }
         [ObservableProperty]
-        private ObservableCollection<Phase> phaseList = [];
+        public partial ObservableCollection<Phase> PhaseList { get; set; } = [];
+
         [ObservableProperty]
-        private Phase? selectedPhase = null;
+        public partial Phase? SelectedPhase { get; set; } = null;
 
         public void OnAppearing()
         {
             PickerMinDate = reportData.GetAppFirstRunDate();
+            StartDate = DateOnly.FromDateTime(reportData.GetStartOfPayPeriod(DateTime.Now));
             WCRate = reportData.GetWCRate();
+            List<Employee> e = reportData.GetEmployeesList();
+            EmployeeList = new MultiSelectObservableCollection<Employee>(e as List<Employee>);
         }
 
         private void RefreshProjects()
         {
-            ProjectList ??= [];
             ProjectList = reportData.GetProjectsList();
         }
         private void RefreshPhases()
         {
-            PhaseList ??= [];
             PhaseList = reportData.GetPhaseList();
         }
 
         private void RefreshEmployees()
         {
-            EmployeeList ??= [];
-            if (EmployeeList.Count > 0)
-                EmployeeList.Clear();
-
-            EmployeeList = reportData.GetEmployeesList().ToObservableCollection();
+            List<Employee> e = reportData.GetEmployeesList();
+            EmployeeList = new MultiSelectObservableCollection<Employee>(e as List<Employee>);
         }
 
         [RelayCommand]
-        private async Task MakeReport()
-        {
-            await Task.Run(async () => await RunReportAsync(UseEmployeeFilter, UseProjectFilter, UsePhaseFilter, UseDateFilter, SelectedEmployee, SelectedProject, SelectedPhase, StartDate, EndDate));
-        }
-
-        private async Task RunReportAsync(bool useEmployeeFilter, bool useProjectFilter, bool usePhaseFilter, bool useDateFilter, Employee? employee, Project? project, Phase? phase, DateOnly? start, DateOnly? end)
+        private Task MakeReport()
         {
             ResetItems();
+            return Task.Run(async () => await RunReportAsync(UseEmployeeFilter, UseProjectFilter, UsePhaseFilter, UseDateFilter, SelectedEmployeeList, SelectedProject, SelectedPhase, StartDate, EndDate));
+        }
+
+        private async Task RunReportAsync(bool useEmployeeFilter, bool useProjectFilter, bool usePhaseFilter, bool useDateFilter, List<Employee> employee, Project? project, Phase? phase, DateOnly? start, DateOnly? end)
+        {
+
             Task<List<TimeSheet>> t = reportData.RunFullReportAsync(useEmployeeFilter, useProjectFilter, usePhaseFilter, useDateFilter, employee, project, phase, start, end);
             TimeSheetList = await t;
             foreach (TimeSheet i in TimeSheetList)
@@ -127,6 +132,22 @@ namespace TimeClockApp.ViewModels
                 TotalOTHours += i.TotalOTHours;
                 TotalOT2Hours += i.TotalOT2Hours;
             }
+        }
+
+        [RelayCommand]
+        private void ClickedEmployeeList(int employeeId)
+        {
+            int idx = SelectedEmployeeList.FindIndex(x => x.EmployeeId == employeeId);
+            if (idx > 0)
+            {
+                SelectedEmployeeList.RemoveAt(idx);
+            }
+            else
+            {
+                Employee? e = reportData.GetEmployee(employeeId);
+                SelectedEmployeeList.Add(e);
+            }
+            ResetItems();
         }
 
         [RelayCommand]

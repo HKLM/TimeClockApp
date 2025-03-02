@@ -15,7 +15,7 @@
             }
             catch (Exception e)
             {
-                System.Diagnostics.Debug.WriteLine(e.Message + "\n" + e.InnerException);
+                Log.WriteLine($"{e.Message}\n{e.InnerException}");
                 //throw;
             }
             return false;

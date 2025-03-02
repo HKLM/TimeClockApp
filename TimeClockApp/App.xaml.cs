@@ -1,32 +1,26 @@
-﻿using TimeClockApp.Shared;
+﻿namespace TimeClockApp;
 
-namespace TimeClockApp;
-
+#nullable enable
 [XamlCompilation(XamlCompilationOptions.Compile)]
-public partial class App : Microsoft.Maui.Controls.Application
+public partial class App : Application
 {
-    public static IServiceProvider Services { get; protected set; }
-    public static IAlertService AlertSvc;
+    public static IServiceProvider? Services { get; protected set; }
+    public static IAlertService? AlertSvc;
 
     public App(IServiceProvider provider)
     {
         InitializeComponent();
 
-        SQLiteSetting.SQLiteDBPath = SQLiteSetting.GetSQLiteDBPath();
-        FirstRun = true;
         Services = provider;
         AlertSvc = Services.GetService<IAlertService>();
+    }
 
-        MainPage = new AppShell();
+    protected override Window CreateWindow(IActivationState? activationState)
+    {
+        return new Window(new AppShell());
     }
 
 #region HELPERS
-    /// <summary>
-    /// Determine if this is the apps 1st time running
-    /// </summary>
-    public static bool FirstRun { get; private set; } = true;
-    public static void SetFirstRun(bool IsFirstRun) => FirstRun = IsFirstRun;
-
     private static ViewModels.EntityMonitor GetEntityMonitor = new();
     public static bool NoticeProjectHasChanged
     {
@@ -45,8 +39,8 @@ public partial class App : Microsoft.Maui.Controls.Application
     }
 
     // Cached for quick access
-    public static int CurrentProjectId { get; set; } = 0;
-    public static int CurrentPhaseId { get; set; } = 0;
+    public static int? CurrentProjectId { get; set; } = null;
+    public static int? CurrentPhaseId { get; set; } = null;
 
 #endregion HELPERS
 }

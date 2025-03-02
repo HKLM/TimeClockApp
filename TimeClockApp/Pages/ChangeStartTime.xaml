@@ -6,10 +6,9 @@
 	xmlns:Converter="clr-namespace:TimeClockApp.Converters"
 	xmlns:models="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
 	xmlns:viewModels="clr-namespace:TimeClockApp.ViewModels"
-	Title="Change Start Time"
-	x:DataType="viewModels:ChangeStartTimeViewModel">
+	Title="Change Start Time">
     <ContentPage.ToolbarItems>
-        <ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
+        <ToolbarItem x:DataType="viewModels:ChangeStartTimeViewModel" Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
     </ContentPage.ToolbarItems>
     <ContentPage.Resources>
         <ResourceDictionary>
@@ -20,8 +19,8 @@
         <StackLayout>
             <Border
 				x:Name="helpbox"
+                x:DataType="viewModels:ChangeStartTimeViewModel"
 				Padding="8"
-				HorizontalOptions="FillAndExpand"
 				IsVisible="{Binding HelpInfoBoxVisible}"
 				VerticalOptions="Center">
                 <Border.StrokeShape>
@@ -33,9 +32,9 @@
 					Text="Change TimeCard Start Time. &#10;&#10;Change the time cards date, start time, associated project and/or phase." />
             </Border>
             <StackLayout Padding="8" >
-                <Label FontSize="Small" Text="{Binding TimeCardID, StringFormat='Id={0}'}" />
-                <Label FontSize="Title" Text="{Binding TimeCard_EmployeeName}" />
-                <Label FontSize="Small" Text="{Binding TimeCard_Date, StringFormat='{0:MMM d ddd}'}" />
+                <Label FontSize="Small" Text="{Binding TimeCardID, StringFormat='Id={0}'}" x:DataType="viewModels:ChangeStartTimeViewModel"/>
+                <Label FontSize="Title" Text="{Binding TimeCard_EmployeeName}" x:DataType="viewModels:ChangeStartTimeViewModel"/>
+                <Label FontSize="Small" Text="{Binding TimeCard_Date, StringFormat='{0:MMM d ddd}'}" x:DataType="viewModels:ChangeStartTimeViewModel" />
                 <Border>
                     <Grid
 							ColumnDefinitions="*,*"
@@ -48,7 +47,6 @@
 								VerticalTextAlignment="Center" />
                         <TimePicker
 								Grid.Column="1"
-								HorizontalOptions="FillAndExpand"
 								Time="{Binding StartTime, Converter={StaticResource timeOnlyToTimeSpanConverter}, Mode=TwoWay}"
 								VerticalOptions="Center" />
                         <Label
@@ -59,7 +57,6 @@
                         <Picker
 								Grid.Row="1"
 								Grid.Column="1"
-								HorizontalOptions="FillAndExpand"
 								ItemDisplayBinding="{Binding Name}"
 								ItemsSource="{Binding ProjectList}"
 								SelectedItem="{Binding SelectedProject, Mode=TwoWay}"
@@ -72,7 +69,6 @@
                         <Picker
 								Grid.Row="2"
 								Grid.Column="1"
-								HorizontalOptions="FillAndExpand"
 								ItemDisplayBinding="{Binding PhaseTitle}"
 								ItemsSource="{Binding PhaseList}"
 								SelectedItem="{Binding SelectedPhase, Mode=TwoWay}"
@@ -80,9 +76,10 @@
                     </Grid>
                 </Border>
                 <Button
-						Margin="20,0"
-						Command="{Binding SaveTimeCardCommand}"
-						Text="Save" />
+                    x:DataType="viewModels:ChangeStartTimeViewModel"
+					Margin="20,0"
+					Command="{Binding SaveTimeCardCommand}"
+					Text="Save" />
             </StackLayout>
         </StackLayout>
     </ScrollView>

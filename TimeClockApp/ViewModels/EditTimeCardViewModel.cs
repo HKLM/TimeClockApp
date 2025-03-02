@@ -3,38 +3,29 @@
 
 namespace TimeClockApp.ViewModels
 {
-    public partial class EditTimeCardViewModel(EditTimeCardService service) : TimeStampViewModel, IQueryAttributable
+    public partial class EditTimeCardViewModel(EditTimeCardService service) : BaseViewModel, IQueryAttributable
     {
         protected readonly EditTimeCardService cardService = service;
 
         [ObservableProperty]
-        private int timeCardID = 0;
+        public partial int TimeCardID { get; set; } = 0;
         partial void OnTimeCardIDChanged(int value)
         {
-            RefreshCard();
+            MainThread.BeginInvokeOnMainThread(async () => { await RefreshCard(); });
         }
 
         [ObservableProperty]
-        private TimeCard? timeCardEditing = null;
+        public partial TimeCard? TimeCardEditing { get; set; } = null;
 
         [ObservableProperty]
-        private int timeCardEmployeeId;
+        public partial int TimeCardEmployeeId { get; set; }
 
         [ObservableProperty]
-        private DateOnly timeCard_Date;
-        partial void OnTimeCard_DateChanging(global::System.DateOnly oldValue, global::System.DateOnly newValue)
-        {
-            if (oldValue != new DateOnly())
-                Last_TimeCard_Date = oldValue;
-            else if (newValue != new DateOnly())
-                Last_TimeCard_Date = newValue;
-        }
-
-        public DateOnly Last_TimeCard_Date { get; set; }
+        public partial DateOnly TimeCard_Date { get; set; }
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(StartTime))]
-        private TimeOnly timeCard_StartTime = new(0);
+        public partial TimeOnly TimeCard_StartTime { get; set; } = new(0);
         public TimeOnly StartTime
         {
             get => TimeCard_StartTime;
@@ -43,7 +34,7 @@ namespace TimeClockApp.ViewModels
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(EndTime))]
-        private TimeOnly timeCard_EndTime = new(0);
+        public partial TimeOnly TimeCard_EndTime { get; set; } = new(0);
         public TimeOnly EndTime
         {
             get => TimeCard_EndTime;
@@ -51,13 +42,13 @@ namespace TimeClockApp.ViewModels
         }
 
         [ObservableProperty]
-        private double timeCard_WorkHours = 0;
+        public partial double TimeCard_WorkHours { get; set; } = 0;
         [ObservableProperty]
-        private string timeCard_EmployeeName = string.Empty;
+        public partial string TimeCard_EmployeeName { get; set; } = string.Empty;
         [ObservableProperty]
-        private double timeCard_EmployeePayRate = 0.0;
+        public partial double TimeCard_EmployeePayRate { get; set; } = 0.0;
         [ObservableProperty]
-        private bool timeCard_bReadOnly = false;
+        public partial bool TimeCard_bReadOnly { get; set; } = false;
 #region "DatePicker Min/Max Bindings"
         public DateTime PickerMinDate { get; set; }
         private readonly DateTime pickerMaxDate = DateTime.Now;
@@ -65,57 +56,59 @@ namespace TimeClockApp.ViewModels
 #endregion
 
         [ObservableProperty]
-        private ObservableCollection<Project> projectList = [];
+        public partial ObservableCollection<Project> ProjectList { get; set; } = [];
         [ObservableProperty]
-        private Project? selectedProject = null;
+        public partial Project? SelectedProject { get; set; } = null;
         [ObservableProperty]
-        private ObservableCollection<Phase> phaseList = [];
+        public partial ObservableCollection<Phase> PhaseList { get; set; } = [];
         [ObservableProperty]
-        private Phase? selectedPhase = null;
+        public partial Phase? SelectedPhase { get; set; } = null;
 
         [ObservableProperty]
-        private ShiftStatus timeCard_Status = ShiftStatus.NA;
-        public IReadOnlyList<string> AllShiftStatus { get; } = Enum.GetNames(typeof(ShiftStatus));
+        public partial ShiftStatus TimeCard_Status { get; set; } = ShiftStatus.NA;
+        public IReadOnlyList<string> AllShiftStatus { get; } = Enum.GetNames<ShiftStatus>();
 
         //If the TimeCard failed the clockOut validation (TimeCardDataStore.ValidateClockOutAsync()), then this is used
         [ObservableProperty]
-        private int errorCode = 0!;
+        public partial int ErrorCode { get; set; } = 0!;
         partial void OnErrorCodeChanged(int value)
         {
-            if (value == 1)
-                Title = "ERROR IN CLOCKOUT TIME";
-            else if (value == 2) 
-                Title = "ERROR IN CLOCKIN TIME";
-            else
-                Title = "Edit TimeCard";
+            SetPageTitle(value);
         }
 
-        [ObservableProperty]
-        private string? title = "Edit TimeCard";
+        private string SetPageTitle(int value) => value switch
+        {
+            1 => Title = "ERROR IN CLOCKOUT TIME",
+            2 => Title = "ERROR IN CLOCKIN TIME",
+            3 => Title = "ERROR WITH THE DATE",
+            _ => Title = "Edit TimeCard"
+        };
 
         public void ApplyQueryAttributes(IDictionary<string, object> query)
         {
-            if (query.ContainsKey("e"))
-            {
-                if (Int32.TryParse(query["e"].ToString(), out int i))
-                { ErrorCode = i; }
-            }
-            if (query.ContainsKey("id"))
-            {
-                if (Int32.TryParse(query["id"].ToString(), out int i))
-                { TimeCardID = i; }
-            }
+            if (query.ContainsKey("e") && Int32.TryParse(query["e"].ToString(), out int i))
+            { ErrorCode = i; }
+            if (query.ContainsKey("id") && Int32.TryParse(query["id"].ToString(), out int t))
+            { TimeCardID = t; }
         }
 
-        public void OnAppearing()
+        public async Task OnAppearing()
         {
+            SetPageTitle(ErrorCode);
             PickerMinDate = cardService.GetAppFirstRunDate();
             if (ErrorCode > 0)
                 IsAdmin = true;
             else
                 IsAdmin = IntToBool(cardService.GetConfigInt(9, 0));
+
             RefreshProjectPhases();
-            RefreshCard();
+            await RefreshCard();
+        }
+
+        public void OnDisappearing()
+        {
+            //reset error code
+            ErrorCode = 0;
         }
 
         [RelayCommand]
@@ -123,7 +116,7 @@ namespace TimeClockApp.ViewModels
         {
             if (TimeCard_EndTime < TimeCard_StartTime)
             {
-                await App.AlertSvc.ShowAlertAsync("ERROR", "StartTime must be before EndTime.");
+                await App.AlertSvc!.ShowAlertAsync("ERROR", "StartTime must be before EndTime.");
                 return;
             }
             if (ErrorCode > 0 && TimeCard_Status == ShiftStatus.ClockedIn)
@@ -149,18 +142,23 @@ namespace TimeClockApp.ViewModels
 
                 if (cardService.UpdateTimeCard(TimeCardEditing, IsAdmin))
                 {
-                    await App.AlertSvc.ShowAlertAsync("NOTICE", "TimeCard saved");
+                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "TimeCard saved");
                 }
                 else
                 {
-                    await App.AlertSvc.ShowAlertAsync("NOTICE", "Failed to save TimeCard");
+                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "Failed to save TimeCard");
                 }
 
-                RefreshCard();
+                await RefreshCard();
+
+            }
+            catch (AggregateException ax)
+            {
+                TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateException(ax);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Trace.WriteLine(ex.Message + "\n" + ex.InnerException);
+                Log.WriteLine(ex.Message + "\n" + ex.InnerException);
             }
         }
 
@@ -186,11 +184,11 @@ namespace TimeClockApp.ViewModels
             }
         }
 
-        private void RefreshCard()
+        private async Task RefreshCard()
         {
             if (TimeCardID > 0)
             {
-                TimeCardEditing = cardService.GetTimeCardByID(TimeCardID);
+                TimeCardEditing = await cardService.GetTimeCardByIDAsync(TimeCardID);
                 if (TimeCardEditing != null)
                 {
                     TimeCard_StartTime = TimeCardEditing.TimeCard_StartTime;

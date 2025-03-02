@@ -1,24 +1,24 @@
-﻿//#define TRIGGER
-//#define TIMESTAMP
-//#define NEW_DATABASE
+﻿//#define NEW_DATABASE
 //#define SAVECREATESQL
 
-#if TRIGGER
+#if (SQLITE)
 using Microsoft.Data.Sqlite;
+#endif
+#if (MSSQL)
+using Microsoft.EntityFrameworkCore.SqlServer;
 #endif
 using System;
 using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.EntityFrameworkCore;
-//#if DEBUG
 using Microsoft.Extensions.Logging;
-//#endif
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
-#nullable enable 
+//#nullable enable 
 
 namespace TimeClockApp.Shared.Models
 {
-    public class DataBackendContext : DbContext
+    public partial class DataBackendContext : DbContext
     {
         public static bool Initialized { get; protected set; }
         public static bool FirstRun { get; private set; } = true;
@@ -28,17 +28,13 @@ namespace TimeClockApp.Shared.Models
     "EF Core isn't fully compatible with trimming, and running the application may generate unexpected runtime failures. "
     + "Some specific coding pattern are usually required to make trimming work properly, see https://aka.ms/efcore-docs-trimming for "
     + "more details.")]
-    //    [RequiresDynamicCode(
-    //"EF Core isn't fully compatible with NativeAOT, and running the application may generate unexpected runtime failures.")]
         public DataBackendContext()
         {
-#if MIGRATION
-            SQLiteSetting.SQLiteDBPath = Path.Combine("../", "BaseTimeClock.db3");
-#else
-            SQLiteSetting.SQLiteDBPath = SQLiteSetting.GetSQLiteDBPath();
-#endif
             Initialize();
         }
+#if MSSQL
+        public DataBackendContext(DbContextOptions<DataBackendContext> options) : base(options) {}
+#endif
 
         private void Initialize()
         {
@@ -46,11 +42,14 @@ namespace TimeClockApp.Shared.Models
             {
                 try
                 {
-#if NEW_DATABASE && DEBUG
+#if SQLITE
+                    SQLitePCL.Batteries_V2.Init();
+#endif
+#if (NEW_DATABASE && DEBUG)
                     this.Database.EnsureDeleted();
                     this.Database.EnsureCreated();
 #endif
-#if SAVECREATESQL && DEBUG
+#if (SAVECREATESQL && DEBUG)
                     FileService fhs = new();
                     string sqltxt = Path.Combine(fhs.GetDownloadPath(), "CreateDB.sql");
 
@@ -58,11 +57,7 @@ namespace TimeClockApp.Shared.Models
                     File.WriteAllText(sqltxt, sql);
 #endif
 #if !NEW_DATABASE
-                    SQLitePCL.Batteries_V2.Init();
                     Database.Migrate();
-#endif
-#if TRIGGER
-                    CreateDBTrigger();
 #endif
                 }
                 finally
@@ -72,45 +67,6 @@ namespace TimeClockApp.Shared.Models
                 }
             }
         }
-
-#if TRIGGER
-        private int CreateDBTrigger()
-        {
-            int i = 0;
-            //if (Config != null)
-            //{
-            //    const int z = 2;
-            //    Config? c = Config.Find(z);
-            //    if (string.IsNullOrEmpty(c?.StringValue))
-            //    {
-            //        c!.StringValue = DateOnly.FromDateTime(DateTime.Now).ToShortDateString();
-            //        Config.Update(c);
-
-            //        i = SaveChanges();
-            //    }
-            //}
-            if (this.Database != null)
-            {
-                try
-                {
-                    string s = "CREATE TRIGGER IF NOT EXISTS TimeCardReadOnlyTrigger \r\n"
-                            + "BEFORE UPDATE \r\n ON TimeCard \r\n BEGIN \r\n"
-                            + "    SELECT CASE WHEN OLD.TimeCard_bReadOnly == 1 THEN RAISE(ABORT, \"Access denied. Item is ReadOnly\") \r\n END; \r\n END; \r\n";
-                    i = this.Database.ExecuteSqlRaw(s);
-
-                }
-                catch (SqliteException ex)
-                {
-                    System.Diagnostics.Trace.WriteLine(ex.Message + "\n" + ex.InnerException);
-                }
-                catch (Exception e)
-                {
-                    System.Diagnostics.Trace.WriteLine(e.Message + "\n" + e.InnerException);
-                }
-            }
-            return i;
-        }
-#endif
 
         public DbSet<Employee> Employee { get; set; }
         public DbSet<Project> Project { get; set; }
@@ -123,25 +79,35 @@ namespace TimeClockApp.Shared.Models
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder?
-#if DEBUG && !MIGRATION
-                    .EnableSensitiveDataLogging(true)
+                    .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning))
+#if (DEBUG && !MIGRATION)
                     .EnableDetailedErrors()
-                    .LogTo(Console.WriteLine, LogLevel.Debug)
+                    .EnableSensitiveDataLogging(true)
+                    .LogTo(Console.WriteLine, LogLevel.Information)
 #else
-                    //#if TRACE && DEBUG
                     .LogTo(Console.WriteLine, LogLevel.Warning)
 #endif
-                    .UseSqlite($"Filename={SQLiteSetting.SQLiteDBPath}");
+#if SQLITE
+                    .UseSqlite($"Filename={SQLiteSetting.GetSQLiteDBPath()}");
+#elif MSSQL
+                    .UseSqlServer("Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=TimeClockApp;Integrated Security=True;Encrypt=False;Trust Server Certificate=True");
+#endif
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-#if TIMESTAMP
-            if (modelBuilder is null)
-            {
-                OnModelCreatingPartial(modelBuilder);
-                return;
-            }
+#if MSSQL
+#region MSSQLConverters
+            modelBuilder.Entity<Employee>()
+                .Property(e => e.Employee_PayRate)
+                .HasConversion<decimal>();
+            modelBuilder.Entity<Expense>()
+                .Property(e => e.Amount)
+                .HasConversion<decimal>();
+            modelBuilder.Entity<TimeCard>()
+                .Property(t => t.TimeCard_EmployeePayRate)
+                .HasConversion<decimal>();
+#endregion
 #endif
 
 #region ForeignKeys
@@ -220,6 +186,10 @@ namespace TimeClockApp.Shared.Models
                 .HasIndex(p => new { p.ProjectId, p.Status })
                 .HasDatabaseName("IX_ProjectStatus");
 
+            modelBuilder.Entity<ExpenseType>()
+                .HasIndex(t => new { t.CategoryName })
+                .IsUnique();
+
 #endregion Indexs
 
             modelBuilder.Entity<Config>().HasData(new Config
@@ -234,7 +204,7 @@ namespace TimeClockApp.Shared.Models
                 ConfigId = 2,
                 Name = "FirstRun",
                 StringValue = DateOnly.FromDateTime(DateTime.Now).ToShortDateString(),
-                Hint = "Date this app was 1st ran. For internal use only"                
+                Hint = "Date this app was 1st ran. For internal use only"
             },
             new Config
             {
@@ -267,13 +237,13 @@ namespace TimeClockApp.Shared.Models
             {
                 ConfigId = 7,
                 Name = "ProfitRate",
-                IntValue = 10
+                StringValue = "0.1"
             },
             new Config
             {
                 ConfigId = 8,
                 Name = "OverHeadRate",
-                IntValue = 8
+                StringValue = "0.08"
             },
             new Config
             {
@@ -319,6 +289,7 @@ namespace TimeClockApp.Shared.Models
                 Employee_PayRate = 25.00,
                 JobTitle = "Job Title",
                 Employee_Employed = EmploymentStatus.Employed
+            });
 
             modelBuilder.Entity<ExpenseType>().HasData(
             new ExpenseType
@@ -413,77 +384,6 @@ namespace TimeClockApp.Shared.Models
             }
 
             base.OnModelCreating(modelBuilder);
-#if TIMESTAMP
-            OnModelCreatingPartial(modelBuilder);
-#endif
         }
-
-#if TIMESTAMP
-
-        public override int SaveChanges()
-        {
-            OnBeforeSaving();
-            return base.SaveChanges();
-        }
-
-        public override int SaveChanges(bool acceptAllChangesOnSuccess)
-        {
-            OnBeforeSaving();
-            return base.SaveChanges(acceptAllChangesOnSuccess);
-        }
-
-        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-        {
-            OnBeforeSaving();
-            return base.SaveChangesAsync(cancellationToken);
-        }
-
-        public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
-        {
-            OnBeforeSaving();
-            return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
-        }
-
-        partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
-
-
-        /// <summary>
-        /// Gets the current UTC DateTime of DateTimeKind.Utc
-        /// </summary>
-        /// <returns>DateTime.UtcNow of DateTimeKind.Utc</returns>
-        public static DateTime GetUTC()
-        {
-            return DateTime.Now;
-        }
-
-        private void OnBeforeSaving()
-        {
-            IEnumerable<Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry> entries = ChangeTracker.Entries();
-            DateTime utcNow = DateTime.Now;
-
-            foreach (var entry in entries)
-            {
-                // for entities that inherit from BaseEntity, set UpdatedOn / CreatedOn appropriately
-                if (entry.Entity is BaseEntity trackable)
-                {
-                    switch (entry.State)
-                    {
-                        case EntityState.Modified:
-                            // set the updated date to "now"
-                            trackable.DateModified = utcNow;
-                            // mark property as "don't touch" we don't want to update on a Modify operation
-                            entry.Property("DateCreated").IsModified = false;
-                            break;
-
-                        case EntityState.Added:
-                            // set both updated and created date to "now"
-                            trackable.DateCreated = utcNow;
-                            trackable.DateModified = utcNow;
-                            break;
-                    }
-                }
-            }
-        }
-#endif
     }
 }

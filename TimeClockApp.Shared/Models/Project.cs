@@ -21,7 +21,7 @@ namespace TimeClockApp.Shared.Models
 
     /// <summary>
     /// Projects are a way to group together TimeCards, Wages and Expenses. From this Project totals can be calculated
-    /// TotalWages, TotalExpenses, TotalHours, etc. After a Project has been completed, it can be set tto [Archived]. 
+    /// TotalWages, TotalExpenses, TotalHours, etc. After a Project has been completed, it can be set tto [Archived].
     /// This will remove that Project from the active ProjectLists, yet keep that Project saved. Another Project of the
     /// same name can be created. Just be sure to have only 1 of them be set to [Active] at one time. If 2+ of same name
     /// are [Active], it would be difficult for the user to determine which Project they actually want.
@@ -62,29 +62,16 @@ namespace TimeClockApp.Shared.Models
         [System.ComponentModel.DataAnnotations.Schema.Column(TypeName = "DateOnly")]
         public DateOnly ProjectDate { get; set; }
 
+        /*
         /// <summary>
-        /// Date of project creation.
+        /// Date of project completion.
         /// </summary>
-        /// <remarks>Used mainly for filtering out items that come after this projects date</remarks>
         //[System.ComponentModel.DataAnnotations.Schema.Column(TypeName = "DateOnly")]
         //public DateOnly? ProjectDateEnd { get; set; } = null;
+        */
 
         public virtual ICollection<TimeCard> TimeCards { get; set; }
-        public virtual ICollection<Expense> Expenses { get; set; } 
-
-#if DEBUG
-        public override string ToString()
-        {
-            //string x = ProjectDateEnd.HasValue ? ProjectDateEnd.Value.ToShortDateString() : "null";
-            string rv = "\n--------------[  ProjectId: " + ProjectId + "  ]---------------------\n";
-            rv += "Name:           " + Name + Environment.NewLine;
-            rv += "Status:         " + Status.ToString() + Environment.NewLine;
-            rv += "ProjectDate:    " + ProjectDate.ToShortDateString() + Environment.NewLine;
-            //rv += "ProjectDateEnd: " + x + Environment.NewLine;
-            rv += "------------------------------------------------------\n";
-            return rv;
-        }
-#endif
+        public virtual ICollection<Expense> Expenses { get; set; }
     }
 
     public sealed class ProjectMap : ClassMap<Project>

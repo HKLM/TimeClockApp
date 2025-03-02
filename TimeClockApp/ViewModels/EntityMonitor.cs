@@ -3,10 +3,10 @@
     public partial class EntityMonitor  : ObservableObject
     {
         [ObservableProperty]
-        private bool noticeProjectHasChanged = false;
+        public partial bool NoticeProjectHasChanged { get; set; } = false;
         [ObservableProperty]
-        private bool noticePhaseHasChanged = false;
+        public partial bool NoticePhaseHasChanged { get; set; } = false;
         [ObservableProperty]
-        private bool noticeUserHasChanged = false;
+        public partial bool NoticeUserHasChanged { get; set; } = false;
     }
 }

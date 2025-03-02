@@ -6,7 +6,7 @@ using CsvHelper.Configuration;
 namespace TimeClockApp.Shared.Models
 {
     /// <summary>
-    /// Settings data storage. Each Setting has a Id and Name to Identify each setting. 
+    /// Settings data storage. Each Setting has a Id and Name to Identify each setting.
     /// Values are either the StringValue or IntValue.
     /// </summary>
     public class Config
@@ -36,19 +36,6 @@ namespace TimeClockApp.Shared.Models
         /// Optional brief description of this config item.
         /// </summary>
         public string? Hint { get; set; }
-
-#if DEBUG
-        public override string ToString()
-        {
-            string rv = "\n--------------[  ConfigId: " + ConfigId + "  ]---------------------\n";
-            rv += "Name:        " + Name + Environment.NewLine;
-            rv += "StringValue: " + StringValue + Environment.NewLine;
-            rv += "IntValue:    " + IntValue?.ToString() + Environment.NewLine;
-            rv += "Hint:        " + Hint + Environment.NewLine;
-            rv += "------------------------------------------------------\n";
-            return rv;
-        }
-#endif
     }
 
     public sealed class ConfigMap : ClassMap<Config>

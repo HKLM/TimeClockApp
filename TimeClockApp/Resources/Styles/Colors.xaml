@@ -5,7 +5,10 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
 	<Color x:Key="Primary">#4682b4</Color>
-	<Color x:Key="Secondary">#DFD8F7</Color>
+    <Color x:Key="PrimaryDark">#ac99ea</Color>
+    <Color x:Key="PrimaryDarkText">#242424</Color>
+    <Color x:Key="Secondary">#DFD8F7</Color>
+    <Color x:Key="SecondaryDarkText">#9880e5</Color>
 	<Color x:Key="FlyBackgroundDark">#C8646770</Color>
 	<Color x:Key="FlyBackgroundLight">#C8C8C8</Color>
 	<Color x:Key="PageBackgroundLight">#BEC8D1</Color>

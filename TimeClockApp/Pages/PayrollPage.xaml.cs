@@ -10,10 +10,10 @@ public partial class PayrollPage : ContentPage
         BindingContext = viewModel = ViewModel;
     }
 
-    protected override void OnAppearing()
+    protected override async void OnAppearing()
     {
         base.OnAppearing();
-        viewModel.OnAppearing();
+        await viewModel.OnAppearing();
     }
 
     private async void TeamPageToolbarButton_Clicked(object sender, EventArgs e)
@@ -29,7 +29,6 @@ public partial class PayrollPage : ContentPage
             if (int.TryParse(swipeItem.CommandParameter!.ToString(), out int i))
             {
                 await Shell.Current.GoToAsync($"PayrollDetailPage?id={i}&start={DatePickerStart.Date:MM-dd-yyyy}&end={DatePickerEnd.Date:MM-dd-yyyy}");
-                viewModel.OnAppearing();
             }
         }
     }

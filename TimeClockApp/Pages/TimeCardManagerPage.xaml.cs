@@ -11,6 +11,12 @@ public partial class TimeCardManagerPage : ContentPage
         BindingContext = viewModel = ViewModel;
     }
 
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        await viewModel.OnAppearing();
+    }
+
     private async void ItemsListView_ItemSelected(object sender, SelectedItemChangedEventArgs e)
     {
         if (e?.SelectedItem is TimeCard item)

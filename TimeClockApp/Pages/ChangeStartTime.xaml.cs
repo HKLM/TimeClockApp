@@ -11,9 +11,9 @@ public partial class ChangeStartTime : ContentPage
         BindingContext = viewModel = ViewModel;
     }
 
-    protected override void OnAppearing()
+    protected override async void OnAppearing()
     {
         base.OnAppearing();
-        viewModel.OnAppearing();
+        await viewModel.OnAppearing();
     }
 }

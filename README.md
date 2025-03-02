@@ -15,25 +15,38 @@ Supports Dark theme.
 
 ### Breaking Changes
 
+2.0
+Is not compatible with prior exported data. Same as in version 1.8, it is possible but requires edits to the csv files before importing the data.
+
 1.8
 Add version check during data Import, Prior exported data will not be allowed to be imported in. 
 (It is possible with some edits to the csv files to make compatible. [TimeClockApp/discussions](https://github.com/HKLM/TimeClockApp/discussions) Use the project discussions page and ask me for details if you need to do this)
 
 ### Notes
 
-Built using .NET 9.0-preview6
+Built using .NET 9.0.2
 and the following nuget packages:
 ```
-"CommunityToolkit.Maui" Version="9.0.2"
-"CommunityToolkit.Mvvm" Version="8.2.2"
+"CommunityToolkit.Maui" Version="11.1.0"
+"CommunityToolkit.Mvvm" Version="8.4.0"
+"Microsoft.Maui.Controls" Version="9.0.40"
 "CsvHelper" Version="33.0.1"
-"Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0-preview.6.24327.4"
+"Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.2"
 ```
 
 To change the default items that are added during the database creation,
 see the file [TimeClockApp.Shared\Models\DataBackendContext.cs](/TimeClockApp.Shared/Models/DataBackendContext.cs)
 
+To change the name of the database file for creation,
+see the property 'sQLiteDbFileName' in file [TimeClockApp\TimeClockApp.Shared\SQLiteSetting.cs](/TimeClockApp.Shared/SQLiteSetting.cs)
+
 ### Release Notes
+2.0
+* Add invoice and Invoice detail pages
+* bug fixes
+* Removed unused code
+* Fixed NumericValidationBehavior and TextValidationBehavior not working
+* Better exception error logging with for async methods
 
 1.8 
 * Moved ExpenseType from a Enum into a database table. 
@@ -66,11 +79,40 @@ Then after upgrading, use `Tools`->`Backup`->`Import Data` to restore your data.
 1.0
 * Initial Release
 
-### Migrations
 
-To create the initial migration files needed for the database
 
-1. Set the 'Solution Configuration' to `DebugMigrator`
+### Migrations How to use EFMigrator
+
+To create the initial migration files needed for the database. Requires the Entity Framework Core tools to be installed. .NET Core CLI tool was used during development, but either tool set will work.
+
+#### Verify type of EF tools (Package Manager Console tools or .NET Core CLI tools)
+
+1. Test if Package Manager Console tools by open a PowerShell console and enter the command
+```
+Get-Help about_EntityFrameworkCore
+```
+2. If you get a error message, test if .NET Core CLI tools in the same console, enter the following command
+```
+dotnet ef
+```
+3. If that also gives a error, follow instructions at [https://learn.microsoft.com/en-us/ef/core/cli/dotnet#installing-the-tools](https://learn.microsoft.com/en-us/ef/core/cli/dotnet#installing-the-tools)
+
+#### .NET Core CLI instructions
+
+1. In Visual Studio 2022, Set the 'Solution Configuration' to `DebugMigrator`
+2. Set the `EFMigrator` project as the 'Start up project'
+3. Build the solution.
+4. Right click on the EFMigrator project and select `Open in Terminal`.
+5. In the Console window (PowerShell or Command Prompt), enter the command 
+```
+dotnet ef migrations add InitialCreate -c TimeClockApp.Shared.Models.DataBackendContext -p ..\TimeClockApp.Shared --configuration DebugMigrator --no-build --verbose
+```
+6. After the command completes. Set the 'Solution Configuration' to `Debug` or `Release`
+7. Set the `TimeClockApp` project as the 'Start up project'
+
+#### Package Manager Console tools instructions
+
+1. In Visual Studio 2022, Set the 'Solution Configuration' to `DebugMigrator`
 2. Set the `EFMigrator` project as the 'Start up project'
 3. View->Other Windows->Package Manager Console
 4. In the Package Manager Console window, set the 'Default project' to `TimeClockApp.Shared`
