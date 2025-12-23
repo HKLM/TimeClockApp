@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:models="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
+             xmlns:m="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
+             x:DataType="vm:EditExpenseTypeViewModel"
              x:Class="TimeClockApp.Pages.EditExpenseTypePage"
              Title="Edit ExpenseType">
     <ContentPage.ToolbarItems>
-        <ToolbarItem x:DataType="vm:EditExpenseTypeViewModel" Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
+        <ToolbarItem  Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
     </ContentPage.ToolbarItems>
     <ContentPage.Resources>
         <Style x:Key="InvalidEntryStyle" TargetType="Entry">
@@ -21,7 +22,6 @@
         <StackLayout>
             <Border
                 x:Name="helpbox"
-                x:DataType="vm:EditExpenseTypeViewModel"
                 Padding="8"
                 IsVisible="{Binding HelpInfoBoxVisible}"
                 VerticalOptions="Center">
@@ -40,13 +40,13 @@
                     VerticalOptions="Center"
                     VerticalTextAlignment="Center" />
                 <Picker
+                    x:DataType="m:ExpenseType"
                     Grid.Row="1"
-                    ItemDisplayBinding="{Binding CategoryName}"
-                    ItemsSource="{Binding ExpenseTypeList}"
-                    SelectedItem="{Binding SelectedExpenseType, Mode=TwoWay}"
+                    ItemDisplayBinding="{Binding CategoryName, x:DataType=m:ExpenseType}"
+                    ItemsSource="{Binding ExpenseTypeList, Source={RelativeSource AncestorType={x:Type vm:EditExpenseTypeViewModel}}, x:DataType=vm:EditExpenseTypeViewModel}"
+                    SelectedItem="{Binding SelectedExpenseType, Source={RelativeSource AncestorType={x:Type vm:EditExpenseTypeViewModel}}, x:DataType=vm:EditExpenseTypeViewModel, Mode=TwoWay}"
                     VerticalOptions="Center" />
                 <Button 
-                    x:DataType="vm:EditExpenseTypeViewModel"
                     Grid.Row="2"
                     Text="Clear Selection"
                     Command="{Binding ClearSelectionCommand}"/>
@@ -57,7 +57,6 @@
                     VerticalTextAlignment="Center" />
                 <Entry
                     x:Name="CategoryNameBox"
-                    x:DataType="vm:EditExpenseTypeViewModel"
                     Grid.Row="4"
                     Keyboard="Text"
                     Text="{Binding NewCategoryName, Mode=TwoWay}">
@@ -80,7 +79,7 @@
                     Text="Save Change">
                     <Button.Triggers>
                         <DataTrigger
-                            Binding="{Binding Source={x:Reference CategoryNameBox}, Path=Text.Length}"
+                            Binding="{Binding Source={x:Reference CategoryNameBox}, Path=Text.Length, x:DataType=Entry}"
                             TargetType="Button"
                             Value="0">
                             <Setter Property="IsEnabled" Value="False" />
@@ -93,7 +92,6 @@
                     HorizontalOptions="Fill" />
                 <Button
                     Grid.Row="7"
-                    x:DataType="vm:EditExpenseTypeViewModel"
                     Command="{Binding AddExpenseTypeCommand}"
                     IsEnabled="{Binding EnableAddButton}"
                     Text="Add New" />
@@ -103,7 +101,6 @@
                     HorizontalOptions="Fill" />
                 <Button
                     Grid.Row="9"
-                    x:DataType="vm:EditExpenseTypeViewModel"
                     Command="{Binding DelExpenseTypeCommand}"
                     IsEnabled="{Binding EnableDeleteButton}"
                     Text="Delete" />

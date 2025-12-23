@@ -7,12 +7,14 @@
 		xmlns:models="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
 		xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
 		xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
+        xmlns:m="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
+		x:DataType="vm:UserManagerViewModel"
 		Title="HR Dept">
     <ContentPage.BindingContext>
         <vm:UserManagerViewModel x:Name="viewModel" />
     </ContentPage.BindingContext>
     <ContentPage.ToolbarItems>
-        <ToolbarItem x:DataType="vm:UserManagerViewModel" Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
+        <ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
     </ContentPage.ToolbarItems>
     <ContentPage.Resources>
         <ResourceDictionary>
@@ -30,7 +32,6 @@
         <VerticalStackLayout>
             <Border
 				x:Name="helpbox"
-                x:DataType="vm:UserManagerViewModel"
 				Padding="8"
 				IsVisible="{Binding HelpInfoBoxVisible}"
 				VerticalOptions="Center">
@@ -50,11 +51,12 @@
 						VerticalTextAlignment="Center" />
                     <Picker
 						x:Name="EmployeePicker"
+						x:DataType="m:Employee"                        
 						Grid.Row="1"
-						ItemDisplayBinding="{Binding Employee_Name}"
-						ItemsSource="{Binding EmployeeList}"
+						ItemDisplayBinding="{Binding Employee_Name, x:DataType=m:Employee}"
+						ItemsSource="{Binding EmployeeList, Source={RelativeSource AncestorType={x:Type vm:UserManagerViewModel}}, x:DataType=vm:UserManagerViewModel}"
 						SelectedIndexChanged="EmployeePicker_SelectedIndexChanged"
-						SelectedItem="{Binding SelectedEmployee, Mode=TwoWay}"
+						SelectedItem="{Binding SelectedEmployee, Source={RelativeSource AncestorType={x:Type vm:UserManagerViewModel}}, x:DataType=vm:UserManagerViewModel, Mode=TwoWay}"
 						VerticalOptions="Center" />
                     <Label
 						Grid.Row="2"
@@ -79,7 +81,7 @@
 						Keyboard="Text"
 						Placeholder="Employee Name"
 						Text="{Binding EmployeeName, Mode=TwoWay}"
-						TextChanged="NameBox_TextChanged">
+						TextChanged="NameBox_TextChanged" WidthRequest="400">
                         <Entry.Behaviors>
                             <toolkit:TextValidationBehavior 
                                 BindingContext="{Binding Path=BindingContext, Source={x:Reference NameBox}, x:DataType=Entry}"
@@ -105,7 +107,7 @@
 						HorizontalOptions="Center"
 						Keyboard="Text"
 						Placeholder="Job Title"
-						Text="{Binding JobTitle, Mode=TwoWay}">
+						Text="{Binding JobTitle, Mode=TwoWay}" WidthRequest="400">
                         <Entry.Behaviors>
                             <toolkit:TextValidationBehavior 
                                 BindingContext="{Binding Path=BindingContext, Source={x:Reference JobTitleBox}, x:DataType=Entry}"
@@ -129,7 +131,7 @@
 						Grid.Row="5"
 						HorizontalOptions="Center"
 						Keyboard="Numeric"
-						Text="{Binding PayRate, Converter={StaticResource stringToDoubleConverter}, Mode=TwoWay}">
+						Text="{Binding PayRate, Converter={StaticResource stringToDoubleConverter}, Mode=TwoWay}" WidthRequest="150">
                         <Entry.Behaviors>
                             <toolkit:NumericValidationBehavior
                                 BindingContext="{Binding Path=BindingContext, Source={x:Reference PayRateBox}, x:DataType=Entry}"
@@ -157,7 +159,6 @@
 						HorizontalOptions="Fill" />
                     <Button
 						x:Name="EditButton"
-                        x:DataType="vm:UserManagerViewModel"
 						Grid.Row="8"
 						Command="{Binding SaveEditEmployeeCommand}"
 						IsEnabled="{Binding EnableSaveDelButton, Mode=TwoWay}"
@@ -168,7 +169,6 @@
 						HorizontalOptions="Fill" />
                     <Button
 						x:Name="NewEmpButton"
-                        x:DataType="vm:UserManagerViewModel"
 						Grid.Row="10"
 						Command="{Binding SaveNewEmployeeCommand}"
 						IsEnabled="{Binding EnableAddButton, Mode=TwoWay}"
@@ -179,7 +179,6 @@
 						HorizontalOptions="Fill" />
                     <Button
 						x:Name="DelButton"
-                        x:DataType="vm:UserManagerViewModel"
 						Grid.Row="12"
 						Command="{Binding FireEmployeeCommand}"
 						IsEnabled="{Binding EnableSaveDelButton, Mode=TwoWay}"

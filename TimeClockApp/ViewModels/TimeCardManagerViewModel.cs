@@ -1,8 +1,10 @@
-﻿namespace TimeClockApp.ViewModels
+﻿#nullable enable
+
+namespace TimeClockApp.ViewModels
 {
     public partial class TimeCardManagerViewModel(EditTimeCardService cardService) : BaseViewModel
     {
-        protected readonly EditTimeCardService cardService = cardService;
+        private readonly EditTimeCardService cardService = cardService;
 
         [ObservableProperty]
         public partial ObservableCollection<TimeCard> TimeCards { get; set; } = new();

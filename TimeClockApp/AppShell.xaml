@@ -4,22 +4,52 @@
 		xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 		xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 		xmlns:local="clr-namespace:TimeClockApp.Pages"
+        xmlns:s="clr-namespace:TimeClockApp"
+        xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
 		x:Name="HomeAppShell"
+        x:DataType="vm:AppViewModel"
 		FlyoutBehavior="Flyout" 
-		FlyoutHeaderBehavior="CollapseOnScroll" 
-		FlyoutBackgroundColor="{AppThemeBinding Light={StaticResource FlyBackgroundLight}, Dark={StaticResource FlyBackgroundDark}}">
+		FlyoutHeaderBehavior="CollapseOnScroll"
+        FlyoutBackgroundColor="{AppThemeBinding Light={StaticResource FlyBackgroundLight}, Dark={StaticResource FlyBackgroundDark}}">
+
+    <Shell.Resources>
+        <ResourceDictionary>
+            <Style Class="FlyoutItemLabelStyle" TargetType="Label">
+                <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+            </Style>
+            <Style Class="FlyoutItemLayoutStyle" TargetType="Layout" ApplyToDerivedTypes="True">
+                <Setter Property="VisualStateManager.VisualStateGroups">
+                    <VisualStateGroupList>
+                        <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="Normal">
+                                <VisualState.Setters>
+                                    <Setter TargetName="FlyoutItemLabel" Property="Label.TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Selected">
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
+                                    <Setter TargetName="FlyoutItemLabel" Property="Label.FontAttributes" Value="Bold" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </Setter>
+            </Style>
+        </ResourceDictionary>
+    </Shell.Resources>
     <Shell.FlyoutHeaderTemplate>
-        <DataTemplate>
-            <Grid BackgroundColor="{AppThemeBinding Light={StaticResource Tertiary}, Dark={StaticResource Tertiary}}" VerticalOptions="Center" ColumnDefinitions="50,*" RowDefinitions="50">
+        <DataTemplate x:DataType="s:AppShell">
+            <Grid BackgroundColor="{StaticResource Tertiary}" VerticalOptions="Center" ColumnDefinitions="50,*" RowDefinitions="50">
                 <Image Source="clock_icon.png" HeightRequest="32" WidthRequest="32" Margin="10,0,0,0" />
                 <Label Text="TimeCard App" TextColor="White" FontAttributes="Bold" FontSize="Title" Grid.Column="1" HorizontalTextAlignment="Start" VerticalTextAlignment="Center" Margin="10,0,0,0" />
             </Grid>
         </DataTemplate>
     </Shell.FlyoutHeaderTemplate>
     <Shell.FlyoutFooterTemplate>
-        <DataTemplate>
+        <DataTemplate x:DataType="s:AppShell">
             <StackLayout>
-                <Label Grid.Column="2" HorizontalOptions="Center" FontSize="Micro" Padding="10" Text="{Binding AppVersion, Source={x:Reference HomeAppShell}}" />
+                <Label Grid.Column="2" HorizontalOptions="Center" FontSize="11" Padding="10" Text="{Binding AppVersion, Source={x:Reference HomeAppShell}}" />
             </StackLayout>
         </DataTemplate>
     </Shell.FlyoutFooterTemplate>
@@ -30,7 +60,7 @@
     <FlyoutItem Title="Payroll List" FlyoutDisplayOptions="AsSingleItem" Icon="payments.png">
         <ShellContent ContentTemplate="{DataTemplate local:PayrollPage}" Route="PayrollPage" />
     </FlyoutItem>
-    <FlyoutItem Title="Expences" FlyoutDisplayOptions="AsSingleItem" Icon="receipt_outline.png">
+    <FlyoutItem Title="Expenses" FlyoutDisplayOptions="AsSingleItem" Icon="receipt_outline.png">
         <ShellContent ContentTemplate="{DataTemplate local:ExpensePage}" Route="ExpensePage" />
     </FlyoutItem>
     <FlyoutItem Title="Invoice" FlyoutDisplayOptions="AsSingleItem" Icon="assignment.png">

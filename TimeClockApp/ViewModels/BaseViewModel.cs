@@ -4,19 +4,11 @@ namespace TimeClockApp.ViewModels
 {
     public partial class BaseViewModel : ObservableObject
     {
-        public bool initDone = false;
-
         /// <summary>
         /// The ToolBar Help Icon toggles displaying the HelpInfoBox for each page
         /// </summary>
         [ObservableProperty]
         public partial bool HelpInfoBoxVisible { get; set; } = false;
-
-        /// <summary>
-        /// The ToolBar Icon toggles displaying the OptionsBox for the page
-        /// </summary>
-        [ObservableProperty]
-        public partial bool OptionsBoxVisible { get; set; } = false;
 
         /// <summary>
         /// Page title bindable property

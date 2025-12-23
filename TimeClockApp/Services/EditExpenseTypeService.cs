@@ -24,7 +24,7 @@ namespace TimeClockApp.Services
             if (string.IsNullOrEmpty(categoryName))
                 return 0;
 
-            if (await Context.ExpenseType.AsNoTracking().Where(x => x.CategoryName == categoryName).AnyAsync())
+            if (Context.ExpenseType.AsNoTracking().Where(x => x.CategoryName == categoryName).Any())
             {
                 return 2;
             }
@@ -35,7 +35,7 @@ namespace TimeClockApp.Services
                     CategoryName = categoryName
                 };
                 Context.Add<ExpenseType>(et);
-                return (await Context.SaveChangesAsync() > 0) ? 1 : 0;
+                return (await Context.SaveChangesAsync().ConfigureAwait(false) > 0) ? 1 : 0;
             }
         }
 
@@ -49,7 +49,7 @@ namespace TimeClockApp.Services
             {
                 origExpense.CategoryName = categoryName;
                 Context.Update<ExpenseType>(origExpense);
-                return (await Context.SaveChangesAsync() > 0);
+                return (await Context.SaveChangesAsync().ConfigureAwait(false) > 0);
             }
             return false;
         }
@@ -62,10 +62,10 @@ namespace TimeClockApp.Services
             ExpenseType origExpense = Context.ExpenseType.Find(expenseTypeId);
             if (origExpense != null)
             {
-                if (await Context.ExpenseType.CountAsync() > 2)
+                if (await Context.ExpenseType.CountAsync().ConfigureAwait(false) > 2)
                 {
                     Context.Remove<ExpenseType>(origExpense);
-                    return (await Context.SaveChangesAsync() > 0);
+                    return (await Context.SaveChangesAsync().ConfigureAwait(false) > 0);
                 }
             }
             return false;

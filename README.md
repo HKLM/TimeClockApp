@@ -1,6 +1,6 @@
 # TimeClockApp
 
-## .NET 9 MAUI app for Android 10+ using a SQLite database.
+## .NET 10 MAUI app for Android 10+ using a SQLite database.
 
 Simple app for employer to track employees time cards for payroll use. Supports multiple employees over different projects.
 
@@ -24,14 +24,14 @@ Add version check during data Import, Prior exported data will not be allowed to
 
 ### Notes
 
-Built using .NET 9.0.2
+Built using .NET 10.0.1
 and the following nuget packages:
 ```
-"CommunityToolkit.Maui" Version="11.1.0"
+"CommunityToolkit.Maui" Version="13.0.0"
 "CommunityToolkit.Mvvm" Version="8.4.0"
-"Microsoft.Maui.Controls" Version="9.0.40"
-"CsvHelper" Version="33.0.1"
-"Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.2"
+"Microsoft.Maui.Controls" Version="10.0.2"
+"CsvHelper" Version="33.1.0"
+"Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.1"
 ```
 
 To change the default items that are added during the database creation,
@@ -41,6 +41,16 @@ To change the name of the database file for creation,
 see the property 'sQLiteDbFileName' in file [TimeClockApp\TimeClockApp.Shared\SQLiteSetting.cs](/TimeClockApp.Shared/SQLiteSetting.cs)
 
 ### Release Notes
+2.1
+* Minor bug fixes
+* Many code cleanup and optimizations
+* Added experimental support to use MSSQL server as the database backend.
+* Fixed issue of not working on windows platform.
+* Updated to .NET 10.0.1 and latest nuget packages.
+* Improved exception logging for async methods.
+* Improved UI responsiveness when loading large data sets.
+* Improved overall app stability.
+
 2.0
 * Add invoice and Invoice detail pages
 * bug fixes
@@ -82,46 +92,5 @@ Then after upgrading, use `Tools`->`Backup`->`Import Data` to restore your data.
 
 
 ### Migrations How to use EFMigrator
+See [EFMigrator\README.md](/EFMigrator/README.md)
 
-To create the initial migration files needed for the database. Requires the Entity Framework Core tools to be installed. .NET Core CLI tool was used during development, but either tool set will work.
-
-#### Verify type of EF tools (Package Manager Console tools or .NET Core CLI tools)
-
-1. Test if Package Manager Console tools by open a PowerShell console and enter the command
-```
-Get-Help about_EntityFrameworkCore
-```
-2. If you get a error message, test if .NET Core CLI tools in the same console, enter the following command
-```
-dotnet ef
-```
-3. If that also gives a error, follow instructions at [https://learn.microsoft.com/en-us/ef/core/cli/dotnet#installing-the-tools](https://learn.microsoft.com/en-us/ef/core/cli/dotnet#installing-the-tools)
-
-#### .NET Core CLI instructions
-
-1. In Visual Studio 2022, Set the 'Solution Configuration' to `DebugMigrator`
-2. Set the `EFMigrator` project as the 'Start up project'
-3. Build the solution.
-4. Right click on the EFMigrator project and select `Open in Terminal`.
-5. In the Console window (PowerShell or Command Prompt), enter the command 
-```
-dotnet ef migrations add InitialCreate -c TimeClockApp.Shared.Models.DataBackendContext -p ..\TimeClockApp.Shared --configuration DebugMigrator --no-build --verbose
-```
-6. After the command completes. Set the 'Solution Configuration' to `Debug` or `Release`
-7. Set the `TimeClockApp` project as the 'Start up project'
-
-#### Package Manager Console tools instructions
-
-1. In Visual Studio 2022, Set the 'Solution Configuration' to `DebugMigrator`
-2. Set the `EFMigrator` project as the 'Start up project'
-3. View->Other Windows->Package Manager Console
-4. In the Package Manager Console window, set the 'Default project' to `TimeClockApp.Shared`
-5. In the Package Manager Console, enter the command 
-```
-add-migration Initial -Context TimeClockApp.Shared.Models.DataBackendContext -Verbose
-```
-6. After the command completes. Set the 'Solution Configuration' to `Debug` or `Release`
-7. Set the `TimeClockApp` project as the 'Start up project'
-
-
-Thank you to @taublast for his guide on getting migrations to work with maui android projects. [github.com/taublast/MauiEF](https://github.com/taublast/MauiEF)

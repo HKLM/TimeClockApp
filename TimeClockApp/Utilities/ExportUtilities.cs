@@ -1,4 +1,6 @@
 ﻿using System.IO.Compression;
+using Microsoft.Maui.ApplicationModel.DataTransfer;
+using Microsoft.Maui.Storage;
 using TimeClockApp.Shared;
 
 namespace TimeClockApp.Utilities
@@ -50,7 +52,7 @@ namespace TimeClockApp.Utilities
             await File.WriteAllBytesAsync(filePublic, bytes);
 
             // Give the user the option to share this using whatever medium they like
-            await Share.RequestAsync(new ShareFileRequest
+            await Share.Default.RequestAsync(new ShareFileRequest
             {
                 Title = "TimeClock App Export Data",
                 File = new ShareFile(filePublic),

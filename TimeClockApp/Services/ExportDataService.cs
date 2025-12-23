@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using CsvHelper;
+#if SQLITE
 using Microsoft.Data.Sqlite;
+#endif
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using TimeClockApp.Shared;
@@ -135,6 +137,8 @@ namespace TimeClockApp.Services
 
         public async Task BackupDatabase(string? savePath = null)
         {
+#if SQLITE
+
             try
             {
                 Log.WriteLine("BEGIN BACKUP OF SQLITE DATABASE", "Backup");
@@ -178,6 +182,10 @@ namespace TimeClockApp.Services
             {
                 Log.WriteLine("BACKUP COMPLETE.\n", "Backup");
             }
+#elif MSSQL
+            Log.WriteLine("THIS FEATURE IS NOT AVAILABLE FOR MSSQL SERVER.\nDATABASE NOT BACKED UP.", "Backup");
+            await ShowPopupErrorAsync("THIS FEATURE IS NOT AVAILABLE FOR MSSQL SERVER.\nDATABASE NOT BACKED UP.", "WARNING");
+#endif
         }
 
         public string ImportData(ImportDataModel dataModel, string ExportLog, bool overWriteData)

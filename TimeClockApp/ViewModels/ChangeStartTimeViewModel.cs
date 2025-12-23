@@ -75,7 +75,7 @@ namespace TimeClockApp.ViewModels
                 TimeCardEditing.PhaseTitle = SelectedPhase.PhaseTitle;
 
                 if (cardService.UpdateTimeCard(TimeCardEditing))
-                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "TimeCard saved");
+                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "TimeCard saved").ConfigureAwait(false);
 
                 await RefreshCard();
             }

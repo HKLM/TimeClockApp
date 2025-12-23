@@ -18,7 +18,7 @@ namespace TimeClockApp.Services
             foreach (Employee emp in employeeList)
             {
                 TimeSheet sheet = new TimeSheet(emp.EmployeeId, start.Value, end.Value, emp.Employee_Name);
-                sheet.TimeCards = await ReportListPaidTimeCardsForPayPeriodAsync(useProjectFilter, usePhaseFilter, useDateFilter, emp, project, phase, start, end);
+                sheet.TimeCards = await ReportListPaidTimeCardsForPayPeriodAsync(useProjectFilter, usePhaseFilter, useDateFilter, emp, project, phase, start, end).ConfigureAwait(false);
 
                 if (sheet.TimeCards.Count > 0)
                 {

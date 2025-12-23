@@ -36,7 +36,7 @@ namespace TimeClockApp.Services
                 foreach (Employee emp in e)
                 {
                     TimeSheet sheet = new TimeSheet(emp.EmployeeId, start.Value, end.Value, emp.Employee_Name);
-                    sheet.TimeCards = await TimeCardsForPayPeriod(true, usePhaseFilter, true, emp, project, phase, start, end).ToListAsync();
+                    sheet.TimeCards = await TimeCardsForPayPeriod(true, usePhaseFilter, true, emp, project, phase, start, end).ToListAsync().ConfigureAwait(false);
 
                     if (sheet.TimeCards.Count > 0)
                     {
@@ -123,7 +123,8 @@ namespace TimeClockApp.Services
                     && item.ExpenseTypeId != 4
                     && item.ExpenseDate >= start
                     && item.ExpenseDate <= end)
-                .SumAsync(item => item.Amount);
+                .SumAsync(item => item.Amount)
+                .ConfigureAwait(false);
 
             //change from negative # to positive
             return Math.Abs(e);
@@ -140,7 +141,8 @@ namespace TimeClockApp.Services
                     && item.ExpenseDate >= start
                     && item.ExpenseDate <= end)
                 .Distinct()
-                .ToListAsync();
+                .ToListAsync()
+                .ConfigureAwait(false);
 
             return e;
         }

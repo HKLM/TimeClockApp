@@ -7,12 +7,14 @@
 		xmlns:models="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
 		xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
 		xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
+        xmlns:m="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
+		x:DataType="vm:EditProjectViewModel"
 		Title="Projects Manager">
     <ContentPage.BindingContext>
         <vm:EditProjectViewModel x:Name="viewModel" />
     </ContentPage.BindingContext>
     <ContentPage.ToolbarItems>
-        <ToolbarItem x:DataType="vm:EditProjectViewModel" Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
+        <ToolbarItem  Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
     </ContentPage.ToolbarItems>
     <ContentPage.Resources>
         <ResourceDictionary>
@@ -31,7 +33,6 @@
             <StackLayout Padding="12">
                 <Border
 					x:Name="helpbox"
-                    x:DataType="vm:EditProjectViewModel"
 					Padding="8"
 					IsVisible="{Binding HelpInfoBoxVisible}"
 					VerticalOptions="Center">
@@ -54,12 +55,13 @@
 						VerticalOptions="Center" />
                     <Picker
 						x:Name="ProjectPicker"
+                        x:DataType="m:Project"
 						Grid.Row="1"
 						Grid.ColumnSpan="2"
-						ItemDisplayBinding="{Binding Name}"
-						ItemsSource="{Binding ProjectList}"
+						ItemDisplayBinding="{Binding Name, x:DataType=m:Project}"
+						ItemsSource="{Binding ProjectList, Source={RelativeSource AncestorType={x:Type vm:EditProjectViewModel}}, x:DataType=vm:EditProjectViewModel}"
 						SelectedIndexChanged="ProjectPicker_SelectedIndexChanged"
-						SelectedItem="{Binding SelectedProject, Mode=TwoWay}"
+						SelectedItem="{Binding SelectedProject, Source={RelativeSource AncestorType={x:Type vm:EditProjectViewModel}}, x:DataType=vm:EditProjectViewModel, Mode=TwoWay}"
 						VerticalOptions="Center" />
                     <Label
 						Grid.Row="2"
@@ -130,7 +132,6 @@
 						MinimumDate="{Binding PickerMinDate}" />
                     <Button
 						x:Name="buttonSave"
-                        x:DataType="vm:EditProjectViewModel"
 						Grid.Row="8"
 						Grid.ColumnSpan="2"
 						Command="{Binding SaveEditProjectCommand}"
@@ -143,7 +144,6 @@
 						HorizontalOptions="Fill" />
                     <Button
 						x:Name="buttonNew"
-                        x:DataType="vm:EditProjectViewModel"
 						Grid.Row="10"
 						Grid.ColumnSpan="2"
 						Command="{Binding SaveNewProjectCommand}"
@@ -156,7 +156,6 @@
 						HorizontalOptions="Fill" />
                     <Button
 						x:Name="buttonDelete"
-                        x:DataType="vm:EditProjectViewModel"
 						Grid.Row="12"
 						Grid.ColumnSpan="2"
 						Command="{Binding DeleteProjectCommand}"

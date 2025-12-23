@@ -3,8 +3,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:Converter="clr-namespace:TimeClockApp.Converters"
 	         xmlns:controls="clr-namespace:TimeClockApp.Controls"
-             xmlns:models="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
+             xmlns:m="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
              xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
+             x:DataType="vm:InvoiceDetailExpensesViewModel"
              x:Class="TimeClockApp.Pages.InvoiceDetailExpenses"
              Title="Detail-Expenses">
     <ContentPage.ToolbarItems>
@@ -16,9 +17,9 @@
             <Converter:DateOnlyConverter x:Key="dateOnlyConverter" />
         </ResourceDictionary>
 
-        <DataTemplate x:Key="expenseTemplate" x:DataType="vm:InvoiceDetailExpensesViewModel">
+        <DataTemplate x:Key="expenseTemplate" x:DataType="m:Expense">
             <Border Padding="6">
-                <VerticalStackLayout x:DataType="models:Expense">
+                <VerticalStackLayout>
                     <Grid
 						ColumnDefinitions="*,*,*"
 						ColumnSpacing="10"

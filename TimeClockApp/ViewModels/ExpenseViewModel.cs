@@ -78,6 +78,12 @@ namespace TimeClockApp.ViewModels
         [ObservableProperty]
         public partial string Memo { get; set; } = string.Empty;
 
+        /// <summary>
+        /// The ToolBar Icon toggles displaying the OptionsBox for the page
+        /// </summary>
+        [ObservableProperty]
+        public partial bool OptionsBoxVisible { get; set; } = false;
+
         public ExpenseViewModel(ExpenseService service)
         {
             dataService = service;

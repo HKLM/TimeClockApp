@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net9.0-android</TargetFrameworks>
-		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net9.0-windows10.0.19041.0</TargetFrameworks>
+		<TargetFrameworks>net10.0-android</TargetFrameworks>
+		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>
 
 		<OutputType>Exe</OutputType>
 		<RootNamespace>TimeClockApp</RootNamespace>
@@ -18,20 +18,17 @@
 		<ApplicationId>com.alexanderbuilder.timeclockapp</ApplicationId>
 		 <!--Versions--> 
 		<ApplicationIdGuid>AA699F0D-F30D-4094-AAEC-745B07309A2B</ApplicationIdGuid>
-		<ApplicationVersion>6</ApplicationVersion>
-		<ApplicationDisplayVersion>2.0</ApplicationDisplayVersion>
-		<FileVersion>2.0</FileVersion>
-		<AssemblyVersion>2.0</AssemblyVersion>
-		<Version>2.0</Version>
+		<ApplicationVersion>7</ApplicationVersion>
+		<ApplicationDisplayVersion>2.1</ApplicationDisplayVersion>
+		<FileVersion>2.1</FileVersion>
+		<AssemblyVersion>2.1</AssemblyVersion>
+		<Version>2.1</Version>
 		
-		<!--<WindowsPackageType>None</WindowsPackageType>-->
-        <!--<WindowsSdkPackageVersion>10.0.19041.41</WindowsSdkPackageVersion>-->
-
 		<!--<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>-->
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">30.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
-		<Configurations>Debug;Release;DebugMigrator</Configurations>
+		<Configurations>Debug;Release;MSSQL Migration;SQLite Migration</Configurations>
 		<Copyright>2025 (c) Brian Alexander</Copyright>
 		<Authors>Brian Alexander</Authors>
 		<Company>Alexander Builder</Company>
@@ -39,59 +36,86 @@
 		<SourceRevisionId>build$([System.DateTime]::Now.ToString("yy.M.d:HH.mm"))</SourceRevisionId>
 		<Title>TimeClock App</Title>
 		<DefaultLanguage>en-us</DefaultLanguage>
-	    <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
+		<SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
 		<EnableSplashScreenProcessing>false</EnableSplashScreenProcessing>
 		<MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
+		<WindowsPackageType>MSIX</WindowsPackageType>
+		<DefineConstants>$(DefineConstants);SQLITE</DefineConstants>
+		<!-- Replace xxxxxxxxxxxxxxx with your own PackageCertificateThumbprint value -->
+		<!--<PackageCertificateThumbprint>xxxxxxxxxxxxxxx</PackageCertificateThumbprint>
+		<AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>-->
 	</PropertyGroup>
 
-	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-android|AnyCPU'">
-	  <EmbedAssembliesIntoApk>False</EmbedAssembliesIntoApk>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-android|AnyCPU'">
-	  <PublishTrimmed>True</PublishTrimmed>
-	  <RunAOTCompilation>True</RunAOTCompilation>
+	<!-- Use CoreCLR on Android -->
+	<!--<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+		<UseMonoRuntime>false</UseMonoRuntime>
+	</PropertyGroup>-->
+	
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net10.0-android|AnyCPU'">
 	  <AndroidLinkTool>r8</AndroidLinkTool>
-	  <AndroidEnableProfiledAot>True</AndroidEnableProfiledAot>
+	  <!--<AndroidEnableProfiledAot>True</AndroidEnableProfiledAot>-->
 	  <EnableLLVM>False</EnableLLVM>
+	  <RunAOTCompilation>True</RunAOTCompilation>
 	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='DebugMigrator|net9.0-android|AnyCPU'">
+  
+	<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows' and '$(Configuration)' == 'Release'">
+		<!-- Replace xxxxxxxxxxxxxxx with your own PackageCertificateThumbprint value -->
+		<!--<AppxPackageSigningEnabled>true</AppxPackageSigningEnabled>
+		<PackageCertificateThumbprint>xxxxxxxxxxxxxxx</PackageCertificateThumbprint>-->
 	</PropertyGroup>
-
+  
 	<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows' and '$(RuntimeIdentifierOverride)' != ''">
 		<RuntimeIdentifier>$(RuntimeIdentifierOverride)</RuntimeIdentifier>
 	</PropertyGroup>
-		
+    
 	<ItemGroup>
-		<!--<MauiSplashScreen Include="Resources\AppIcon\appiconfg.svg" Color="#512BD4" BaseSize="128,128" />-->
-		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" />
-		<MauiImage Include="Resources\Images\ui\check_box_white.svg">
+      		<MauiImage Include="Resources\Images\*.svg" />
+		<MauiImage Include="Resources\Images\*.png" />
+      		<MauiImage Include="Resources\Images\ui\check_box_white.svg">
 		  <TintColor>#EFEFEF</TintColor>
 		</MauiImage>
-		<MauiImage Include="Resources\Images\*" />
 		<MauiFont Include="Resources\Fonts\*" />
-		<!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
 		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
 	</ItemGroup>
 	
 	<ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
-		<MauiSplashScreen Include="Resources\AppIcon\appiconfg.svg" Color="#512BD4" BaseSize="288,288" />
+		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" BaseSize="256,256">
+			<TintColor>Black</TintColor>
+		</MauiIcon>		
+		<MauiSplashScreen Include="Platforms\Windows\Images\base\splashscreen.png" Color="#512BD4" BaseSize="288,288" />
+		<Content Include="Platforms\Windows\Images\winui\*.{png,svg}" />
+	</ItemGroup>
+	
+	<ItemGroup Condition="$(TargetFramework.Contains('-android'))">
+		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" />		
+	</ItemGroup>
+
+	<ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
+	  <None Remove="Platforms\Windows\Images\winui\splashscreen.scale-100.png" />
+	  <None Remove="Platforms\Windows\Images\winui\splashscreen.scale-125.png" />
+	  <None Remove="Platforms\Windows\Images\winui\splashscreen.scale-150.png" />
+	  <None Remove="Platforms\Windows\Images\winui\splashscreen.scale-200.png" />
+	  <None Remove="Platforms\Windows\Images\winui\splashscreen.scale-400.png" />
+	</ItemGroup>
+
+	<ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
+	  <Content Include="Platforms\Windows\Images\winui\splashscreen.scale-100.png" />
+	  <Content Include="Platforms\Windows\Images\winui\splashscreen.scale-125.png" />
+	  <Content Include="Platforms\Windows\Images\winui\splashscreen.scale-150.png" />
+	  <Content Include="Platforms\Windows\Images\winui\splashscreen.scale-200.png" />
+	  <Content Include="Platforms\Windows\Images\winui\splashscreen.scale-400.png" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="CommunityToolkit.Maui" Version="11.1.0" />
+		<PackageReference Include="CommunityToolkit.Maui" Version="13.0.0" />
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-		<PackageReference Include="Microsoft.Maui.Controls" Version="9.0.40" />
+		<PackageReference Include="Microsoft.Maui.Controls" Version="10.0.20" />
 	</ItemGroup>
-
+	
 	<ItemGroup>
 	  <ProjectReference Include="..\TimeClockApp.Shared\TimeClockApp.Shared.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<TrimmerRootAssembly Include="TimeClockApp" RootMode="All" />
-		<TrimmerRootAssembly Include="TimeClockApp.Shared" RootMode="library" />
+	  <TrimmerRootAssembly Include="TimeClockApp" RootMode="All" />
+	  <TrimmerRootAssembly Include="TimeClockApp.Shared" RootMode="library" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -116,6 +140,9 @@
 	  <MauiXaml Update="Pages\EditTimeCard.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	  <MauiXaml Update="Pages\ExpensePage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Pages\InvoiceDetailExpenses.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
@@ -123,15 +150,6 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Pages\InvoicePage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Pages\TimeCardManagerPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Pages\ExpensePage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Pages\ExportPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Pages\PayrollDetailPage.xaml">
@@ -144,6 +162,12 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Pages\SettingsPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Pages\TimeCardManagerPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Pages\ExportPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Pages\TeamEmployeesPage.xaml">
@@ -160,4 +184,5 @@
 	<ItemGroup>
 	  <Folder Include="Platforms\Android\Resources\color\" />
 	</ItemGroup>
+
 </Project>

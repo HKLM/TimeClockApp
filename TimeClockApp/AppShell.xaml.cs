@@ -5,10 +5,14 @@ namespace TimeClockApp;
 [XamlCompilation(XamlCompilationOptions.Compile)]
 public partial class AppShell : Shell
 {
-    public AppShell()
+    protected readonly AppViewModel viewModel;
+
+    public AppShell(AppViewModel ViewModel)
     {
         InitializeComponent();
         RegisterRoutes();
+        viewModel = ViewModel;
+        BindingContext = viewModel;
     }
 
     private void RegisterRoutes()
@@ -29,9 +33,10 @@ public partial class AppShell : Shell
 
         try
         {
-            TimeCardDataStore data = new();
-            await data.GetCurrentProjectIdAsync();
-            await data.GetCurrentPhaseIdAsync();
+            Application.Current!.UserAppTheme = await viewModel.GetThemeTypeAsync();
+
+            await viewModel.GetCurrentProjectIdAsync();
+            await viewModel.GetCurrentPhaseIdAsync();
         }
         catch (AggregateException ax)
         {

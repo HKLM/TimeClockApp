@@ -70,7 +70,6 @@
             }
             finally
             {
-                initDone = true;
                 Loading = false;
             }
         }

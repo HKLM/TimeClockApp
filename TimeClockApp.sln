@@ -1,14 +1,14 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.11.35005.142
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.11018.127
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TimeClockApp", "TimeClockApp\TimeClockApp.csproj", "{98EB1C85-FEDC-4289-B4D6-123FBE41B85B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TimeClockApp.Shared", "TimeClockApp.Shared\TimeClockApp.Shared.csproj", "{5FB90588-3D01-409A-B67E-69D12F783377}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EFMigrator", "EFMigrator\EFMigrator.csproj", "{D6D9FEC7-B63F-43F5-BFE1-06BD8BC2E6B3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EFMigrator", "EFMigrator\EFMigrator.csproj", "{0371BEAD-5364-4157-86A0-D31CD6D99466}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7EE5F98A-23CA-4FDA-98AE-DBF51AEC9302}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7526086E-0BD1-47F1-B4DE-97156AF6BE65}"
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
 	EndProjectSection
@@ -16,27 +16,34 @@ EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
-		DebugMigrator|Any CPU = DebugMigrator|Any CPU
+		MSSQL Migration|Any CPU = MSSQL Migration|Any CPU
 		Release|Any CPU = Release|Any CPU
+		SQLite Migration|Any CPU = SQLite Migration|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{98EB1C85-FEDC-4289-B4D6-123FBE41B85B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{98EB1C85-FEDC-4289-B4D6-123FBE41B85B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{98EB1C85-FEDC-4289-B4D6-123FBE41B85B}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
-		{98EB1C85-FEDC-4289-B4D6-123FBE41B85B}.DebugMigrator|Any CPU.ActiveCfg = DebugMigrator|Any CPU
+		{98EB1C85-FEDC-4289-B4D6-123FBE41B85B}.MSSQL Migration|Any CPU.ActiveCfg = MSSQL Migration|Any CPU
 		{98EB1C85-FEDC-4289-B4D6-123FBE41B85B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{98EB1C85-FEDC-4289-B4D6-123FBE41B85B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{98EB1C85-FEDC-4289-B4D6-123FBE41B85B}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{98EB1C85-FEDC-4289-B4D6-123FBE41B85B}.SQLite Migration|Any CPU.ActiveCfg = SQLite Migration|Any CPU
+		{98EB1C85-FEDC-4289-B4D6-123FBE41B85B}.SQLite Migration|Any CPU.Deploy.0 = SQLite Migration|Any CPU
 		{5FB90588-3D01-409A-B67E-69D12F783377}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5FB90588-3D01-409A-B67E-69D12F783377}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5FB90588-3D01-409A-B67E-69D12F783377}.DebugMigrator|Any CPU.ActiveCfg = DebugMigrator|Any CPU
-		{5FB90588-3D01-409A-B67E-69D12F783377}.DebugMigrator|Any CPU.Build.0 = DebugMigrator|Any CPU
+		{5FB90588-3D01-409A-B67E-69D12F783377}.MSSQL Migration|Any CPU.ActiveCfg = MSSQL Migration|Any CPU
+		{5FB90588-3D01-409A-B67E-69D12F783377}.MSSQL Migration|Any CPU.Build.0 = MSSQL Migration|Any CPU
 		{5FB90588-3D01-409A-B67E-69D12F783377}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5FB90588-3D01-409A-B67E-69D12F783377}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D6D9FEC7-B63F-43F5-BFE1-06BD8BC2E6B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D6D9FEC7-B63F-43F5-BFE1-06BD8BC2E6B3}.DebugMigrator|Any CPU.ActiveCfg = DebugMigrator|Any CPU
-		{D6D9FEC7-B63F-43F5-BFE1-06BD8BC2E6B3}.DebugMigrator|Any CPU.Build.0 = DebugMigrator|Any CPU
-		{D6D9FEC7-B63F-43F5-BFE1-06BD8BC2E6B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5FB90588-3D01-409A-B67E-69D12F783377}.SQLite Migration|Any CPU.ActiveCfg = SQLite Migration|Any CPU
+		{5FB90588-3D01-409A-B67E-69D12F783377}.SQLite Migration|Any CPU.Build.0 = SQLite Migration|Any CPU
+		{0371BEAD-5364-4157-86A0-D31CD6D99466}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0371BEAD-5364-4157-86A0-D31CD6D99466}.MSSQL Migration|Any CPU.ActiveCfg = MSSQL Migration|Any CPU
+		{0371BEAD-5364-4157-86A0-D31CD6D99466}.MSSQL Migration|Any CPU.Build.0 = MSSQL Migration|Any CPU
+		{0371BEAD-5364-4157-86A0-D31CD6D99466}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0371BEAD-5364-4157-86A0-D31CD6D99466}.SQLite Migration|Any CPU.ActiveCfg = SQLite Migration|Any CPU
+		{0371BEAD-5364-4157-86A0-D31CD6D99466}.SQLite Migration|Any CPU.Build.0 = SQLite Migration|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

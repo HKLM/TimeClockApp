@@ -4,10 +4,11 @@
 	    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 	    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 	    xmlns:controls="clr-namespace:TimeClockApp.Controls"
-	    xmlns:models="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
+	    xmlns:m="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
         xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
 	    xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
 	    x:Name="AppSettingsPage"
+        x:DataType="vm:SettingsPageViewModel"
 	    Title="Settings">
     <ContentPage.BindingContext>
         <vm:SettingsPageViewModel x:Name="viewModel" />
@@ -20,18 +21,18 @@
             <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
         </Style>
 
-        <DataTemplate x:Key="intTemplate">
-            <Grid ColumnDefinitions="200,40,*,40" RowDefinitions="Auto">
+        <DataTemplate x:Key="intTemplate" x:DataType="m:Config">
+            <Grid ColumnDefinitions="180,40,*,40" RowDefinitions="Auto">
                 <Label                   
 					StyleClass="LabelSmallCenter"
 					Text="{Binding Name}"
 					VerticalTextAlignment="Center" />
                 <ImageButton
 					Grid.Column="1"
-                    Command="{Binding Source={x:Reference AppSettingsPage}, Path=BindingContext.DisplayHintCommand}"
+                    Command="{Binding DisplayHintCommand, Source={RelativeSource AncestorType={x:Type vm:SettingsPageViewModel}}, x:DataType=vm:SettingsPageViewModel}"
 					CommandParameter="{Binding}"
-					HorizontalOptions="Center"
-					Source="help_icon_blue.png" />
+                    Style="{StaticResource BaseImageButton}"
+					Source="help_icon_blue.png" Scale="0.7" />
                 <Entry
                     x:Name="entryIntBox"
 					Grid.Column="2"
@@ -49,25 +50,25 @@
                 </Entry>
                 <ImageButton
 					Grid.Column="3"
-                    Command="{Binding Source={x:Reference AppSettingsPage}, Path=BindingContext.SaveSettingCommand}"
+                    Command="{Binding SaveSettingCommand, Source={RelativeSource AncestorType={x:Type vm:SettingsPageViewModel}}, x:DataType=vm:SettingsPageViewModel}"
 					CommandParameter="{Binding}"
-					HorizontalOptions="Center"
+                    Style="{StaticResource BaseImageButton}"
 					Source="save.png" />
             </Grid>
         </DataTemplate>
 
-        <DataTemplate x:Key="stringTemplate">
-            <Grid ColumnDefinitions="200,40,*,40" RowDefinitions="Auto">
+        <DataTemplate x:Key="stringTemplate" x:DataType="m:Config">
+            <Grid ColumnDefinitions="180,40,*,40" RowDefinitions="Auto">
                 <Label                    
 					StyleClass="LabelSmallCenter"
 					Text="{Binding Name}"
 					VerticalTextAlignment="Center" />
                 <ImageButton
 					Grid.Column="1"
-                    Command="{Binding Source={x:Reference AppSettingsPage}, Path=BindingContext.DisplayHintCommand}"
+                    Command="{Binding DisplayHintCommand, Source={RelativeSource AncestorType={x:Type vm:SettingsPageViewModel}}, x:DataType=vm:SettingsPageViewModel}"
 					CommandParameter="{Binding}"
-					HorizontalOptions="Center"
-					Source="help_icon_blue.png" />
+                    Style="{StaticResource BaseImageButton}"
+					Source="help_icon_blue.png" Scale="0.7" />
                 <Entry
                     x:Name="entryStringBox"
 					Grid.Column="2"
@@ -87,9 +88,9 @@
                 </Entry>
                 <ImageButton
 					Grid.Column="3"
-                    Command="{Binding Source={x:Reference AppSettingsPage}, Path=BindingContext.SaveSettingCommand}"
+                    Command="{Binding SaveSettingCommand, Source={RelativeSource AncestorType={x:Type vm:SettingsPageViewModel}}, x:DataType=vm:SettingsPageViewModel}"
 					CommandParameter="{Binding}"
-					HorizontalOptions="Center"
+                    Style="{StaticResource BaseImageButton}"
 					Source="save.png" />
             </Grid>
         </DataTemplate>

@@ -4,18 +4,19 @@
 	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 	xmlns:controls="clr-namespace:TimeClockApp.Controls;assembly=TimeClockApp"
-	xmlns:models="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
-	xmlns:vm="clr-namespace:TimeClockApp.ViewModels"	
+	xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
+    xmlns:m="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
+    x:DataType="vm:PayrollPageViewModel"
 	x:Name="PagePayroll"
 	Title="Payroll Totals">
     <ContentPage.ToolbarItems>
-        <ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" x:DataType="vm:PayrollPageViewModel" />
+        <ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
         <ToolbarItem x:Name="TeamPageToolbarButton" IconImageSource="manage_accounts.png" Clicked="TeamPageToolbarButton_Clicked" />
-        <ToolbarItem Command="{Binding RefreshEverythingCommand}" IconImageSource="refresh.png" x:DataType="vm:PayrollPageViewModel" />
+        <ToolbarItem Command="{Binding RefreshEverythingCommand}" IconImageSource="refresh.png" />
     </ContentPage.ToolbarItems>
     <ContentPage.Resources>
 
-        <DataTemplate x:Key="payrollListTemplate">
+        <DataTemplate x:Key="payrollListTemplate" x:DataType="m:TimeSheet">
             <SwipeView>
                 <SwipeView.LeftItems>
                     <SwipeItems>
@@ -30,7 +31,7 @@
                 <SwipeView.RightItems>
                     <SwipeItems>
                         <SwipeItem
-                            Command="{Binding Source={x:Reference PagePayroll}, Path=BindingContext.MarkPaidCommand}"
+                            Command="{Binding MarkPaidCommand, Source={RelativeSource AncestorType={x:Type vm:PayrollPageViewModel}}, x:DataType=vm:PayrollPageViewModel}"
 							CommandParameter="{Binding}"
 							StyleClass="SwpieRed"
 							Text="Mark Paid" />
@@ -70,7 +71,7 @@
         <controls:SingleDataTemplateSelector x:Key="singletemplatesel" TheTemplate="{StaticResource payrollListTemplate}" />
     </ContentPage.Resources>
 
-    <ScrollView  x:DataType="vm:PayrollPageViewModel">
+    <ScrollView>
         <VerticalStackLayout>
             <ActivityIndicator IsRunning="True" IsVisible="{Binding Loading}"  />
             <VerticalStackLayout IsVisible="{Binding HasError}">
@@ -91,11 +92,11 @@
                         LineBreakMode="WordWrap" Style="{StaticResource LabelSmall}"
 					    Text="TODO. &#10;&#10;TODO. &#10;&#10;Additional details..." />
 
-                    <Image Grid.Row="1" Source="manage_accounts.png" />
+                    <Image Grid.Row="1" Source="manage_accounts.png" HeightRequest="24" WidthRequest="24"  />
                     <Label Grid.Row="1" Grid.Column="1"
                            Style="{StaticResource LabelSmall}" 
                            Text="Manage Employee" />
-                    <Image Grid.Row="2" Source="refresh.png" />
+                    <Image Grid.Row="2" Source="refresh.png" HeightRequest="24" WidthRequest="24"  />
                     <Label Grid.Row="2" Grid.Column="1"
                            Style="{StaticResource LabelSmall}" 
                            Text="Refresh the page" />

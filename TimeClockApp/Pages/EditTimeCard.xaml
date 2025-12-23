@@ -4,12 +4,13 @@
 	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 	xmlns:Converter="clr-namespace:TimeClockApp.Converters"
-	xmlns:models="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
+	xmlns:m="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
 	xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
 	x:Name="PageEditTimeCard"
+    x:DataType="vm:EditTimeCardViewModel"
 	Title="{Binding PageTitle}">
     <ContentPage.ToolbarItems>
-        <ToolbarItem x:DataType="vm:EditTimeCardViewModel" Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
+        <ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
     </ContentPage.ToolbarItems>
     <ContentPage.Resources>
         <ResourceDictionary>
@@ -23,7 +24,6 @@
         <StackLayout Margin="10">
             <Border
 				x:Name="helpbox"
-                x:DataType="vm:EditTimeCardViewModel"
 				Padding="8"
 				IsVisible="{Binding HelpInfoBoxVisible}"
 				VerticalOptions="Center">
@@ -51,10 +51,11 @@
 					Text="Project: "
 					VerticalTextAlignment="Center" />
                 <Picker
+                    x:DataType="m:Project"
 					Grid.Column="1"
-					ItemDisplayBinding="{Binding Name}"
-					ItemsSource="{Binding ProjectList}"
-					SelectedItem="{Binding SelectedProject, Mode=TwoWay}"
+					ItemDisplayBinding="{Binding Name, x:DataType=m:Project}"
+					ItemsSource="{Binding ProjectList, Source={RelativeSource AncestorType={x:Type vm:EditTimeCardViewModel}}, x:DataType=vm:EditTimeCardViewModel}"
+					SelectedItem="{Binding SelectedProject, Source={RelativeSource AncestorType={x:Type vm:EditTimeCardViewModel}}, x:DataType=vm:EditTimeCardViewModel, Mode=TwoWay}"
 					VerticalOptions="Center" />
                 <Label
 					Grid.Row="1"
@@ -62,11 +63,12 @@
 					Text="Phase: "
 					VerticalTextAlignment="Center" />
                 <Picker
+                    x:DataType="m:Phase"
 					Grid.Row="1"
 					Grid.Column="1"
-					ItemDisplayBinding="{Binding PhaseTitle}"
-					ItemsSource="{Binding PhaseList}"
-					SelectedItem="{Binding SelectedPhase, Mode=TwoWay}"
+					ItemDisplayBinding="{Binding PhaseTitle, x:DataType=m:Phase}"
+					ItemsSource="{Binding PhaseList, Source={RelativeSource AncestorType={x:Type vm:EditTimeCardViewModel}}, x:DataType=vm:EditTimeCardViewModel}"
+					SelectedItem="{Binding SelectedPhase, Source={RelativeSource AncestorType={x:Type vm:EditTimeCardViewModel}}, x:DataType=vm:EditTimeCardViewModel, Mode=TwoWay}"
 					VerticalOptions="Center" />
 
                 <Label
@@ -75,7 +77,6 @@
 					Text="Date:"
 					VerticalTextAlignment="Center" />
                 <DatePicker
-                    x:DataType="vm:EditTimeCardViewModel"
 					Grid.Row="2"
 					Grid.Column="1"
 					Date="{Binding TimeCard_Date, Converter={StaticResource dateOnlyToDateTimeConverter}, Mode=TwoWay}"
@@ -105,7 +106,6 @@
 					Text="Status:"
 					VerticalTextAlignment="Center" />
                 <Picker
-                    x:DataType="vm:EditTimeCardViewModel"
 					Grid.Row="5"
 					Grid.Column="1"
 					IsEnabled="{Binding IsAdmin}"
@@ -117,7 +117,6 @@
 					Text="Read Only:"
 					VerticalTextAlignment="Center" />
                 <CheckBox
-                    x:DataType="vm:EditTimeCardViewModel"
 					Grid.Row="6"
 					Grid.Column="1"
 					Margin="0,5"
@@ -127,7 +126,6 @@
             </Grid>
 
             <Button
-                x:DataType="vm:EditTimeCardViewModel"
 				Margin="20,0"
 				Command="{Binding SaveTimeCardCommand}"
 				Text="Save" />

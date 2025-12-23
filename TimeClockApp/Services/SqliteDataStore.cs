@@ -50,23 +50,5 @@ namespace TimeClockApp.Services
             Config? C = await Context.Config.FindAsync(keyId).ConfigureAwait(false);
             return C?.IntValue ?? defaultValue;
         }
-
-
-        /// <summary>
-        /// Gets the String value of the Config item
-        /// </summary>
-        /// <param name="keyId">Primary Id key of the item</param>
-        /// <returns>the Config's STRING value</returns>
-        internal string GetConfigString(int keyId)
-        {
-            Config? C = Context.Config.Find(keyId);
-            return C?.StringValue ?? string.Empty;
-        }
-
-        internal async Task<string> GetConfigStringAsync(int keyId)
-        {
-            Config? C = await Context.Config.FindAsync(keyId).ConfigureAwait(false); ;
-            return C?.StringValue ?? string.Empty;
-        }
     }
 }

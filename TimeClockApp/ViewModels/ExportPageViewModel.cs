@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using CsvHelper;
+using Microsoft.Maui.ApplicationModel.DataTransfer;
+using Microsoft.Maui.Storage;
 using TimeClockApp.Shared;
 using TimeClockApp.Utilities;
 
@@ -323,7 +325,7 @@ namespace TimeClockApp.ViewModels
                     ExportLog += "Begin backing up...\n";
                     await dataService.BackupDatabase(file);
 #if WINDOWS
-                    await Share.RequestAsync(new ShareFileRequest
+                    await Share.Default.RequestAsync(new ShareFileRequest
                     {
                         Title = "TimeClock App SQLite3 Database",
                         File = new ShareFile(file),
@@ -342,7 +344,7 @@ namespace TimeClockApp.ViewModels
                     ExportLog += "Copy backup database file to: " + filePublic + "\n";
                     await File.WriteAllBytesAsync(filePublic, bytes);
                     ExportLog += "Back up complete, start share file...\n";
-                    await Share.RequestAsync(new ShareFileRequest
+                    await Share.Default.RequestAsync(new ShareFileRequest
                     {
                         Title = "TimeClock App SQLite3 Database",
                         File = new ShareFile(filePublic),

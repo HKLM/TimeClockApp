@@ -6,12 +6,14 @@
         xmlns:models="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
         xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
         xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
+        xmlns:m="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
+        x:DataType="vm:EditPhaseViewModel"
         Title="Phase List Manager">
     <ContentPage.BindingContext>
         <vm:EditPhaseViewModel x:Name="viewModel" />
     </ContentPage.BindingContext>
     <ContentPage.ToolbarItems>
-        <ToolbarItem x:DataType="vm:EditPhaseViewModel" Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
+        <ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
     </ContentPage.ToolbarItems>
     <ContentPage.Resources>
         <Style x:Key="InvalidEntryStyle" TargetType="Entry">
@@ -25,7 +27,6 @@
         <StackLayout>
             <Border
                 x:Name="helpbox"
-                x:DataType="vm:EditPhaseViewModel"
                 Padding="8"
                 IsVisible="{Binding HelpInfoBoxVisible}"
                 VerticalOptions="Center">
@@ -46,10 +47,11 @@
                     VerticalTextAlignment="Center" />
                 <Picker
                     x:Name="PhasePicker"
+                    x:DataType="m:Phase"
                     Grid.Row="1"
-                    ItemDisplayBinding="{Binding PhaseTitle}"
-                    ItemsSource="{Binding PhaseList}"
-                    SelectedItem="{Binding SelectedPhase, Mode=TwoWay}"
+                    ItemDisplayBinding="{Binding PhaseTitle, x:DataType=m:Phase}"
+                    ItemsSource="{Binding PhaseList, Source={RelativeSource AncestorType={x:Type vm:EditPhaseViewModel}}, x:DataType=vm:EditPhaseViewModel}"
+                    SelectedItem="{Binding SelectedPhase, Source={RelativeSource AncestorType={x:Type vm:EditPhaseViewModel}}, x:DataType=vm:EditPhaseViewModel, Mode=TwoWay}"
                     VerticalOptions="Center" />
                 <Label
                     Grid.Row="2"
@@ -90,7 +92,7 @@
                     Text="Save Change">
                     <Button.Triggers>
                         <DataTrigger
-                            Binding="{Binding Source={x:Reference PhaseNameBox}, Path=Text.Length}"
+                            Binding="{Binding Source={x:Reference PhaseNameBox}, Path=Text.Length, x:DataType=Entry}"
                             TargetType="Button"
                             Value="0">
                             <Setter Property="IsEnabled" Value="False" />
@@ -102,7 +104,6 @@
                     HeightRequest="2"
                     HorizontalOptions="Fill" />
                 <Button
-                    x:DataType="vm:EditPhaseViewModel"
                     Grid.Row="7"
                     Command="{Binding SaveNewPhaseCommand}"
                     IsEnabled="{Binding EnableAddDelButtons}"
@@ -112,7 +113,6 @@
                     HeightRequest="2"
                     HorizontalOptions="Fill" />
                 <Button
-                    x:DataType="vm:EditPhaseViewModel"
                     Grid.Row="9"
                     Command="{Binding DeletePhaseCommand}"
                     IsEnabled="{Binding EnableAddDelButtons}"

@@ -2,18 +2,18 @@
 
 namespace TimeClockApp.ViewModels
 {
-    public partial class PayrollDetailViewModel : BaseViewModel, IQueryAttributable
+    public partial class PayrollDetailViewModel(PayrollService service) : BaseViewModel, IQueryAttributable
     {
-        protected readonly PayrollService payrollData;
+        protected readonly PayrollService payrollData = service;
 
         [ObservableProperty]
-        public partial ObservableCollection<TimeCard> TimeCards { get; set; }
+        public partial ObservableCollection<TimeCard> TimeCards { get; set; } = new();
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(TimeCards))]
         public partial TimeSheet SheetTime { get; set; } = new();
 
         [ObservableProperty]
-        public partial ObservableCollection<Employee> EmployeeList { get; set; }
+        public partial ObservableCollection<Employee> EmployeeList { get; set; } = new();
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(PayPeriod))]
         public partial DateTime StartDate { get; set; }
@@ -77,7 +77,7 @@ namespace TimeClockApp.ViewModels
         public partial bool ShowFilterOptions { get; set; } = false;
 
         [ObservableProperty]
-        public partial Employee? SelectedFilter { get; set; }
+        public partial Employee? SelectedFilter { get; set; } = null;
         partial void OnSelectedFilterChanged(global::TimeClockApp.Shared.Models.Employee? value)
         {
             TimeCards.Clear();
@@ -85,14 +85,6 @@ namespace TimeClockApp.ViewModels
         }
         private int? selectedFilterId;
         private bool LastOnlyUnpaid = false;
-
-        public PayrollDetailViewModel(PayrollService service)
-        {
-            payrollData = service;
-            TimeCards = [];
-            EmployeeList = [];
-            SelectedFilter = null;
-        }
 
         public void ApplyQueryAttributes(IDictionary<string, object> query)
         {
@@ -198,7 +190,6 @@ namespace TimeClockApp.ViewModels
             }
             finally
             {
-                initDone = true;
                 Loading = false;
             }
 
@@ -284,7 +275,6 @@ namespace TimeClockApp.ViewModels
             }
             finally
             {
-                initDone = true;
                 Loading = false;
             }
         }

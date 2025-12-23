@@ -4,10 +4,11 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:Converter="clr-namespace:TimeClockApp.Converters"
-    xmlns:models="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
+    xmlns:m="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
-    Title="Edit Expence">
+    Title="Edit Expence"
+    x:DataType="vm:EditExpensePageViewModel">
     <ContentPage.BindingContext>
         <vm:EditExpensePageViewModel x:Name="viewModel" />
     </ContentPage.BindingContext>
@@ -49,35 +50,38 @@
                         Text="Project: "
                         VerticalTextAlignment="Center" />
                     <Picker
+                        x:DataType="m:Project"
                         Grid.Column="2"
                         HorizontalOptions="Fill"
-                        ItemDisplayBinding="{Binding Name}"
-                        ItemsSource="{Binding ProjectList}"
-                        SelectedItem="{Binding SelectedProject, Mode=TwoWay}" />
+                        ItemDisplayBinding="{Binding Name, x:DataType=m:Project}"
+                        ItemsSource="{Binding ProjectList, Source={RelativeSource AncestorType={x:Type vm:EditExpensePageViewModel}}, x:DataType=vm:EditExpensePageViewModel}"
+                        SelectedItem="{Binding SelectedProject, Source={RelativeSource AncestorType={x:Type vm:EditExpensePageViewModel}}, x:DataType=vm:EditExpensePageViewModel, Mode=TwoWay}" />
                     <Label
                         Grid.Row="1"
                         HorizontalOptions="Start"
                         Text="Phase: "
                         VerticalTextAlignment="Center" />
                     <Picker
+                        x:DataType="m:Phase"
                         Grid.Row="1"
                         Grid.Column="2"
                         HorizontalOptions="Fill"
-                        ItemDisplayBinding="{Binding PhaseTitle}"
-                        ItemsSource="{Binding PhaseList}"
-                        SelectedItem="{Binding SelectedPhase, Mode=TwoWay}" />
+                        ItemDisplayBinding="{Binding PhaseTitle, x:DataType=m:Phase}"
+                        ItemsSource="{Binding PhaseList, Source={RelativeSource AncestorType={x:Type vm:EditExpensePageViewModel}}, x:DataType=vm:EditExpensePageViewModel}"
+                        SelectedItem="{Binding SelectedPhase, Source={RelativeSource AncestorType={x:Type vm:EditExpensePageViewModel}}, x:DataType=vm:EditExpensePageViewModel, Mode=TwoWay}" />
                     <Label
                         Grid.Row="2"
                         Style="{StaticResource LabelSmall}"
                         Text="Category: "
                         VerticalTextAlignment="Center" />
                     <Picker
+                        x:DataType="m:ExpenseType"
                         Grid.Row="2"
 					    Grid.Column="2"
 					    HorizontalOptions="Fill"
-					    ItemDisplayBinding="{Binding CategoryName}"
-					    ItemsSource="{Binding ExpenseTypeList}"
-					    SelectedItem="{Binding SelectedExpenseType, Mode=TwoWay}"
+					    ItemDisplayBinding="{Binding CategoryName, x:DataType=m:ExpenseType}"
+					    ItemsSource="{Binding ExpenseTypeList, Source={RelativeSource AncestorType={x:Type vm:EditExpensePageViewModel}}, x:DataType=vm:EditExpensePageViewModel}"
+					    SelectedItem="{Binding SelectedExpenseType, Source={RelativeSource AncestorType={x:Type vm:EditExpensePageViewModel}}, x:DataType=vm:EditExpensePageViewModel, Mode=TwoWay}"
                         VerticalTextAlignment="Center" />
                     <Label
                         Grid.Row="3"

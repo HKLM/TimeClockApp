@@ -1,20 +1,19 @@
 ﻿//#define NEW_DATABASE
-//#define SAVECREATESQL
-
-#if (SQLITE)
-using Microsoft.Data.Sqlite;
+#if SQLITE && MSSQL
+#error Cannot define both SQLITE and MSSQL
 #endif
-#if (MSSQL)
+#if MSSQL
 using Microsoft.EntityFrameworkCore.SqlServer;
+#else
+using Microsoft.Data.Sqlite;
 #endif
 using System;
 using System.Diagnostics.CodeAnalysis;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
-//#nullable enable 
+#nullable enable 
 
 namespace TimeClockApp.Shared.Models
 {
@@ -32,9 +31,23 @@ namespace TimeClockApp.Shared.Models
         {
             Initialize();
         }
+
+        [RequiresUnreferencedCode(
+"EF Core isn't fully compatible with trimming, and running the application may generate unexpected runtime failures. "
++ "Some specific coding pattern are usually required to make trimming work properly, see https://aka.ms/efcore-docs-trimming for "
++ "more details.")]
+        public DataBackendContext(DbContextOptions<DataBackendContext> options) : base(options) 
+        {
+            //Initialize();
+
 #if MSSQL
-        public DataBackendContext(DbContextOptions<DataBackendContext> options) : base(options) {}
+            Database.Migrate();
+            Thread.Sleep(3000);
+#else
+            SQLitePCL.Batteries_V2.Init();
+            Database.Migrate();
 #endif
+        }
 
         private void Initialize()
         {
@@ -42,22 +55,19 @@ namespace TimeClockApp.Shared.Models
             {
                 try
                 {
-#if SQLITE
+#if !MSSQL
                     SQLitePCL.Batteries_V2.Init();
 #endif
-#if (NEW_DATABASE && DEBUG)
+#if NEW_DATABASE
                     this.Database.EnsureDeleted();
+                    Thread.Sleep(3000);
                     this.Database.EnsureCreated();
+                    Thread.Sleep(3000);
 #endif
-#if (SAVECREATESQL && DEBUG)
-                    FileService fhs = new();
-                    string sqltxt = Path.Combine(fhs.GetDownloadPath(), "CreateDB.sql");
 
-                    string sql = this.Database.GenerateCreateScript();
-                    File.WriteAllText(sqltxt, sql);
-#endif
-#if !NEW_DATABASE
                     Database.Migrate();
+#if MSSQL
+                    Thread.Sleep(3000);
 #endif
                 }
                 finally
@@ -78,37 +88,84 @@ namespace TimeClockApp.Shared.Models
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
+
             optionsBuilder?
                     .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning))
-#if (DEBUG && !MIGRATION)
-                    .EnableDetailedErrors()
+#if DEBUG
+                    .EnableDetailedErrors(true)
                     .EnableSensitiveDataLogging(true)
-                    .LogTo(Console.WriteLine, LogLevel.Information)
+                    .LogTo(message => System.Diagnostics.Debug.WriteLine(message), LogLevel.Information)
 #else
-                    .LogTo(Console.WriteLine, LogLevel.Warning)
+                    .LogTo(message => Console.WriteLine(message), LogLevel.Warning)
 #endif
-#if SQLITE
+#if MSSQL
+                    .UseSqlServer($"Data Source={TimeClockApp.Shared.MSSQLSetting.GetMSSQLconnectionString()}");
+#else
                     .UseSqlite($"Filename={SQLiteSetting.GetSQLiteDBPath()}");
-#elif MSSQL
-                    .UseSqlServer("Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=TimeClockApp;Integrated Security=True;Encrypt=False;Trust Server Certificate=True");
 #endif
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-#if MSSQL
 #region MSSQLConverters
+#if MSSQL
             modelBuilder.Entity<Employee>()
                 .Property(e => e.Employee_PayRate)
+                .HasColumnType("decimal(8,2)")
                 .HasConversion<decimal>();
             modelBuilder.Entity<Expense>()
                 .Property(e => e.Amount)
+                .IsRequired(required: true)
+                .HasColumnType("decimal(8,2)")
                 .HasConversion<decimal>();
             modelBuilder.Entity<TimeCard>()
                 .Property(t => t.TimeCard_EmployeePayRate)
+                .HasColumnType("decimal(8,2)")
                 .HasConversion<decimal>();
-#endregion
+            modelBuilder.Entity<TimeCard>()
+                .Property(t => t.TimeCard_WorkHours)
+                .HasColumnType("decimal(4,2)")
+                .HasConversion<decimal>();
+            modelBuilder.Entity<TimeCard>()
+                .Property(t => t.TimeCard_EmployeePayRate)
+                .HasColumnType("decimal(8,2)")
+                .HasConversion<decimal>();
 #endif
+#endregion
+
+            modelBuilder.Entity<Employee>()
+                .Property(t => t.Employee_Name)
+                .HasMaxLength(50);
+            modelBuilder.Entity<Expense>()
+                .Property(t => t.ExpenseDate)
+                .HasColumnType("date");
+            modelBuilder.Entity<TimeCard>()
+                .Property(t => t.TimeCard_DateTime)
+                .IsRequired(true);
+            modelBuilder.Entity<TimeCard>()
+                .Property(t => t.TimeCard_Date)
+                .HasColumnType("date")
+                .IsRequired(true);
+            modelBuilder.Entity<TimeCard>()
+                .Property(t => t.TimeCard_StartTime)
+                .HasColumnType("time")
+                .HasPrecision(0);
+            modelBuilder.Entity<TimeCard>()
+                .Property(t => t.TimeCard_EndTime)
+                .HasColumnType("time")
+                .HasPrecision(0);
+            modelBuilder.Entity<TimeCard>()
+                .Property(t => t.TimeCard_EmployeeName)
+                .HasMaxLength(50);
+            modelBuilder.Entity<TimeCard>()
+                .Property(t => t.ProjectName)
+                .HasMaxLength(50);
+            modelBuilder.Entity<TimeCard>()
+                .Property(t => t.PhaseTitle)
+                .HasMaxLength(50);
+            modelBuilder.Entity<Project>()
+                .Property(t => t.ProjectDate)
+                .HasColumnType("date");
 
 #region ForeignKeys
 
@@ -142,7 +199,6 @@ namespace TimeClockApp.Shared.Models
                 .WithMany(t => t.Expenses)
                 .HasForeignKey(t => t.ExpenseTypeId);
 
-
 #endregion ForeignKeys
 
 #region DefaultValues
@@ -156,9 +212,21 @@ namespace TimeClockApp.Shared.Models
             modelBuilder.Entity<TimeCard>()
                 .Property(b => b.ProjectId)
                 .HasDefaultValue(1);
+#if MSSQL
             modelBuilder.Entity<TimeCard>()
-                .Property(b => b.TimeCard_DateTime)
-                .HasDefaultValueSql("datetime('now', 'localtime')");
+                    .Property(b => b.TimeCard_DateTime)
+                    .HasDefaultValueSql("GETDATE()");
+            modelBuilder.Entity<TimeCard>()
+                    .Property(t => t.TimeCard_WorkHours)
+                    .HasComputedColumnSql("CONVERT([decimal](4,2),datediff(minute,[TimeCard_StartTime],[TimeCard_EndTime])/(60.0))", stored: true);
+#else
+            modelBuilder.Entity<TimeCard>()
+                    .Property(b => b.TimeCard_DateTime)
+                    .HasDefaultValueSql("datetime('now', 'localtime')");
+            modelBuilder.Entity<TimeCard>()
+                    .Property(t => t.TimeCard_WorkHours)
+                    .HasComputedColumnSql("round((strftime('%s', [TimeCard_EndTime]) - strftime('%s', [TimeCard_StartTime])) / 3600.0, 2)", stored: true);
+#endif
             modelBuilder.Entity<Project>()
                 .Property(b => b.Status)
                 .HasDefaultValue(ProjectStatus.Ready);
@@ -170,25 +238,13 @@ namespace TimeClockApp.Shared.Models
 
 #region Indexs
 
-            modelBuilder.Entity<TimeCard>()
-                 .HasIndex(b => new { b.EmployeeId, b.TimeCard_Status, b.TimeCard_Date, b.TimeCard_bReadOnly})
-                 .HasDatabaseName("IX_TimeCardEmpStatDateRead");
-
-            modelBuilder.Entity<TimeCard>()
-                .Property(t => t.TimeCard_WorkHours)
-                .HasComputedColumnSql("round((strftime('%s', [TimeCard_EndTime]) - strftime('%s', [TimeCard_StartTime])) / 3600.0, 2)", stored: true);
-
             modelBuilder.Entity<Employee>()
-                .HasIndex(b => new { b.EmployeeId, b.Employee_Employed })
-                .HasDatabaseName("IX_EmployeeEmployed");
-
-            modelBuilder.Entity<Project>()
-                .HasIndex(p => new { p.ProjectId, p.Status })
-                .HasDatabaseName("IX_ProjectStatus");
+                .HasIndex(b => new { b.Employee_Name})
+                .IsUnique(true);
 
             modelBuilder.Entity<ExpenseType>()
                 .HasIndex(t => new { t.CategoryName })
-                .IsUnique();
+                .IsUnique(true);
 
 #endregion Indexs
 
@@ -272,13 +328,20 @@ namespace TimeClockApp.Shared.Models
                 Name = "Version",
                 StringValue = "1.7",
                 Hint = "Application Database version"
+            },
+            new Config
+            {
+                ConfigId = 13,
+                Name = "AppTheme",
+                IntValue = 0,
+                Hint = "Override App theme (0=Default-Unspecified, 1=Light, 2=Dark)"
             });
 
             modelBuilder.Entity<Employee>().HasData(new Employee
             {
                 EmployeeId = 1,
                 Employee_Name = "John Doe",
-                Employee_PayRate = 20.00,
+                Employee_PayRate = 25.00,
                 JobTitle = "Job Title",
                 Employee_Employed = EmploymentStatus.Employed
             },
@@ -292,74 +355,22 @@ namespace TimeClockApp.Shared.Models
             });
 
             modelBuilder.Entity<ExpenseType>().HasData(
-            new ExpenseType
-            {
-                ExpenseTypeId = 1,
-                CategoryName = "Deleted"
-            },
-            new ExpenseType
-            {
-                ExpenseTypeId = 2,
-                CategoryName = "Income"
-            },
-            new ExpenseType
-            {
-                ExpenseTypeId = 3,
-                CategoryName = "Payroll"
-            },
-            new ExpenseType
-            {
-                ExpenseTypeId = 4,
-                CategoryName = "WorkersComp"
-            },
-            new ExpenseType
-            {
-                ExpenseTypeId = 5,
-                CategoryName = "Materials"
-            },
-            new ExpenseType
-            {
-                ExpenseTypeId = 6,
-                CategoryName = "Toll.Gas"
-            },
-            new ExpenseType
-            {
-                ExpenseTypeId = 7,
-                CategoryName = "Misc"
-            },
-            new ExpenseType
-            {
-                ExpenseTypeId = 8,
-                CategoryName = "Refund"
-            },
-            new ExpenseType
-            {
-                ExpenseTypeId = 9,
-                CategoryName = "Subcontractor"
-            },
-            new ExpenseType
-            {
-                ExpenseTypeId = 10,
-                CategoryName = "Taxes"
-            },
-            new ExpenseType
-            {
-                ExpenseTypeId = 11,
-                CategoryName = "Dumps"
-            },
-            new ExpenseType
-            {
-                ExpenseTypeId = 12,
-                CategoryName = "Overhead"
-            },
-            new ExpenseType
-            {
-                ExpenseTypeId = 13,
-                CategoryName = "Permit"
-            });
+            new ExpenseType { ExpenseTypeId = 1, CategoryName = "Deleted" },
+            new ExpenseType { ExpenseTypeId = 2, CategoryName = "Income" },
+            new ExpenseType { ExpenseTypeId = 3, CategoryName = "Payroll" },
+            new ExpenseType { ExpenseTypeId = 4, CategoryName = "WorkersComp" },
+            new ExpenseType { ExpenseTypeId = 5, CategoryName = "Materials" },
+            new ExpenseType { ExpenseTypeId = 6, CategoryName = "Toll.Gas" },
+            new ExpenseType { ExpenseTypeId = 7, CategoryName = "Misc" },
+            new ExpenseType { ExpenseTypeId = 8, CategoryName = "Refund" },
+            new ExpenseType { ExpenseTypeId = 9, CategoryName = "Subcontractor" },
+            new ExpenseType { ExpenseTypeId = 10, CategoryName = "Taxes" },
+            new ExpenseType { ExpenseTypeId = 11, CategoryName = "Dumps" },
+            new ExpenseType { ExpenseTypeId = 12, CategoryName = "Overhead" },
+            new ExpenseType { ExpenseTypeId = 13, CategoryName = "Permit" });
 
-            string[] projectNames = new string[] { ".None", "Sample" };
             DateOnly date = DateOnly.FromDateTime(DateTime.Now);
+            string[] projectNames = new string[] { ".None", "Sample" };
 
             for (int i = 0; i < projectNames.Length; i++)
             {
@@ -372,7 +383,12 @@ namespace TimeClockApp.Shared.Models
                 });
             }
 
-            string[] phaseTitles = new string[] { ".Misc", "Phase 1", "Phase 2", "Phase 3", "Office Work" };
+            string[] phaseTitles = new string[] {".Misc","Cement","Cement-Forms","Framing","Prep-Painting","Painting","Bathroom","Crown Molding","Deck","Demo",
+                            "Doors","Drywall","Electric-Finish","Electrical","Fence","Finish Hardware","Flooring","HVAC","Insulation","Irrigation","Kitchen","Landscaping",
+                            "Plumbing","Siding","Stucco","Stucco-Lath","Subfloor","Drywall-Texture","Tile","Trim/Baseboards","Windows","Building Paper","Drywall-Tape+Mud",
+                            "Stairs","Data/Comm/AV","Countertop","Excavation","Administrative","Clean Up","Roofing","Masonry/Brick","Dumps","Cabinets","Moving","Gas Line",
+                            "Light Fixtures","Plumbing-Rough","Water Heater","Blueprints","Inspection"};
+            Array.Sort(phaseTitles);
 
             for (int i = 0; i < phaseTitles.Length; i++)
             {

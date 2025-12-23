@@ -46,8 +46,8 @@ namespace TimeClockApp.Services
 
 
         public async Task<List<Expense>> GetExpenseListAsync(int? projectId, bool showRecent = true, bool showAll = false, int numOfResults = 20) => showAll
-        ? await Task.Run(() => GetAllExpensesListAsync(numOfResults))
-        : await Task.Run(() => GetRecentExpensesListAsync(projectId.Value, showRecent, numOfResults));
+        ? await Task.Run(() => GetAllExpensesListAsync(numOfResults)).ConfigureAwait(false)
+        : await Task.Run(() => GetRecentExpensesListAsync(projectId.Value, showRecent, numOfResults)).ConfigureAwait(false);
 
         public bool UpdateExpense(Expense newExpense)
         {
@@ -87,7 +87,7 @@ namespace TimeClockApp.Services
             {
                 origExpense.ExpenseTypeId = 1;
                 Context.Update<Expense>(origExpense);
-                return await Context.SaveChangesAsync() > 0;
+                return await Context.SaveChangesAsync().ConfigureAwait(false) > 0;
             }
             return false;
         }

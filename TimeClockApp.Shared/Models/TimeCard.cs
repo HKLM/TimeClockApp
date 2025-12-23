@@ -1,5 +1,4 @@
-﻿//#define TIMESTAMP
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
@@ -64,11 +63,7 @@ namespace TimeClockApp.Shared.Models
     /// TODO -If breaks are not paid time, end current TimeCard at the beginning of break.
     /// Start a new TimeCard upon end of the break time or add a breaktime column
     /// </remarks>
-#if TIMESTAMP
-    public class TimeCard : BaseEntity
-#else
     public class TimeCard
-#endif
     {
         public TimeCard() { }
 
@@ -164,8 +159,6 @@ namespace TimeClockApp.Shared.Models
         /// <remarks>
         /// Used in query sorting operations.
         /// </remarks>
-        [Required]
-        [Column(TypeName = "datetime")]
         public DateTime TimeCard_DateTime { get; set; }
 
         /// <summary>
@@ -174,14 +167,11 @@ namespace TimeClockApp.Shared.Models
         /// <remarks>
         /// Used for display in UI and quicker queries when looking for a Date
         /// </remarks>
-        [Required]
-        [Column(TypeName = "date")]
         public DateOnly TimeCard_Date { get; set; }
 
         /// <summary>
         /// Time Employee begins their shift
         /// </summary>
-        [Column(TypeName = "time")]
         public TimeOnly TimeCard_StartTime { get; set; }
 
         /// <summary>
@@ -191,7 +181,6 @@ namespace TimeClockApp.Shared.Models
         /// Time entry must be for the same day. If working up to and past midnight 12AM,
         /// set the EndTime of this TimeCard to 11:59PM and begin a new TimeCard starting at 12AM
         /// </remarks>
-        [Column(TypeName = "time")]
         public TimeOnly TimeCard_EndTime { get; set; }
 
         [NotMapped]
@@ -218,21 +207,18 @@ namespace TimeClockApp.Shared.Models
         /// <summary>
         /// SQL computed column of the amount of time worked for this timecard
         /// </summary>
-        [Column(TypeName = "double")]
         public double TimeCard_WorkHours { get; set; }
 
         /// <summary>
         /// Used on TimeCardPage to display the total hours clocked (from all TimeCards in the current pay period)
         /// </summary>
         [NotMapped]
-        [Column(TypeName = "double")]
         public double TotalWorkHours { get; set; }
 
         /// <summary>
         /// The Employee's payrate, at the time of this TimeCard
         /// </summary>
         [Required]
-        [Column(TypeName = "double")]
         public double TimeCard_EmployeePayRate { get; set; }
 
         /// <summary>

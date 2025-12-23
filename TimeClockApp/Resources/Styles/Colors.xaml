@@ -5,16 +5,18 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
 	<Color x:Key="Primary">#4682b4</Color>
-    <Color x:Key="PrimaryDark">#ac99ea</Color>
+    <Color x:Key="PrimaryDark">#4682b4</Color>
     <Color x:Key="PrimaryDarkText">#242424</Color>
     <Color x:Key="Secondary">#DFD8F7</Color>
     <Color x:Key="SecondaryDarkText">#9880e5</Color>
-	<Color x:Key="FlyBackgroundDark">#C8646770</Color>
+    <Color x:Key="PageTitleBackgroundDark">#36557D</Color>
+	<Color x:Key="FlyBackgroundDark">#646770</Color>
 	<Color x:Key="FlyBackgroundLight">#C8C8C8</Color>
 	<Color x:Key="PageBackgroundLight">#BEC8D1</Color>
+    <Color x:Key="PageBackgroundDark">#252526</Color>
 	<Color x:Key="FlyTextDark">#000000</Color>
 	<Color x:Key="FlyTextLight">#000000</Color>
-	<Color x:Key="BarBack">#2779C8</Color>
+	<Color x:Key="TabBarBackground">#858E9B</Color>
 	<Color x:Key="BarSelect">#679ED6</Color>
 	<Color x:Key="Tertiary">#2A67A9</Color>
 	<Color x:Key="White">White</Color>
@@ -34,8 +36,8 @@
 	<SolidColorBrush x:Key="TertiaryBrush" Color="{StaticResource Tertiary}"/>
 	<SolidColorBrush x:Key="WhiteBrush" Color="{StaticResource White}"/>
 	<SolidColorBrush x:Key="BlackBrush" Color="{StaticResource Black}"/>
-	
-	<Color x:Key="Blue100Accent">#3E8EED</Color>
+    
+    <Color x:Key="Blue100Accent">#3E8EED</Color>
 	<Color x:Key="Blue300Accent">#A7CBF6</Color>
 	<Color x:Key="GoldAccent">#FFD700</Color>
 	<Color x:Key="DarkMagentaAccent">#512BD4</Color>

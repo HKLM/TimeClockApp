@@ -3,6 +3,7 @@ namespace TimeClockApp.Pages;
 [XamlCompilation(XamlCompilationOptions.Compile)]
 public partial class TimeCardPage : ContentPage
 {
+    private const string NoTimeCardMessage = "There is no TimeCard to edit.\n\nYou must first create a Time Card before it can be edited.";
     protected readonly TimeCardPageViewModel viewModel;
 
     public TimeCardPage(TimeCardPageViewModel ViewModel)
@@ -14,9 +15,9 @@ public partial class TimeCardPage : ContentPage
 
     protected override async void OnAppearing()
     {
+        base.OnAppearing();
         try
         {
-            base.OnAppearing();
             await viewModel.OnAppearing();
         }
         catch (AggregateException ax)
@@ -25,92 +26,55 @@ public partial class TimeCardPage : ContentPage
         }
         catch (Exception ex)
         {
-            Log.WriteLine("EXCEPTION ERROR\n" + ex.Message + "\n" + ex.InnerException, "TimeCardPage");
+            Log.WriteLine($"EXCEPTION ERROR\n{ex.Message}\n{ex.InnerException}", "TimeCardPage");
         }
+    }
+
+    private async Task HandleTimeCardNavigationAsync(int id, string route)
+    {
+        if (id == 0)
+        {
+            await App.AlertSvc!.ShowAlertAsync("NOTICE", NoTimeCardMessage);
+            return;
+        }
+
+        await Shell.Current.GoToAsync($"{route}?id={id}");
     }
 
     private async void Swipeitemaction_Clicked(object sender, EventArgs e)
     {
-        SwipeItem swipeItem = (SwipeItem)sender;
-        if (swipeItem != null)
-        {
-            if (int.TryParse(swipeItem.CommandParameter.ToString(), out int i))
-            {
-                if (i == 0)
-                {
-                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "There is no TimeCard to edit.\n\nYou must first create a Time Card before it can be edited.");
-                    return;
-                }
-                else
-                {
-                    await Shell.Current.GoToAsync($"ChangeStartTime?id={i}");
-                }
-            }
-        }
+        if (sender is not SwipeItem swipeItem || !int.TryParse(swipeItem.CommandParameter?.ToString(), out int id))
+            return;
+
+        await HandleTimeCardNavigationAsync(id, "ChangeStartTime");
     }
 
     private async void SwipeitemStart_Clicked(object sender, EventArgs e)
     {
-        SwipeItem swipeItem = (SwipeItem)sender;
-        if (swipeItem != null)
-        {
-            if (int.TryParse(swipeItem.CommandParameter.ToString(), out int i))
-            {
-                if (i == 0)
-                {
-                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "There is no TimeCard to edit.\n\nYou must first create a Time Card before it can be edited.");
-                    return;
-                }
-                else
-                {
-                    await Shell.Current.GoToAsync($"EditTimeCard?id={i}");
-                }
-            }
-        }
+        if (sender is not SwipeItem swipeItem || !int.TryParse(swipeItem.CommandParameter?.ToString(), out int id))
+            return;
+
+        await HandleTimeCardNavigationAsync(id, "EditTimeCard");
     }
 
     private async void TeamPageToolbarButton_Clicked(object sender, EventArgs e)
     {
-        await Shell.Current.GoToAsync($"TeamEmployeesPage");
+        await Shell.Current.GoToAsync("TeamEmployeesPage");
     }
 
     private async void FlyItemStart_Clicked(object sender, EventArgs e)
     {
-        MenuFlyoutItem itemClicked = (MenuFlyoutItem)sender;
-        if (itemClicked != null)
-        {
-            if (int.TryParse(itemClicked.CommandParameter.ToString(), out int i))
-            {
-                if (i == 0)
-                {
-                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "There is no TimeCard to edit.\n\nYou must first create a Time Card before it can be edited.");
-                    return;
-                }
-                else
-                {
-                    await Shell.Current.GoToAsync($"EditTimeCard?id={i}");
-                }
-            }
-        }
+        if (sender is not MenuFlyoutItem itemClicked || !int.TryParse(itemClicked.CommandParameter?.ToString(), out int id))
+            return;
+
+        await HandleTimeCardNavigationAsync(id, "EditTimeCard");
     }
 
     private async void FlyItemEditStart_Clicked(object sender, EventArgs e)
     {
-        MenuFlyoutItem itemClicked = (MenuFlyoutItem)sender;
-        if (itemClicked != null)
-        {
-            if (int.TryParse(itemClicked.CommandParameter.ToString(), out int i))
-            {
-                if (i == 0)
-                {
-                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "There is no TimeCard to edit.\n\nYou must first create a Time Card before it can be edited.");
-                    return;
-                }
-                else
-                {
-                    await Shell.Current.GoToAsync($"ChangeStartTime?id={i}");
-                }
-            }
-        }
+        if (sender is not MenuFlyoutItem itemClicked || !int.TryParse(itemClicked.CommandParameter?.ToString(), out int id))
+            return;
+
+        await HandleTimeCardNavigationAsync(id, "ChangeStartTime");
     }
 }

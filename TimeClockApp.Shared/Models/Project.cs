@@ -59,7 +59,6 @@ namespace TimeClockApp.Shared.Models
         /// Date of project creation.
         /// </summary>
         /// <remarks>Used mainly for filtering out items that come after this projects date</remarks>
-        [System.ComponentModel.DataAnnotations.Schema.Column(TypeName = "DateOnly")]
         public DateOnly ProjectDate { get; set; }
 
         /*

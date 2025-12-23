@@ -3,14 +3,13 @@
         x:Class="TimeClockApp.Pages.ReportPage" 
         xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
         xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
-        xmlns:controls="clr-namespace:TimeClockApp.Controls"
         xmlns:converter="clr-namespace:TimeClockApp.Converters" 
-        xmlns:models="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
-        xmlns:lv="clr-namespace:TimeClockApp.Controls.MultiSelectListView"
+        xmlns:m="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
         xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
+        x:DataType="vm:ReportPageViewModel"
         Title="Report Page">
     <ContentPage.ToolbarItems>
-        <ToolbarItem x:DataType="vm:ReportPageViewModel" Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
+        <ToolbarItem  Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
     </ContentPage.ToolbarItems>
     <ContentPage.Resources>
         <ResourceDictionary>
@@ -20,7 +19,6 @@
     <ScrollView>
         <VerticalStackLayout>
             <Border
-                x:DataType="vm:ReportPageViewModel"
                 x:Name="helpbox" 
                 Padding="8"
                 IsVisible="{Binding HelpInfoBoxVisible}"
@@ -35,36 +33,30 @@
             </Border>
             <Border
                 x:Name="employeebox" 
-                x:DataType="vm:ReportPageViewModel"
                 Padding="10"
                 IsVisible="{Binding UseEmployeeFilter}"
                 VerticalOptions="Center">
                 <Border.StrokeShape>
                     <RoundRectangle CornerRadius="10"/>
                 </Border.StrokeShape>
-                <ListView x:Name="lvwUsers" 
-                            HasUnevenRows="False"
-                            SeparatorVisibility="Default" 
-                            ItemsSource="{Binding EmployeeList}"
-                            lv:MultiSelect.Enable="true">
-                    <ListView.ItemTemplate>
-                        <DataTemplate>
-                            <lv:SelectableCell x:Name="SelectableCell" x:DataType="models:Employee">
-                                <lv:SelectableCell.CheckView>
-                                    <Image Source="check_box_white.png" />
-                                </lv:SelectableCell.CheckView>
-                                <lv:SelectableCell.DataView>
-                                    <StackLayout Orientation="Vertical" Padding="30,0,30,0">
-                                        <Label Text="{Binding Employee_Name}" />
-                                    </StackLayout>
-                                </lv:SelectableCell.DataView>
-                            </lv:SelectableCell>
+                <CollectionView 
+                    SelectionMode="Multiple"
+                    x:Name="colUsers"   
+                    x:DataType="m:Employee"
+                    SelectionChangedCommand="{Binding ClickedEmployeeListCommand, Source={RelativeSource AncestorType={x:Type vm:ReportPageViewModel}}, x:DataType=vm:ReportPageViewModel}"
+                    SelectionChangedCommandParameter="{Binding EmployeeId}"
+                    ItemsSource="{Binding EmployeeList, Source={RelativeSource AncestorType={x:Type vm:ReportPageViewModel}}, x:DataType=vm:ReportPageViewModel}">
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout   Orientation="Vertical" />
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="m:Employee">
+                            <StackLayout Orientation="Vertical" Padding="30">
+                                <Label Text="{Binding Employee_Name}" />
+                            </StackLayout>
                         </DataTemplate>
-                    </ListView.ItemTemplate>
-                    <ListView.Behaviors>
-                        <lv:SelectedItemBehavior Command="{Binding ClickedEmployeeListCommand}" PropertyName="EmployeeId"/>
-                    </ListView.Behaviors>
-                </ListView>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
             </Border>
             <Border>
                 <Grid
@@ -80,12 +72,13 @@
                         Grid.Column="1" 
                         IsChecked="{Binding UseProjectFilter, Mode=TwoWay}" />
                     <Picker
+                        x:DataType="m:Project"
                         Grid.Row="1" Grid.ColumnSpan="2"
                         HorizontalOptions="Fill"
-                        IsEnabled="{Binding UseProjectFilter}"
-                        ItemDisplayBinding="{Binding Name}"
-                        ItemsSource="{Binding ProjectList}"
-                        SelectedItem="{Binding SelectedProject, Mode=TwoWay}" />
+                        IsEnabled="{Binding UseProjectFilter, Source={RelativeSource AncestorType={x:Type vm:ReportPageViewModel}}, x:DataType=vm:ReportPageViewModel}"
+                        ItemDisplayBinding="{Binding Name, x:DataType=m:Project}"
+                        ItemsSource="{Binding ProjectList, Source={RelativeSource AncestorType={x:Type vm:ReportPageViewModel}}, x:DataType=vm:ReportPageViewModel}"
+                        SelectedItem="{Binding SelectedProject, Source={RelativeSource AncestorType={x:Type vm:ReportPageViewModel}}, x:DataType=vm:ReportPageViewModel, Mode=TwoWay}" />
                     <Label
                         Grid.Row="2" 
                         HorizontalOptions="Start"
@@ -96,20 +89,20 @@
                         Grid.Column="1"
                         IsChecked="{Binding UsePhaseFilter, Mode=TwoWay}" />
                     <Picker
+                        x:DataType="m:Phase"
                         Grid.Row="3" 
                         Grid.ColumnSpan="2"
                         HorizontalOptions="Fill"
-                        IsEnabled="{Binding UsePhaseFilter}"
-                        ItemDisplayBinding="{Binding PhaseTitle}"
-                        ItemsSource="{Binding PhaseList}"
-                        SelectedItem="{Binding SelectedPhase, Mode=TwoWay}" />
+                        IsEnabled="{Binding UsePhaseFilter, Source={RelativeSource AncestorType={x:Type vm:ReportPageViewModel}}, x:DataType=vm:ReportPageViewModel}"
+                        ItemDisplayBinding="{Binding PhaseTitle, x:DataType=m:Phase}"
+                        ItemsSource="{Binding PhaseList, Source={RelativeSource AncestorType={x:Type vm:ReportPageViewModel}}, x:DataType=vm:ReportPageViewModel}"
+                        SelectedItem="{Binding SelectedPhase, Source={RelativeSource AncestorType={x:Type vm:ReportPageViewModel}}, x:DataType=vm:ReportPageViewModel, Mode=TwoWay}" />
                     <Label
                         Grid.Row="4" 
                         HorizontalOptions="Start"
                         Text="Employee: " 
                         VerticalTextAlignment="Center" />
                     <CheckBox
-                        x:DataType="vm:ReportPageViewModel"
                         Grid.Row="4" 
                         Grid.Column="1"
                         IsChecked="{Binding UseEmployeeFilter, Mode=TwoWay}" />
@@ -123,14 +116,12 @@
                         Grid.Column="1"
                         IsChecked="{Binding UseDateFilter, Mode=TwoWay}" />
                     <Label
-                        x:DataType="vm:ReportPageViewModel"
                         Grid.Row="7"
                         IsEnabled="{Binding UseDateFilter}"
                         Style="{StaticResource LabelSmallCenter}"
                         Text="Begin Date: " 
                         VerticalTextAlignment="Center" />
                     <DatePicker
-                        x:DataType="vm:ReportPageViewModel"
                         Grid.Row="7" 
                         Grid.Column="1"
                         Date="{Binding StartDate, Converter={StaticResource dateOnlyToDateTimeConverter}, Mode=TwoWay}"
@@ -138,14 +129,12 @@
                         MaximumDate="{Binding PickerMaxDate}"
                         MinimumDate="{Binding PickerMinDate}" />
                     <Label
-                        x:DataType="vm:ReportPageViewModel"
                         Grid.Row="8"
                         IsEnabled="{Binding UseDateFilter}"
                         Style="{StaticResource LabelSmallCenter}"
                         Text="End Date: " 
                         VerticalTextAlignment="Center" />
                     <DatePicker
-                        x:DataType="vm:ReportPageViewModel"
                         Grid.Row="8" 
                         Grid.Column="1"
                         Date="{Binding EndDate, Converter={StaticResource dateOnlyToDateTimeConverter}, Mode=TwoWay}"
@@ -153,7 +142,6 @@
                         MaximumDate="{Binding PickerMaxDate}"
                         MinimumDate="{Binding PickerMinDate}" />
                     <Button
-                        x:DataType="vm:ReportPageViewModel"
                         Grid.Row="9" 
                         Grid.Column="1"
                         Command="{Binding MakeReportCommand}"

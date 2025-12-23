@@ -39,7 +39,6 @@ namespace TimeClockApp.Shared.Models
         Deleted = 4
     }
 
-    [Index(nameof(Employee_Name), IsUnique = true)]
     public class Employee
     {
         public Employee()
@@ -60,14 +59,12 @@ namespace TimeClockApp.Shared.Models
         public int EmployeeId { get; set; }
 
         [Required]
-        [StringLength(50)]
         public string Employee_Name { get; set; } = string.Empty;
 
         /// <summary>
         /// Employees Rate of Pay.
         /// </summary>
         [Required]
-        [System.ComponentModel.DataAnnotations.Schema.Column(TypeName = "double")]
         public double Employee_PayRate { get; set; }
 
         /// <summary>
@@ -78,6 +75,8 @@ namespace TimeClockApp.Shared.Models
 
         [StringLength(50)]
         public string JobTitle { get; set; } = string.Empty;
+
+        //public int? GroupId { get; set; } = null;
 
         public virtual ICollection<TimeCard> TimeCards { get; set; }
     }

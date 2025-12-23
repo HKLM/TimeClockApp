@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net9.0-android</TargetFrameworks>
-		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net9.0-windows10.0.19041.0</TargetFrameworks>
+		<TargetFrameworks>net10.0;net10.0-android</TargetFrameworks>
+		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>
 		<UseMaui>true</UseMaui>
 		<SingleProject>true</SingleProject>
 		<ImplicitUsings>enable</ImplicitUsings>
@@ -13,22 +13,20 @@
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">30.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
-		<Configurations>Debug;Release;DebugMigrator</Configurations>
+		<Configurations>Debug;Release;MSSQL Migration;SQLite Migration</Configurations>
 		<Authors>Brian Alexander</Authors>
 		<Company>Alexander Builder</Company>
 		<Title>TimeClockApp.Shared</Title>
-		<Copyright>2024 (c) Brian Alexander</Copyright>
-		<ApplicationVersion>6</ApplicationVersion>
-		<ApplicationDisplayVersion>2.0</ApplicationDisplayVersion>
-		<FileVersion>2.0</FileVersion>
-		<AssemblyVersion>2.0</AssemblyVersion>
-		<Version>2.0</Version>		
+		<Copyright>2025 (c) Brian Alexander</Copyright>
+		<ApplicationVersion>7</ApplicationVersion>
+		<ApplicationDisplayVersion>2.1</ApplicationDisplayVersion>
+		<FileVersion>2.1</FileVersion>
+		<AssemblyVersion>2.1</AssemblyVersion>
+		<Version>2.1</Version>
 		<SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
-		<!--<DefineConstants>$(DefineConstants);MSSQL</DefineConstants>-->
-		<DefineConstants>$(DefineConstants);SQLITE</DefineConstants>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-android|AnyCPU'">
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net10.0-android|AnyCPU'">
 		<RunAOTCompilation>True</RunAOTCompilation>
 		<PublishTrimmed>True</PublishTrimmed>
 		<AndroidLinkTool>r8</AndroidLinkTool>
@@ -36,29 +34,39 @@
 		<EnableLLVM>False</EnableLLVM>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-android|AnyCPU'">
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='DebugMigrator|net9.0-android|AnyCPU'">
-		<DefineConstants>$(DefineConstants);MIGRATION</DefineConstants>
-	</PropertyGroup>
-
 	<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows' and '$(RuntimeIdentifierOverride)' != ''">
 		<RuntimeIdentifier>$(RuntimeIdentifierOverride)</RuntimeIdentifier>
 	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='DebugMigrator|net9.0-windows10.0.19041.0|AnyCPU'">
-	  <DefineConstants>$(DefineConstants);MIGRATION</DefineConstants>
-	</PropertyGroup>
+	
+	<!--THE DATABASE TYPE-->
+	<Choose>
+		<When Condition="'$(Configuration)'=='MSSQL Migration'">
+			<PropertyGroup>
+				<DefineConstants>$(DefineConstants);MIGRATION;MSSQL;DEBUG</DefineConstants>
+			</PropertyGroup>
+		</When>
+		<When Condition="'$(Configuration)'=='SQLite Migration'">
+			<PropertyGroup>
+				<DefineConstants>$(DefineConstants);MIGRATION;SQLITE</DefineConstants>
+			</PropertyGroup>
+		</When>
+		<Otherwise>
+			<PropertyGroup>
+				<!--SET THE DATABASE TYPE HERE SQLITE OR MSSQL-->
+				<DefineConstants>$(DefineConstants);SQLITE</DefineConstants>
+			</PropertyGroup>
+		</Otherwise>
+	</Choose>
 
 	<ItemGroup>
 		<TrimmerRootAssembly Include="TimeClockApp.Shared" RootMode="library" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="CsvHelper" Version="33.0.1" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.2" />
-		<PackageReference Include="Microsoft.Maui.Controls" Version="9.0.40" />
+		<PackageReference Include="CsvHelper" Version="33.1.0" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.1" />
+		<!--<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.0" />-->
+		<PackageReference Include="Microsoft.Maui.Controls" Version="10.0.20" />
 	</ItemGroup>
 
 </Project>

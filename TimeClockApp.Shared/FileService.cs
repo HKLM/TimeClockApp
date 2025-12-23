@@ -25,7 +25,7 @@ namespace TimeClockApp.Shared
             AndroidOS.Environment.GetExternalStoragePublicDirectory(AndroidOS.Environment.DirectoryDownloads)!.Path;
 #elif (WINDOWS)
             Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-#elif NET
+#else
             System.IO.Path.Combine(Microsoft.Maui.Storage.FileSystem.Current.AppDataDirectory, "download");
 #endif
 

@@ -116,7 +116,7 @@ namespace TimeClockApp.ViewModels
         {
             if (TimeCard_EndTime < TimeCard_StartTime)
             {
-                await App.AlertSvc!.ShowAlertAsync("ERROR", "StartTime must be before EndTime.");
+                await App.AlertSvc!.ShowAlertAsync("ERROR", "StartTime must be before EndTime.").ConfigureAwait(false);
                 return;
             }
             if (ErrorCode > 0 && TimeCard_Status == ShiftStatus.ClockedIn)
@@ -126,6 +126,12 @@ namespace TimeClockApp.ViewModels
 
             if (TimeCardEditing == null || TimeCardID == 0 || TimeCardEditing.TimeCardId == 0 || SelectedProject == null || SelectedPhase == null)
                 return;
+
+            if (cardService.IsTimeCardReadOnly(TimeCardID, IsAdmin))
+            {
+                await App.AlertSvc!.ShowAlertAsync("NOTICE", "This TimeCard is read-only and cannot be edited.").ConfigureAwait(false);
+                return;
+            }
 
             try
             {
@@ -142,11 +148,11 @@ namespace TimeClockApp.ViewModels
 
                 if (cardService.UpdateTimeCard(TimeCardEditing, IsAdmin))
                 {
-                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "TimeCard saved");
+                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "TimeCard saved").ConfigureAwait(false);
                 }
                 else
                 {
-                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "Failed to save TimeCard");
+                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "Failed to save TimeCard").ConfigureAwait(false);
                 }
 
                 await RefreshCard();

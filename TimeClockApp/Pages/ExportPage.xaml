@@ -28,7 +28,7 @@
                 </Border.StrokeShape>
                 <Label LineBreakMode="WordWrap" 
                        Style="{StaticResource LabelSmall}" 
-                       Text="Import/Export Database. &#10;&#10;. &#10;&#10;TODO info on how to import &#10;&#10;Export Data and Import Data is done by a ZIP file containing the CSV files of the data. &#10;&#10;Backup Database will create a copy of the existing Sqlite database file and then give you a chose of where to put it. Note: There is no way to re-import this file back into this app. Only the import of data from CSV file is possible." />
+                       Text="Import/Export Database. &#10;&#10;. Export Data and Import Data is done by a ZIP file containing the CSV files of the data. &#10;&#10;Backup Database will create a copy of the existing Sqlite database (.db3) file and then give you a chose of where to put it. Note: There is no way to re-import this (.db3) file back into this app. Only the import of CSV data from a ZIP file is possible." />
             </Border>
             <Border
                 IsVisible="{Binding WarningBoxVisible}"

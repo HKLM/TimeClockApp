@@ -10,24 +10,26 @@ namespace TimeClockApp.Services
     {
         public async Task<List<TimeCard>> GetLastTimeCardForAllEmployeesAsync()
         {
-            List<TimeCard> _timeCards = new();
+            // Get all employed employees with their most recent unpaid timecards in a single query
+            var employeesWithCards = await Context.Employee
+                .Where(e => e.Employee_Employed == EmploymentStatus.Employed)
+                .OrderBy(e => e.Employee_Name)
+                .Select(e => new
+                {
+                    Employee = e,
+                    LastTimeCard = Context.TimeCard
+                        .Where(tc => tc.EmployeeId == e.EmployeeId
+                            && tc.TimeCard_Status < ShiftStatus.Paid
+                            && !tc.TimeCard_bReadOnly)
+                        .OrderByDescending(tc => tc.TimeCard_DateTime)
+                        .FirstOrDefault()
+                })
+                .ToListAsync()
+                .ConfigureAwait(false);
 
-            IOrderedQueryable<Employee> emp = Context.Employee
-                 .Where(e => e.Employee_Employed == EmploymentStatus.Employed)
-                 .OrderBy(e => e.Employee_Name);
-
-            foreach (Employee employee in emp)
-            {
-                TimeCard? x = await Context.TimeCard
-                    .Where(item => item.EmployeeId == employee.EmployeeId
-                        && (item.TimeCard_Status < ShiftStatus.Paid
-                        && !item.TimeCard_bReadOnly))
-                    .OrderByDescending(item => item.TimeCard_DateTime)
-                    .FirstOrDefaultAsync();
-
-                _timeCards.Add(x ?? new TimeCard(employee));
-            }
-            return _timeCards;
+            return employeesWithCards
+                .Select(item => item.LastTimeCard ?? new TimeCard(item.Employee))
+                .ToList();
         }
 
         public async Task<bool> EmployeeClockInAsync(TimeCard card, int projectID, int phaseID, string projectName, string phaseTitle)
@@ -42,8 +44,8 @@ namespace TimeClockApp.Services
                 TimeCard c = new(card.Employee, projectID, phaseID, projectName, phaseTitle, sTime);
 
                 Context.Add<TimeCard>(c);
-                Task<int> saveData = Context.SaveChangesAsync();
-                return await saveData != 0;
+                int saveData = await Context.SaveChangesAsync().ConfigureAwait(false);
+                return saveData != 0;
             }
             return false;
         }
@@ -53,13 +55,13 @@ namespace TimeClockApp.Services
             if (timeCardId > 0)
             {
                 TimeCard t = GetTimeCard(timeCardId);
-                Task<bool> valClockOut = ValidateClockOutAsync(t);
-                if (await valClockOut)
+                bool valClockOut = await ValidateClockOutAsync(t).ConfigureAwait(false);
+                if (valClockOut)
                 {
                     t.TimeCard_EndTime = TimeHelper.RoundTimeOnly(new TimeOnly(DateTime.Now.Hour, DateTime.Now.Minute));
                     t.TimeCard_Status = ShiftStatus.ClockedOut;
                     Context.Update<TimeCard>(t);
-                    return Context.SaveChanges() > 0;
+                    return await Context.SaveChangesAsync().ConfigureAwait(false) > 0;
                 }
             }
             return false;
@@ -84,8 +86,8 @@ namespace TimeClockApp.Services
                     t.TimeCard_Status = ShiftStatus.Paid;
                     t.TimeCard_bReadOnly = true;
                     Context.Update<TimeCard>(t);
-                    Task<int> i = Context.SaveChangesAsync();
-                    if (await i != 0)
+                    int i = await Context.SaveChangesAsync().ConfigureAwait(false);
+                    if (i != 0)
                         return true;
                 }
             }

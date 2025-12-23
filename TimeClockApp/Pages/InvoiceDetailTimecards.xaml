@@ -3,8 +3,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:converter="clr-namespace:TimeClockApp.Converters"
 	         xmlns:controls="clr-namespace:TimeClockApp.Controls"
-             xmlns:models="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
+             xmlns:m="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
              xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
+             x:DataType="vm:InvoiceDetailTimecardsViewModel"
              x:Class="TimeClockApp.Pages.InvoiceDetailTimecards"
              Title="Detail-Timecards">
     <ContentPage.ToolbarItems>
@@ -17,9 +18,9 @@
             <converter:TimeOnlyConverter x:Key="timeOnlyConverter" />
         </ResourceDictionary>
 
-        <DataTemplate x:Key="expenseTemplate" x:DataType="vm:InvoiceDetailTimecardsViewModel">
+        <DataTemplate x:Key="expenseTemplate" x:DataType="m:TimeCard">
             <Border Padding="6">
-                <VerticalStackLayout x:DataType="models:TimeCard">
+                <VerticalStackLayout >
                     <Grid ColumnDefinitions="*,*,*,*,*" ColumnSpacing="4" RowDefinitions="auto">
                         <Label Style="{StaticResource LabelMicro}" Text="{Binding TimeCard_Date, Converter={StaticResource dateOnlyConverter}, StringFormat='{0:MMM d ddd yyyy}'}" />
                         <Label

@@ -4,6 +4,7 @@
 [XamlCompilation(XamlCompilationOptions.Compile)]
 public partial class App : Application
 {
+    readonly AppShell _appShell;
     public static IServiceProvider? Services { get; protected set; }
     public static IAlertService? AlertSvc;
 
@@ -13,12 +14,14 @@ public partial class App : Application
 
         Services = provider;
         AlertSvc = Services.GetService<IAlertService>();
+        _appShell = Services.GetService<AppShell>()!;
     }
 
-    protected override Window CreateWindow(IActivationState? activationState)
-    {
-        return new Window(new AppShell());
-    }
+#if WINDOWS
+    protected override Window CreateWindow(IActivationState? activationState) => new(_appShell) { Width = 800 };
+#else
+    protected override Window CreateWindow(IActivationState? activationState) => new(_appShell);
+#endif
 
 #region HELPERS
     private static ViewModels.EntityMonitor GetEntityMonitor = new();

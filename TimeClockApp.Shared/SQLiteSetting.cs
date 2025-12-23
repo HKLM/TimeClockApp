@@ -18,7 +18,7 @@ namespace TimeClockApp.Shared
         /// File name (only) of the SQLite Database used by the app.
         /// </summary>
         /// <remarks>Does not include path.</remarks>
-        private const string sQLiteDbFileName = "TimeClockAppDB-2a.db3";
+        private const string sQLiteDbFileName = "TimeClockAppDB-2.db3";
 #endif
         /// <summary>
         /// Property for the full file path to the SQLite Database

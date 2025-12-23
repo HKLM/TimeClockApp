@@ -34,7 +34,7 @@ public static class MauiProgram
 
         builder.Services.AddSingleton<PayrollService>();
         builder.Services.AddTransient<PayrollPageViewModel>();
-        builder.Services.AddTransient<PayrollPage>();
+        builder.Services.AddSingleton<PayrollPage>();
 
         builder.Services.AddTransient<PayrollDetailViewModel>();
         builder.Services.AddSingleton<PayrollDetailPage>();
@@ -63,6 +63,10 @@ public static class MauiProgram
 
         builder.Services.AddTransient<InvoiceDetailExpensesViewModel>();
         builder.Services.AddTransient<InvoiceDetailTimecardsViewModel>();
+
+        builder.Services.AddSingleton<AppPageService>();
+        builder.Services.AddTransient<AppViewModel>();
+        builder.Services.AddSingleton<AppShell>();
 
         return builder.Build();
     }

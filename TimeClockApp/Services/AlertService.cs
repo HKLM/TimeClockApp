@@ -25,15 +25,9 @@
         /// <param name="message"></param>
         /// <param name="cancel"></param>
         /// <returns></returns>
-        public Task ShowAlertAsync(string title, string message, string cancel = "OK")
-        {
-            return App.Current.Windows[0].Page.DisplayAlert(title, message, cancel);
-        }
+        public Task ShowAlertAsync(string title, string message, string cancel = "OK") => App.Current.Windows[0].Page.DisplayAlertAsync(title, message, cancel);
 
-        public Task<bool> ShowConfirmationAsync(string title, string message, string accept = "Yes", string cancel = "No")
-        {
-            return App.Current.Windows[0].Page.DisplayAlert(title, message, accept, cancel);
-        }
+        public Task<bool> ShowConfirmationAsync(string title, string message, string accept = "Yes", string cancel = "No") => App.Current.Windows[0].Page.DisplayAlertAsync(title, message, accept, cancel);
 
 #region  "'Fire and forget' calls"
 
@@ -44,7 +38,7 @@
         public void ShowAlert(string title, string message, string cancel = "OK")
         {
             App.Current.Windows[0].Page.Dispatcher.Dispatch(async () =>
-                await ShowAlertAsync(title, message, cancel)
+                await ShowAlertAsync(title, message, cancel).ConfigureAwait(false)
             );
         }
 
@@ -57,10 +51,10 @@
             try
             {
                 App.Current.Windows[0].Page.Dispatcher.Dispatch(async () =>
-            {
-                bool answer = await ShowConfirmationAsync(title, message, accept, cancel);
-                callback(answer);
-            });
+                {
+                    bool answer = await ShowConfirmationAsync(title, message, accept, cancel);
+                    callback(answer);
+                });
             }
             catch (AggregateException ax)
             {

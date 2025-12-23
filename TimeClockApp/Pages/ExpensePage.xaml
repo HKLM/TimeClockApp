@@ -5,14 +5,15 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 	xmlns:Converter="clr-namespace:TimeClockApp.Converters"
 	xmlns:controls="clr-namespace:TimeClockApp.Controls"
-	xmlns:models="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
+	xmlns:m="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
 	xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
 	xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
+    x:DataType="vm:ExpenseViewModel"
 	Title="Expences">
     <ContentPage.ToolbarItems>
-        <ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" x:DataType="vm:ExpenseViewModel" />        
+        <ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png"  />
         <ToolbarItem x:Name="AddExpenseTypeBtn" Clicked="AddExpenseTypeBtn_Clicked" IconImageSource="post_add.png" />
-        <ToolbarItem Command="{Binding ToggleOptionsBoxVisibleCommand}" IconImageSource="settings.png" x:DataType="vm:ExpenseViewModel" />
+        <ToolbarItem Command="{Binding ToggleOptionsBoxVisibleCommand}" IconImageSource="settings.png" />
         <ToolbarItem x:Name="ArchiveButton" Clicked="ArchiveButton_ClickedAsync" IconImageSource="archive.png" Text="Archive" />
     </ContentPage.ToolbarItems>
     <ContentPage.Resources>
@@ -27,13 +28,12 @@
             <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
         </Style>
 
-        <DataTemplate x:Key="expenseTemplate" x:DataType="vm:ExpenseViewModel">
+        <DataTemplate x:Key="expenseTemplate" x:DataType="m:Expense">
             <SwipeView>
                 <SwipeView.LeftItems>
                     <SwipeItems Mode="Execute">
                         <SwipeItem
 							x:Name="ExpenseEditAction"
-							x:DataType="models:Expense"
 							Clicked="ExpenseEditAction_Clicked"
 							CommandParameter="{Binding ExpenseId}"
 							StyleClass="SwpieGold"
@@ -41,7 +41,7 @@
                     </SwipeItems>
                 </SwipeView.LeftItems>
                 <Border Padding="6">
-                    <VerticalStackLayout x:DataType="models:Expense">
+                    <VerticalStackLayout>
                         <Grid
 							ColumnDefinitions="*,*,*"
 							ColumnSpacing="10"
@@ -75,7 +75,6 @@
             <Border
 				x:Name="helpbox"
 				Padding="8"
-                x:DataType="vm:ExpenseViewModel"
 				IsVisible="{Binding HelpInfoBoxVisible}"
 				VerticalOptions="Center">
                 <Border.StrokeShape>
@@ -87,15 +86,15 @@
 						LineBreakMode="WordWrap"
 						Style="{StaticResource LabelSmall}"
 						Text="Expenses. &#10;&#10;Ledger page to record project expenses and income. &#10;&#10;TODO" />
-                    <Image Grid.Row="1" Source="post_add.png" />
+                    <Image Grid.Row="1" Source="post_add.png" HeightRequest="24" WidthRequest="24"  />
                     <Label Grid.Row="1" Grid.Column="1"
                            Style="{StaticResource LabelSmall}" 
                            Text="Add New Expense Type" />
-                    <Image Grid.Row="2" Source="settings.png" />
+                    <Image Grid.Row="2" Source="settings.png" HeightRequest="24" WidthRequest="24"  />
                     <Label Grid.Row="2" Grid.Column="1"
                            Style="{StaticResource LabelSmall}" 
                            Text="Toggle Page Options" />
-                    <Image Grid.Row="3" Source="archive.png" />
+                    <Image Grid.Row="3" Source="archive.png" HeightRequest="24" WidthRequest="24"  />
                     <Label Grid.Row="3" Grid.Column="1"
                            Style="{StaticResource LabelSmall}" 
                            Text="Archive expenses" />
@@ -104,7 +103,6 @@
             <Border
 				x:Name="optionsbox"
 				Padding="8"
-                x:DataType="vm:ExpenseViewModel"
 				IsVisible="{Binding OptionsBoxVisible}"
 				VerticalOptions="Center">
                 <Border.StrokeShape>
@@ -115,6 +113,7 @@
 						LineBreakMode="WordWrap"
 						Grid.ColumnSpan="3"
 						Style="{StaticResource LabelSmall}"
+                        FontAttributes="Bold"
 						Text="Expenses Page Settings" />
                     <Label
                         Grid.Row="1"
@@ -145,9 +144,8 @@
                     <Picker
                         Grid.Row="3"
 						Grid.Column="2"
-                        x:DataType="vm:ExpenseViewModel"
 						SelectedItem="{Binding SelectedNumberOfResults}"
-						WidthRequest="45">
+						WidthRequest="60">
                         <Picker.ItemsSource>
                             <x:Array Type="{x:Type x:Int32}">
                                 <x:Int32>5</x:Int32>
@@ -167,27 +165,31 @@
                     <Label
                         Grid.Row="0"
 						HorizontalOptions="Start"
+                        Style="{StaticResource LabelSmall}"
 						Text="Project: "
 						VerticalTextAlignment="Center" />
                     <Picker
+                        x:DataType="m:Project"
                         Grid.Row="0"
 						Grid.Column="2"
 						HorizontalOptions="Fill"
-						ItemDisplayBinding="{Binding Name}"
-						ItemsSource="{Binding ProjectList}"
-						SelectedItem="{Binding SelectedProject, Mode=TwoWay}" />
+						ItemDisplayBinding="{Binding Name, x:DataType=m:Project}"
+						ItemsSource="{Binding ProjectList, Source={RelativeSource AncestorType={x:Type vm:ExpenseViewModel}}, x:DataType=vm:ExpenseViewModel}"
+						SelectedItem="{Binding SelectedProject, Source={RelativeSource AncestorType={x:Type vm:ExpenseViewModel}}, x:DataType=vm:ExpenseViewModel, Mode=TwoWay}" />
                     <Label
 						Grid.Row="1"
 						HorizontalOptions="Start"
+                        Style="{StaticResource LabelSmall}"
 						Text="Phase: "
 						VerticalTextAlignment="Center" />
                     <Picker
+                        x:DataType="m:Phase"
 						Grid.Row="1"
 						Grid.Column="2"
 						HorizontalOptions="Fill"
-						ItemDisplayBinding="{Binding PhaseTitle}"
-						ItemsSource="{Binding PhaseList}"
-						SelectedItem="{Binding SelectedPhase, Mode=TwoWay}" />
+						ItemDisplayBinding="{Binding PhaseTitle, x:DataType=m:Phase}"
+						ItemsSource="{Binding PhaseList, Source={RelativeSource AncestorType={x:Type vm:ExpenseViewModel}}, x:DataType=vm:ExpenseViewModel}"
+						SelectedItem="{Binding SelectedPhase, Source={RelativeSource AncestorType={x:Type vm:ExpenseViewModel}}, x:DataType=vm:ExpenseViewModel, Mode=TwoWay}" />
                     <Label
                         Grid.Row="2"                
 						Style="{StaticResource LabelSmall}"
@@ -197,9 +199,10 @@
                         Grid.Row="2"
 						Grid.Column="2"
 						HorizontalOptions="Fill"
-						ItemDisplayBinding="{Binding CategoryName}"
-						ItemsSource="{Binding ExpenseTypeList}"
-						SelectedItem="{Binding SelectedExpenseType, Mode=TwoWay}"
+                        x:DataType="m:ExpenseType"
+						ItemDisplayBinding="{Binding CategoryName, x:DataType=m:ExpenseType}"
+						ItemsSource="{Binding ExpenseTypeList, Source={RelativeSource AncestorType={x:Type vm:ExpenseViewModel}}, x:DataType=vm:ExpenseViewModel}"
+						SelectedItem="{Binding SelectedExpenseType, Source={RelativeSource AncestorType={x:Type vm:ExpenseViewModel}}, x:DataType=vm:ExpenseViewModel, Mode=TwoWay}"
 						VerticalTextAlignment="Center" />
                     <Label
 						Grid.Row="3"
@@ -240,7 +243,6 @@
 						Grid.Row="7"
 						Grid.Column="2"
 						Margin="20,10"
-                        x:DataType="vm:ExpenseViewModel"
 						Command="{Binding AddNewExpenseCommand}"
 						CornerRadius="10"
 						HorizontalOptions="Fill"
@@ -248,10 +250,13 @@
                 </Grid>
             </Border>
             <CollectionView
+                x:Name="expenseCollection"
 				Margin="0,2"
 				EmptyView="No items to display"
 				ItemTemplate="{StaticResource singletemplatesel}"
-				ItemsSource="{Binding ExpenseList}" />
+                ItemsSource="{Binding ExpenseList, x:DataType=vm:ExpenseViewModel}"
+                SelectionMode="Single"
+                SelectionChanged="CollectionView_SelectionChanged" />
         </StackLayout>
     </ScrollView>
 </ContentPage>

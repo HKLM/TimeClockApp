@@ -47,7 +47,6 @@ namespace TimeClockApp.Shared.Models
         /// <summary>
         /// Date of expense
         /// </summary>
-        [System.ComponentModel.DataAnnotations.Schema.Column(TypeName = "DateOnly")]
         public DateOnly ExpenseDate { get; set; }
 
         /// <summary>
@@ -57,8 +56,7 @@ namespace TimeClockApp.Shared.Models
         /// any where else. TODO</remarks>
         public string Memo { get; set; } = string.Empty;
 
-        [Required]
-        [System.ComponentModel.DataAnnotations.Schema.Column(TypeName = "double")]
+        //[Required]
         public double Amount { get; set; }
 
         /// <summary>

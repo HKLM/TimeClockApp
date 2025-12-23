@@ -8,7 +8,7 @@ namespace TimeClockApp.Services
     public class EditTimeCardService : TimeCardDataStore
     {
         public async Task<TimeCard?> GetTimeCardByIDAsync(int cardId) =>
-            await Context.TimeCard.FindAsync(cardId);
+            await Context.TimeCard.FindAsync(cardId).ConfigureAwait(false);
 
         public Task<List<TimeCard>> GetTimeCards(int NumResults) =>
             Context.TimeCard

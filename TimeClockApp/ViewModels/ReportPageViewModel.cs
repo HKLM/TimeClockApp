@@ -1,5 +1,4 @@
-﻿using TimeClockApp.Controls.MultiSelectListView;
-#nullable enable
+﻿#nullable enable
 
 namespace TimeClockApp.ViewModels
 {
@@ -55,7 +54,7 @@ namespace TimeClockApp.ViewModels
                 RefreshEmployees();
         }
         [ObservableProperty]
-        public partial MultiSelectObservableCollection<Employee> EmployeeList { get; set; } = new();
+        public partial ObservableCollection<Employee> EmployeeList { get; set; } = new();
         /// <summary>
         /// List of Employees to filter by
         /// </summary>
@@ -95,7 +94,7 @@ namespace TimeClockApp.ViewModels
             StartDate = DateOnly.FromDateTime(reportData.GetStartOfPayPeriod(DateTime.Now));
             WCRate = reportData.GetWCRate();
             List<Employee> e = reportData.GetEmployeesList();
-            EmployeeList = new MultiSelectObservableCollection<Employee>(e as List<Employee>);
+            EmployeeList = new ObservableCollection<Employee>(e as List<Employee>);
         }
 
         private void RefreshProjects()
@@ -110,7 +109,7 @@ namespace TimeClockApp.ViewModels
         private void RefreshEmployees()
         {
             List<Employee> e = reportData.GetEmployeesList();
-            EmployeeList = new MultiSelectObservableCollection<Employee>(e as List<Employee>);
+            EmployeeList = new ObservableCollection<Employee>(e as List<Employee>);
         }
 
         [RelayCommand]

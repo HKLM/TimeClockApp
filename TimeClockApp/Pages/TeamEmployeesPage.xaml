@@ -4,15 +4,16 @@
 	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 	xmlns:controls="clr-namespace:TimeClockApp.Controls"
-    xmlns:models="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
+    xmlns:m="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
 	xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
 	x:Name="PageTeamStatus"
+    x:DataType="vm:TeamEmployeesViewModel"
 	Title="Team Employees">
 	<ContentPage.ToolbarItems>
 		<ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
 	</ContentPage.ToolbarItems>
 	<ContentPage.Resources>
-		<DataTemplate x:Key="activeTeam">
+        <DataTemplate x:Key="activeTeam" x:DataType="m:Employee" >
 			<Border
 				Padding="8"
 				VerticalOptions="Center">
@@ -24,7 +25,7 @@
                         Style="{StaticResource LabelTitleName}" Text="{Binding Employee_Name}" />
 					<Button
 						Grid.Column="2"
-						Command="{Binding Source={x:Reference PageTeamStatus}, Path=BindingContext.SetTeamNotActiveCommand}"
+						Command="{Binding SetTeamNotActiveCommand, Source={RelativeSource AncestorType={x:Type vm:TeamEmployeesViewModel}}, x:DataType=vm:TeamEmployeesViewModel}"
 						CommandParameter="{Binding}"
 						Style="{StaticResource GreenButton}"
 						Text="Active" />
@@ -32,7 +33,7 @@
 			</Border>
 		</DataTemplate>
 
-		<DataTemplate x:Key="notActiveTeam">
+        <DataTemplate x:Key="notActiveTeam" x:DataType="m:Employee" >
 			<Border
 				Padding="8"
 				VerticalOptions="Center">
@@ -44,7 +45,7 @@
                         Style="{StaticResource LabelTitleName}" Text="{Binding Employee_Name}" />
 					<Button
 						Grid.Column="2"
-						Command="{Binding Source={x:Reference PageTeamStatus}, Path=BindingContext.SetTeamActiveCommand}"
+						Command="{Binding SetTeamActiveCommand, Source={RelativeSource AncestorType={x:Type vm:TeamEmployeesViewModel}}, x:DataType=vm:TeamEmployeesViewModel}"
 						CommandParameter="{Binding}"
 						Style="{StaticResource RedButton}"
 						Text="Not Active" />

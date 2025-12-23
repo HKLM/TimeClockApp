@@ -27,7 +27,14 @@ namespace TimeClockApp.ViewModels
             if (item == null) return;
 
             if (configService.SaveConfig(item))
+            {
+                // Save the AppTheme setting
+                if (item.ConfigId == 13 && item.IntValue.HasValue)
+                {
+                    Application.Current!.UserAppTheme = (AppTheme)item.IntValue!.Value;
+                }
                 RefreshSettings();
+            }
         }
 
         [RelayCommand]

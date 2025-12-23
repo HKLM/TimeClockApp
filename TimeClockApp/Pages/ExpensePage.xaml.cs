@@ -49,4 +49,16 @@ public partial class ExpensePage : ContentPage
     {
         await Shell.Current.GoToAsync($"EditExpenseTypePage");
     }
+
+    private async void CollectionView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (e == null || e?.CurrentSelection == null || e.CurrentSelection.FirstOrDefault() == null)
+            return;
+        int? current = (e.CurrentSelection.FirstOrDefault() as Expense)?.ExpenseId;
+        if (current.HasValue)
+        {
+            await Shell.Current.GoToAsync($"EditExpensePage?id={current.Value}");
+            expenseCollection.SelectedItem = null;
+        }
+    }
 }

@@ -3,13 +3,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:controls="clr-namespace:TimeClockApp.Controls"
              xmlns:converter="clr-namespace:TimeClockApp.Converters" 
-             xmlns:models="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
+             xmlns:m="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
+             x:DataType="vm:InvoiceViewModel"
              x:Class="TimeClockApp.Pages.InvoicePage"             
              Title="Invoice">
     <ContentPage.ToolbarItems>
-        <ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" x:DataType="vm:InvoiceViewModel" />
+        <ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png"  />
     </ContentPage.ToolbarItems>
     <ContentPage.Resources>
         <ResourceDictionary>
@@ -25,10 +26,9 @@
     </ContentPage.Resources>
     <ScrollView>
         <VerticalStackLayout>
-            <ActivityIndicator IsRunning="True" IsVisible="{Binding MakeInvoiceCommand.IsRunning}" x:DataType="vm:InvoiceViewModel" />
+            <ActivityIndicator IsRunning="True" IsVisible="{Binding MakeInvoiceCommand.IsRunning}" />
             <Border
                 x:Name="helpbox" 
-                x:DataType="vm:InvoiceViewModel"
                 Padding="8"
                 HorizontalOptions="Fill"
                 IsVisible="{Binding HelpInfoBoxVisible}"
@@ -52,11 +52,12 @@
                         Text="Project: "
                         VerticalTextAlignment="Center" />
                     <Picker
+                        x:DataType="m:Project"
                         Grid.Row="1" Grid.ColumnSpan="2"
                         HorizontalOptions="Fill"
-                        ItemDisplayBinding="{Binding Name}"
-                        ItemsSource="{Binding ProjectList}"
-                        SelectedItem="{Binding SelectedProject, Mode=TwoWay}" />
+                        ItemDisplayBinding="{Binding Name, x:DataType=m:Project}"
+                        ItemsSource="{Binding ProjectList, Source={RelativeSource AncestorType={x:Type vm:InvoiceViewModel}}, x:DataType=vm:InvoiceViewModel}"
+                        SelectedItem="{Binding SelectedProject, Source={RelativeSource AncestorType={x:Type vm:InvoiceViewModel}}, x:DataType=vm:InvoiceViewModel, Mode=TwoWay}" />
                     <Label
                         Grid.Row="2" 
                         HorizontalOptions="Start"
@@ -65,16 +66,16 @@
                     <CheckBox
                         Grid.Row="2" 
                         Grid.Column="1"
-                        x:DataType="vm:InvoiceViewModel"
                         IsChecked="{Binding UsePhaseFilter, Mode=TwoWay}" />
                     <Picker
+                        x:DataType="m:Phase"
                         Grid.Row="3" 
                         Grid.ColumnSpan="2"
                         HorizontalOptions="Fill"
-                        IsEnabled="{Binding UsePhaseFilter}"
-                        ItemDisplayBinding="{Binding PhaseTitle}"
-                        ItemsSource="{Binding PhaseList}"
-                        SelectedItem="{Binding SelectedPhase, Mode=TwoWay}" />
+                        IsEnabled="{Binding UsePhaseFilter, Source={RelativeSource AncestorType={x:Type vm:InvoiceViewModel}}, x:DataType=vm:InvoiceViewModel}"
+                        ItemDisplayBinding="{Binding PhaseTitle, x:DataType=m:Phase}"
+                        ItemsSource="{Binding PhaseList, Source={RelativeSource AncestorType={x:Type vm:InvoiceViewModel}}, x:DataType=vm:InvoiceViewModel}"
+                        SelectedItem="{Binding SelectedPhase, Source={RelativeSource AncestorType={x:Type vm:InvoiceViewModel}}, x:DataType=vm:InvoiceViewModel, Mode=TwoWay}" />
                     <Label
                         Grid.Row="4"
                         Style="{StaticResource LabelSmallCenter}"
@@ -83,11 +84,9 @@
                     <CheckBox
                         Grid.Row="4" 
                         Grid.Column="1"
-                        x:DataType="vm:InvoiceViewModel"
                         IsChecked="{Binding UseDateFilter, Mode=TwoWay}" />
                     <Label
                         Grid.Row="5"
-                        x:DataType="vm:InvoiceViewModel"
                         IsEnabled="{Binding UseDateFilter}"
                         Style="{StaticResource LabelSmallCenter}"
                         Text="Begin Date: " 
@@ -101,7 +100,6 @@
                         MinimumDate="{Binding PickerMinDate}" />
                     <Label
                         Grid.Row="6"
-                        x:DataType="vm:InvoiceViewModel"
                         IsEnabled="{Binding UseDateFilter}"
                         Style="{StaticResource LabelSmallCenter}"
                         Text="End Date: " 
@@ -122,7 +120,6 @@
                         Grid.Row="7" 
                         Grid.Column="1"
                         x:Name="entryMarkupBox"
-                        x:DataType="vm:InvoiceViewModel"
                         Text="{Binding TotalOtherFee,Mode=TwoWay}"  Keyboard="Numeric">
                         <Entry.Behaviors>
                             <toolkit:NumericValidationBehavior
@@ -135,7 +132,6 @@
                         </Entry.Behaviors>
                     </Entry>
                     <Button
-                        x:DataType="vm:InvoiceViewModel"
                         Grid.Row="8" 
                         Grid.Column="1"
                         Command="{Binding MakeInvoiceCommand}"
@@ -160,7 +156,6 @@
                     <Button
                         Grid.Row="1" 
                         Grid.Column="1"
-                        x:DataType="vm:InvoiceViewModel"
                         Command="{Binding GoToInvoiceDetailExpensesCommand}"
                         Text="{Binding TotalExpenses, StringFormat='{0:C}'}"  />
                     <Label 
@@ -170,7 +165,6 @@
                     <Button
                         Grid.Row="2" 
                         Grid.Column="1"
-                        x:DataType="vm:InvoiceViewModel"
                         Command="{Binding GoToInvoiceDetailTimecardsCommand}"
                         Text="{Binding GetTotalLaborBurden, StringFormat='{0:C}'}"  />
                     <Label 
@@ -180,7 +174,6 @@
                     <Label
                         Grid.Row="3" 
                         Grid.Column="1"
-                        x:DataType="vm:InvoiceViewModel"
                         Style="{StaticResource LabelSmallCenter}" LineBreakMode="NoWrap">
                         <Label.FormattedText>
                             <FormattedString>
@@ -198,7 +191,6 @@
                         Grid.Row="4" 
                         Grid.Column="1"
                         Style="{StaticResource LabelSmallCenter}"
-                        x:DataType="vm:InvoiceViewModel"
                         Text="{Binding TotalProfit, StringFormat='{0:C}'}" LineBreakMode="NoWrap">
                         <Label.FormattedText>
                             <FormattedString>
@@ -216,7 +208,6 @@
                         Grid.Row="5" 
                         Grid.Column="1"
                         Style="{StaticResource LabelSmallCenter}"
-                        x:DataType="vm:InvoiceViewModel"
                         Text="{Binding GetTotalOtherFee, StringFormat='{0:C}'}" />
                     <Label 
                         Grid.Row="6" 
@@ -228,7 +219,6 @@
                         Grid.Column="1"
                         FontAttributes="Bold"
                         Style="{StaticResource LabelSmallCenter}"
-                        x:DataType="vm:InvoiceViewModel"
                         Text="{Binding GetTotalInvoice, StringFormat='{0:C}'}" />
                 </Grid>
             </Border>
