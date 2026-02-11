@@ -2,17 +2,21 @@
 
 namespace TimeClockApp;
 
+#nullable enable
+
 [XamlCompilation(XamlCompilationOptions.Compile)]
 public partial class AppShell : Shell
 {
     protected readonly AppViewModel viewModel;
+    private static readonly Assembly ExecutingAssembly = Assembly.GetExecutingAssembly();
+    private static string? cachedAppVersion;
 
-    public AppShell(AppViewModel ViewModel)
+    public AppShell(AppViewModel viewModel)
     {
         InitializeComponent();
         RegisterRoutes();
-        viewModel = ViewModel;
-        BindingContext = viewModel;
+        this.viewModel = viewModel;
+        BindingContext = this.viewModel;
     }
 
     private void RegisterRoutes()
@@ -27,27 +31,10 @@ public partial class AppShell : Shell
         Routing.RegisterRoute("InvoiceDetailExpenses", typeof(InvoiceDetailExpenses));
     }
 
-    protected override async void OnAppearing()
+    protected override void OnAppearing()
     {
         base.OnAppearing();
-
-        try
-        {
-            Application.Current!.UserAppTheme = await viewModel.GetThemeTypeAsync();
-
-            await viewModel.GetCurrentProjectIdAsync();
-            await viewModel.GetCurrentPhaseIdAsync();
-        }
-        catch (AggregateException ax)
-        {
-            string z = FlattenAggregateException.ShowAggregateExceptionForPopup(ax, "AppShell");
-            await App.AlertSvc!.ShowAlertAsync("Exception", z).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            Log.WriteLine("EXCEPTION ERROR\n" + ex.Message + "\n" + ex.InnerException, "AppShell");
-            await App.AlertSvc!.ShowAlertAsync("Exception", ex.Message + "\n" + ex.InnerException).ConfigureAwait(false);
-        }
+        Application.Current!.UserAppTheme = viewModel.GetThemeType();
     }
 
     /// <summary>
@@ -55,12 +42,16 @@ public partial class AppShell : Shell
     /// </summary>
     public string AppVersion
     {
-        get { return GetBuildDate(Assembly.GetExecutingAssembly()); }
+        get
+        {
+            cachedAppVersion ??= GetBuildDate(ExecutingAssembly);
+            return cachedAppVersion;
+        }
     }
 
     private static string GetBuildDate(Assembly assembly)
     {
-        AssemblyInformationalVersionAttribute attribute = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
-        return attribute?.InformationalVersion ?? default;
+        AssemblyInformationalVersionAttribute? attribute = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+        return attribute?.InformationalVersion ?? string.Empty;
     }
 }

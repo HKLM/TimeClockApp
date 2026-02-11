@@ -7,7 +7,7 @@
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
              x:DataType="vm:InvoiceViewModel"
-             x:Class="TimeClockApp.Pages.InvoicePage"             
+             x:Class="TimeClockApp.Pages.InvoicePage"
              Title="Invoice">
     <ContentPage.ToolbarItems>
         <ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png"  />
@@ -26,7 +26,7 @@
     </ContentPage.Resources>
     <ScrollView>
         <VerticalStackLayout>
-            <ActivityIndicator IsRunning="True" IsVisible="{Binding MakeInvoiceCommand.IsRunning}" />
+            <ActivityIndicator IsRunning="True" IsVisible="{Binding Loading}" />
             <Border
                 x:Name="helpbox" 
                 Padding="8"
@@ -114,21 +114,22 @@
                     <Label
                         Grid.Row="7" 
                         HorizontalOptions="Start"
-                        Text="Markup: " 
+                        Text="Dollar Amount Markup: " 
                         VerticalTextAlignment="Center" />
                     <Entry
                         Grid.Row="7" 
                         Grid.Column="1"
                         x:Name="entryMarkupBox"
-                        Text="{Binding TotalOtherFee,Mode=TwoWay}"  Keyboard="Numeric">
+                        Text="{Binding TotalOtherFee, Mode=TwoWay}"  Keyboard="Numeric">
                         <Entry.Behaviors>
                             <toolkit:NumericValidationBehavior
                                 BindingContext="{Binding Path=BindingContext, Source={x:Reference entryMarkupBox}, x:DataType=Entry}"
 								Flags="ValidateOnUnfocused"
 								InvalidStyle="{StaticResource InvalidEntryStyle}"
                                 ValidStyle="{StaticResource ValidEntryStyle}"
-								MaximumDecimalPlaces="0"
-								MinimumValue="0.0" />
+                                MinimumDecimalPlaces="0"
+								MaximumDecimalPlaces="2"
+								MinimumValue="0.00" />
                         </Entry.Behaviors>
                     </Entry>
                     <Button
@@ -146,7 +147,7 @@
                     <Label
                         Grid.ColumnSpan="2" 
                         FontAttributes="Bold"
-                        FontSize="Medium" 
+                        FontSize="17" 
                         HorizontalTextAlignment="Center"
                         Text="Invoice Totals" />
                     <Label 
@@ -206,9 +207,9 @@
                         Text="Other fee" />
                     <Label
                         Grid.Row="5" 
-                        Grid.Column="1"
+                        Grid.Column="1"                         
                         Style="{StaticResource LabelSmallCenter}"
-                        Text="{Binding GetTotalOtherFee, StringFormat='{0:C}'}" />
+                        Text="{Binding TotalOtherFee, StringFormat='{0:C}'}" />
                     <Label 
                         Grid.Row="6" 
                         FontAttributes="Bold"

@@ -14,7 +14,15 @@ public partial class TimeCardManagerPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        await viewModel.OnAppearing();
+
+        try
+        {
+            await viewModel.OnAppearing();
+        }
+        catch (Exception ex)
+        {
+            Log.WriteLine($"EXCEPTION ERROR\n{ex.Message}\n{ex.InnerException}", "TimeCardManagerPage");
+        }
     }
 
     private async void FlyGoEdit_Clicked(object sender, EventArgs e)
@@ -26,7 +34,7 @@ public partial class TimeCardManagerPage : ContentPage
             {
                 if (i == 0)
                 {
-                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "There is no TimeCard to edit.\n\nYou must first create a Time Card before it can be edited.");
+                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "There is no TimeCard to edit.\n\nYou must first create a Time Card before it can be edited.").ConfigureAwait(false);
                     return;
                 }
                 else
@@ -37,7 +45,7 @@ public partial class TimeCardManagerPage : ContentPage
         }
     }
 
-    private async void timeCardsCollection_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private async void TimeCardsCollection_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (e == null || e?.CurrentSelection == null || e.CurrentSelection.FirstOrDefault() == null)
             return;
@@ -45,7 +53,7 @@ public partial class TimeCardManagerPage : ContentPage
         if (current.HasValue)
         {
             await Shell.Current.GoToAsync($"EditTimeCard?id={current.Value}");
-            timeCardsCollection.SelectedItem = null;
+            TimeCardsCollection.SelectedItem = null;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.EntityFrameworkCore;
 
 #nullable enable
 
@@ -9,98 +10,80 @@ namespace TimeClockApp.Services
         /// <summary>
         /// Gets the configured profit rate value from the database
         /// </summary>
-        public double GetProfitRate() => GetRate(7);
+        //public double GetProfitRate() => GetRate(7);
+        public Task<double> GetProfitRateAsync() => GetRateAsync(7);
         /// <summary>
         /// Gets the configured overhead rate value from the database
         /// </summary>
-        public double GetOverheadRate() => GetRate(8);
+        //public double GetOverheadRate() => GetRate(8);
+        public Task<double> GetOverheadRateAsync() => GetRateAsync(8);
 
         public async Task<List<TimeSheet>> RunInvoiceReportAsync(bool usePhaseFilter, Project? project, Phase? phase, DateOnly? start, DateOnly? end)
         {
-            if (project == null)
-            {
-                Log.WriteLine("RunInvoiceReportAsync project is null, aborting");
-                return new List<TimeSheet>();
-            }
+            ArgumentNullException.ThrowIfNull(project);
 
             List<TimeSheet> t = [];
-            IEnumerable<Employee> e = [];
 
             start ??= DateOnly.FromDateTime(GetAppFirstRunDate());
             end ??= DateOnly.FromDateTime(DateTime.Now);
-            //e = await GetEmployeeListForProjectAsync(project.ProjectId, (DateOnly)start, (DateOnly)end);
-            var el = GetEmployeeListForProject(project.ProjectId, (DateOnly)start, (DateOnly)end);
-            e = el.DistinctBy(x => x.EmployeeId).AsEnumerable();
-            if (e.Any())
+            IQueryable<Employee> e = QGetEmployeeListForProject(project.ProjectId, start.Value, end.Value);
+
+            foreach (var emp in e)
             {
-                foreach (Employee emp in e)
+                TimeSheet sheet = new TimeSheet(emp.EmployeeId, start.Value, end.Value, emp.Employee_Name);
+                sheet.TimeCards = await TimeCardsForPayPeriod(true, usePhaseFilter, true, emp, project, phase, start, end)
+                    .ToListAsync()
+                    .ConfigureAwait(false);
+
+                if (sheet.TimeCards.Count <= 0)
                 {
-                    TimeSheet sheet = new TimeSheet(emp.EmployeeId, start.Value, end.Value, emp.Employee_Name);
-                    sheet.TimeCards = await TimeCardsForPayPeriod(true, usePhaseFilter, true, emp, project, phase, start, end).ToListAsync().ConfigureAwait(false);
-
-                    if (sheet.TimeCards.Count > 0)
-                    {
-                        double pay = 0;
-                        IQueryable<IGrouping<DateOnly, TimeCard>> tg = sheet.TimeCards.GroupBy(x => x.TimeCard_Date).AsQueryable();
-                        foreach (IGrouping<DateOnly, TimeCard> g in tg)
-                        {
-                            double x = 0;
-                            foreach (TimeCard item in g)
-                            {
-                                if (item.TimeCard_Status == ShiftStatus.ClockedOut)
-                                {
-                                    sheet.UnpaidTimeCards.Add(item);
-                                    x += item.TimeCard_WorkHours;
-                                }
-                                else if (item.TimeCard_Status == ShiftStatus.Paid)
-                                {
-                                    sheet.PaidTimeCards.Add(item);
-                                    x += item.TimeCard_WorkHours;
-                                }
-                            }
-
-                            //TODO fix
-                            pay = g.Select(x => x.TimeCard_EmployeePayRate).First();
-
-                            //dont include any cards ClockedIn. They wreak havoc on the calculations.
-                            TimeCardDayTotal dayHours = new TimeCardDayTotal(g
-                                .Where(x =>
-                                x.TimeCard_Status == ShiftStatus.ClockedOut
-                                || x.TimeCard_Status == ShiftStatus.Paid)
-                                .Sum(x => x.TimeCard_WorkHours));
-
-                            sheet.TotalWorkHours += dayHours.TotalWorkHours;
-                            sheet.RegTotalHours += dayHours.RegTotalHours;
-                            sheet.TotalOTHours += dayHours.TotalOTHours;
-                            sheet.TotalOT2Hours += dayHours.TotalOT2Hours;
-
-                            // Calculate unpaid hours
-                            double d = g.Where(x =>
-                                            x.TimeCard_Status == ShiftStatus.ClockedOut)
-                                            .Sum(x => x.TimeCard_WorkHours);
-                            if (d > 0)
-                            {
-                                TimeCardDayTotal unpaidDayHours = new(d);
-                                sheet.UnPaidTotalWorkHours += unpaidDayHours.TotalWorkHours;
-                                sheet.UnPaidRegTotalHours += unpaidDayHours.RegTotalHours;
-                                sheet.UnPaidTotalOTHours += unpaidDayHours.TotalOTHours;
-                                sheet.UnPaidTotalOT2Hours += unpaidDayHours.TotalOT2Hours;
-                            }
-                        }
-
-                        // calculate wages for this sheet
-                        sheet.RegTotalPay = sheet.RegTotalHours * pay;
-                        sheet.TotalOTPay = sheet.TotalOTHours * (pay * 1.5);
-                        sheet.TotalOT2Pay = sheet.TotalOT2Hours * (pay * 2);
-                        sheet.TotalGrossPay = sheet.RegTotalPay + sheet.TotalOTPay + sheet.TotalOT2Pay;
-                    }
                     t.Add(sheet);
+                    continue;
                 }
+
+                double pay = 0;
+                var groupedByDate = sheet.TimeCards.GroupBy(x => x.TimeCard_Date).ToList();
+
+                foreach (var g in groupedByDate)
+                {
+                    var validCards = g.Where(x => x.TimeCard_Status is ShiftStatus.ClockedOut or ShiftStatus.Paid).ToList();
+                    foreach (var item in validCards)
+                    {
+                        if (item.TimeCard_Status == ShiftStatus.ClockedOut)
+                            sheet.UnpaidTimeCards.Add(item);
+                        else if (item.TimeCard_Status == ShiftStatus.Paid)
+                            sheet.PaidTimeCards.Add(item);
+                    }
+
+                    pay = validCards[0].TimeCard_EmployeePayRate;
+
+                    var dayHours = new TimeCardDayTotal(validCards.Sum(x => x.TimeCard_WorkHours));
+                    sheet.TotalWorkHours += dayHours.TotalWorkHours;
+                    sheet.RegTotalHours += dayHours.RegTotalHours;
+                    sheet.TotalOTHours += dayHours.TotalOTHours;
+                    sheet.TotalOT2Hours += dayHours.TotalOT2Hours;
+
+                    double unpaidHours = validCards.Where(x => x.TimeCard_Status == ShiftStatus.ClockedOut).Sum(x => x.TimeCard_WorkHours);
+                    if (unpaidHours > 0)
+                    {
+                        var unpaidDayHours = new TimeCardDayTotal(unpaidHours);
+                        sheet.UnPaidTotalWorkHours += unpaidDayHours.TotalWorkHours;
+                        sheet.UnPaidRegTotalHours += unpaidDayHours.RegTotalHours;
+                        sheet.UnPaidTotalOTHours += unpaidDayHours.TotalOTHours;
+                        sheet.UnPaidTotalOT2Hours += unpaidDayHours.TotalOT2Hours;
+                    }
+                }
+
+                sheet.RegTotalPay = sheet.RegTotalHours * pay;
+                sheet.TotalOTPay = sheet.TotalOTHours * (pay * 1.5);
+                sheet.TotalOT2Pay = sheet.TotalOT2Hours * (pay * 2);
+                sheet.TotalGrossPay = sheet.RegTotalPay + sheet.TotalOTPay + sheet.TotalOT2Pay;
+                t.Add(sheet);
             }
             return t;
         }
 
-        public IEnumerable<Employee> GetEmployeeListForProject(int projectId, DateOnly start, DateOnly end)
+        public IQueryable<Employee> QGetEmployeeListForProject(int projectId, DateOnly start, DateOnly end)
         {
             return Context.Employee
                 .Include(e => e.TimeCards
@@ -110,43 +93,32 @@ namespace TimeClockApp.Services
                             && (t.TimeCard_Status == ShiftStatus.ClockedOut
                             || t.TimeCard_Status == ShiftStatus.Paid)))
                 .Where(e => e.Employee_Employed != EmploymentStatus.Deleted)
-                .AsEnumerable();
+                .AsQueryable();
         }
 
-        public async Task<double> GetProjectExpensesAmountAsync(int projectId, DateOnly start, DateOnly end)
+        public async Task<double> GetProjectExpensesAmountAsync(int projectId, DateOnly start, DateOnly end, bool allItems)
         {
-            double e = await Context.Expense
+            double e;
+            int i = allItems ? 1 : 4;
+            e = await Context.Expense
                 .AsNoTracking()
-                .Where(item => item.ProjectId == projectId
-                    && item.ExpenseTypeId > 1
-                    && item.ExpenseTypeId != 3
-                    && item.ExpenseTypeId != 4
-                    && item.ExpenseDate >= start
-                    && item.ExpenseDate <= end)
+                .Where(item => item.ProjectId == projectId && item.ExpenseTypeId > i && item.ExpenseDate >= start && item.ExpenseDate <= end)
                 .SumAsync(item => item.Amount)
                 .ConfigureAwait(false);
 
-            //change from negative # to positive
             return Math.Abs(e);
         }
 
-        public async Task<List<Expense>> GetProjectExpensesListAsync(int projectId, DateOnly start, DateOnly end)
+        public Task<List<Expense>> GetProjectExpensesListAsync(int projectId, DateOnly start, DateOnly end, bool allItems)
         {
-            List<Expense> e = await Context.Expense
+            int i = allItems ? 1 : 4;
+            return Context.Expense
                 .AsNoTracking()
-                .Where(item => item.ProjectId == projectId
-                    && item.ExpenseTypeId > 1
-                    && item.ExpenseTypeId != 3
-                    && item.ExpenseTypeId != 4
-                    && item.ExpenseDate >= start
-                    && item.ExpenseDate <= end)
-                .Distinct()
-                .ToListAsync()
-                .ConfigureAwait(false);
-
-            return e;
+                .Where(item => item.ProjectId == projectId && item.ExpenseTypeId > i && item.ExpenseDate >= start && item.ExpenseDate <= end)
+                .ToListAsync();
         }
 
+        [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions))]
         protected IQueryable<TimeCard> TimeCardsForPayPeriod(bool useProjectFilter, bool usePhaseFilter, bool useDateFilter, Employee employee, Project? project, Phase? phase, DateOnly? start, DateOnly? end)
         {
             IQueryable<TimeCard> q = Context.TimeCard

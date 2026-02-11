@@ -449,7 +449,7 @@
                 <Button Command="{Binding RefreshCardsCommand}" Text="Refresh" />
                 <Button Command="{Binding GetAllUnpaidTimeCardsCommand}" Text="Get All Unpaid" />
             </HorizontalStackLayout>
-            <Label FontSize="Small" Text="{Binding PayPeriod}" />
+            <Label FontSize="14" Text="{Binding PayPeriod}" />
             <Border
                 Padding="8"
                 IsVisible="{Binding NotDisplayLandscapeMode}">
@@ -477,7 +477,7 @@
                     ItemsSource="{Binding TimeCards}" />
             </Border>
             <Label
-                FontSize="Micro"
+                FontSize="10"
                 Text="HOUR TOTALS" HorizontalOptions="Center" />
             <Border
                 Padding="8">
@@ -490,66 +490,66 @@
                     RowDefinitions="Auto,Auto,Auto,Auto,Auto"
                     RowSpacing="10">
 
-                    <Label Grid.Column="1" FontSize="Small" Text="Reg" TextDecorations="Underline" />
-                    <Label Grid.Column="2" FontSize="Small" Text="OT" TextDecorations="Underline" />
-                    <Label Grid.Column="3" FontSize="Small" Text="OT2" TextDecorations="Underline" />
-                    <Label Grid.Column="4" FontSize="Small" Text="Total" TextDecorations="Underline" />
-                    <Label Grid.Row="1" FontSize="Micro" Text="Total HR" />
-                    <Label Grid.Row="2" FontSize="Micro" Text="Unpaid HR" />
-                    <Label Grid.Row="3" FontSize="Micro" Text="Wages" />
-                    <Label Grid.Row="4" FontSize="Micro" Text="Estimated WC" />
+                    <Label Grid.Column="1" FontSize="14" Text="Reg" TextDecorations="Underline" />
+                    <Label Grid.Column="2" FontSize="14" Text="OT" TextDecorations="Underline" />
+                    <Label Grid.Column="3" FontSize="14" Text="OT2" TextDecorations="Underline" />
+                    <Label Grid.Column="4" FontSize="14" Text="Total" TextDecorations="Underline" />
+                    <Label Grid.Row="1" FontSize="10" Text="Total HR" />
+                    <Label Grid.Row="2" FontSize="10" Text="Unpaid HR" />
+                    <Label Grid.Row="3" FontSize="10" Text="Wages" />
+                    <Label Grid.Row="4" FontSize="10" Text="Estimated WC" />
 
                     <Label
                         Grid.Row="1" Grid.Column="1"
-                        FontSize="Small"
+                        FontSize="14"
                         Text="{Binding RegTotalHours, StringFormat='{0:F2}'}" />
                     <Label
                         Grid.Row="1" Grid.Column="2"
-                        FontSize="Small"
+                        FontSize="14"
                         Text="{Binding TotalOTHours, StringFormat='{0:F2}'}" />
                     <Label
                         Grid.Row="1" Grid.Column="3"
-                        FontSize="Small"
+                        FontSize="14"
                         Text="{Binding TotalOT2Hours, StringFormat='{0:F2}'}" />
                     <Label
                         Grid.Row="1" Grid.Column="4"
-                        FontSize="Small"
+                        FontSize="14"
                         Text="{Binding TotalWorkHours, StringFormat='{0:F2}'}" />
                     <Label
                         Grid.Row="2" Grid.Column="1"
-                        FontSize="Small" FontAttributes="Bold"
+                        FontSize="14" FontAttributes="Bold"
                         Text="{Binding UnPaidRegTotalHours, StringFormat='{0:F2}'}" />
                     <Label
                         Grid.Row="2" Grid.Column="2"
-                        FontSize="Small" FontAttributes="Bold"
+                        FontSize="14" FontAttributes="Bold"
                         Text="{Binding UnPaidTotalOTHours, StringFormat='{0:F2}'}" />
                     <Label
                         Grid.Row="2" Grid.Column="3"
-                        FontSize="Small" FontAttributes="Bold"
+                        FontSize="14" FontAttributes="Bold"
                         Text="{Binding UnPaidTotalOT2Hours, StringFormat='{0:F2}'}" />
                     <Label
                         Grid.Row="2" Grid.Column="4"
-                        FontSize="Small"
+                        FontSize="14"
                         Text="{Binding UnPaidTotalWorkHours, StringFormat='{0:F2}'}" />
                     <Label
                         Grid.Row="3" Grid.Column="1"
-                        FontSize="Micro"
+                        FontSize="10"
                         Text="Gross:" />
                     <Label
                         Grid.Row="3" Grid.Column="2"
-                        FontSize="Small"
+                        FontSize="14"
                         Text="{Binding TotalGrossPay, StringFormat='{0:C}'}" />
                     <Label
                         Grid.Row="3" Grid.Column="3"
-                        FontSize="Micro" FontAttributes="Bold"
+                        FontSize="10" FontAttributes="Bold"
                         Text="Due:" />
                     <Label
                         Grid.Row="3" Grid.Column="4"
-                        FontSize="Small" FontAttributes="Bold"
+                        FontSize="14" FontAttributes="Bold"
                         Text="{Binding TotalOwedGrossPay, StringFormat='{0:C}'}" />
                     <Label
                         Grid.Row="4" Grid.Column="4"
-                        FontSize="Small"
+                        FontSize="14"
                         Text="{Binding TotalEstimatedWC, StringFormat='{0:C}'}" />
                 </Grid>
             </Border>

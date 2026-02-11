@@ -8,7 +8,7 @@ namespace TimeClockApp.Shared.Exceptions
     {
         public static void WriteLine(string? data)
         {
-#if WINDOWS && DEBUG
+#if DEBUG
             Debug.WriteLine(data);
 //#elif WINDOWS && TRACE
 //			Trace.WriteLine(data);
@@ -19,7 +19,7 @@ namespace TimeClockApp.Shared.Exceptions
 
         public static void WriteLine(string? data, string? category)
         {
-#if WINDOWS && DEBUG
+#if DEBUG
             Debug.WriteLine(data, category);
 //#elif WINDOWS && TRACE
 //			Trace.WriteLine(data, category);

@@ -54,7 +54,7 @@ namespace TimeClockApp.Services
             try
             {
                 Context.Remove<Phase>(item);
-                return await Context.SaveChangesAsync().ConfigureAwait(false) > 0;
+                return await Context.SaveChangesAsync() > 0;
             }
             catch (AggregateException ax)
             {

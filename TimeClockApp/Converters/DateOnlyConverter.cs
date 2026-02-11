@@ -4,32 +4,26 @@ namespace TimeClockApp.Converters
 {
     public class DateOnlyConverter : IValueConverter
     {
+        private static readonly CultureInfo EnUsCulture = CultureInfo.CreateSpecificCulture("en-US");
+
         public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
-            if (value is not null and string str)
+            return value switch
             {
-                if (DateOnly.TryParse(str, out var strTime))
-                    return strTime;
-            }
-            else if (value is not null and DateOnly d)
-            {
-                return d.ToString("MMM d ddd", CultureInfo.CreateSpecificCulture("en-US"));
-            }
-            return null;
+                string str => DateOnly.TryParse(str, out var date) ? date : null,
+                DateOnly d => d.ToString("MMM d ddd", EnUsCulture),
+                _ => null
+            };
         }
 
         public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
-            if (value is not null and DateOnly d)
+            return value switch
             {
-                return d.ToShortDateString();
-            }
-            else if (value is not null and string str)
-            {
-                if (DateOnly.TryParse(str, out var strTime))
-                    return strTime;
-            }
-            return null;
+                DateOnly d => d.ToShortDateString(),
+                string str => DateOnly.TryParse(str, out var date) ? date : null,
+                _ => null
+            };
         }
     }
 }

@@ -9,10 +9,6 @@ namespace TimeClockApp.ViewModels
 
         [ObservableProperty]
         public partial int TimeCardID { get; set; } = 0;
-        partial void OnTimeCardIDChanged(int value)
-        {
-            MainThread.BeginInvokeOnMainThread(async () => { await RefreshCard(); });
-        }
 
         [ObservableProperty]
         public partial TimeCard? TimeCardEditing { get; set; } = null;
@@ -51,18 +47,28 @@ namespace TimeClockApp.ViewModels
         public partial bool TimeCard_bReadOnly { get; set; } = false;
 #region "DatePicker Min/Max Bindings"
         public DateTime PickerMinDate { get; set; }
-        private readonly DateTime pickerMaxDate = DateTime.Now;
-        public DateTime PickerMaxDate { get => pickerMaxDate; }
+        public DateTime PickerMaxDate { get; } = DateTime.Now;
 #endregion
 
         [ObservableProperty]
-        public partial ObservableCollection<Project> ProjectList { get; set; } = [];
+        public partial ObservableCollection<Project> ProjectList { get; set; } = new();
         [ObservableProperty]
         public partial Project? SelectedProject { get; set; } = null;
         [ObservableProperty]
-        public partial ObservableCollection<Phase> PhaseList { get; set; } = [];
+        public partial ObservableCollection<Phase> PhaseList { get; set; } = new();
         [ObservableProperty]
         public partial Phase? SelectedPhase { get; set; } = null;
+
+        /// <summary>
+        /// Page title bindable property
+        /// </summary>
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(PageTitle))]
+        public partial string? Title { get; set; } = string.Empty;
+        /// <summary>
+        /// Displays the page Title value
+        /// </summary>
+        public string? PageTitle => Title;
 
         [ObservableProperty]
         public partial ShiftStatus TimeCard_Status { get; set; } = ShiftStatus.NA;
@@ -86,23 +92,50 @@ namespace TimeClockApp.ViewModels
 
         public void ApplyQueryAttributes(IDictionary<string, object> query)
         {
-            if (query.ContainsKey("e") && Int32.TryParse(query["e"].ToString(), out int i))
+            if (query.ContainsKey("e") && int.TryParse(query["e"].ToString(), out int i))
             { ErrorCode = i; }
-            if (query.ContainsKey("id") && Int32.TryParse(query["id"].ToString(), out int t))
+            if (query.ContainsKey("id") && int.TryParse(query["id"].ToString(), out int t))
             { TimeCardID = t; }
         }
 
         public async Task OnAppearing()
         {
+            HasError = false;
             SetPageTitle(ErrorCode);
             PickerMinDate = cardService.GetAppFirstRunDate();
-            if (ErrorCode > 0)
-                IsAdmin = true;
-            else
-                IsAdmin = IntToBool(cardService.GetConfigInt(9, 0));
+            IsAdmin = ErrorCode > 0 || IntToBool(cardService.GetConfigInt(9, 0));
 
-            RefreshProjectPhases();
-            await RefreshCard();
+            try
+            {
+                List<Project> pro = await cardService.GetProjectsListAsync();
+                ProjectList = pro.ToObservableCollection();
+                List<Phase> ph = await cardService.GetPhaseListAsync();
+                PhaseList = ph.ToObservableCollection();
+
+                if (TimeCardID != 0)
+                {
+                    TimeCardEditing = cardService.GetTimeCardByID(TimeCardID);
+                    if (TimeCardEditing != null)
+                    {
+                        TimeCard_StartTime = TimeCardEditing.TimeCard_StartTime;
+                        TimeCard_Status = TimeCardEditing.TimeCard_Status;
+                        TimeCard_WorkHours = TimeCardEditing.TimeCard_WorkHours;
+                        TimeCard_bReadOnly = TimeCardEditing.TimeCard_bReadOnly;
+                        TimeCard_Date = TimeCardEditing.TimeCard_Date;
+                        TimeCard_EmployeeName = TimeCardEditing.TimeCard_EmployeeName;
+                        TimeCard_EmployeePayRate = TimeCardEditing.TimeCard_EmployeePayRate;
+                        TimeCardEmployeeId = TimeCardEditing.EmployeeId;
+                        TimeCard_EndTime = TimeCardEditing.TimeCard_EndTime;
+                        SelectedProject = TimeCardEditing.Project;
+                        SelectedPhase = TimeCardEditing.Phase;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                HasError = true;
+                Log.WriteLine($"{e.Message}\n  -- {e.Source}\n  -- {e.InnerException}", "EditTimeCardViewModel.OnAppearing");
+            }
         }
 
         public void OnDisappearing()
@@ -114,80 +147,65 @@ namespace TimeClockApp.ViewModels
         [RelayCommand]
         private async Task SaveTimeCardAsync()
         {
+            // Validate time range
             if (TimeCard_EndTime < TimeCard_StartTime)
             {
                 await App.AlertSvc!.ShowAlertAsync("ERROR", "StartTime must be before EndTime.").ConfigureAwait(false);
                 return;
             }
-            if (ErrorCode > 0 && TimeCard_Status == ShiftStatus.ClockedIn)
-            {
-                TimeCard_Status = ShiftStatus.ClockedOut;
-            }
 
-            if (TimeCardEditing == null || TimeCardID == 0 || TimeCardEditing.TimeCardId == 0 || SelectedProject == null || SelectedPhase == null)
+            // Validate required data
+            if (TimeCardEditing == null || TimeCardID == 0 || TimeCardEditing.TimeCardId == 0 || 
+                SelectedProject == null || SelectedPhase == null)
                 return;
 
-            if (cardService.IsTimeCardReadOnly(TimeCardID, IsAdmin))
+            // Check read-only status
+            if (TimeCard_bReadOnly && IsAdmin)
+            {
+                bool confirm = await App.AlertSvc!.ShowConfirmationAsync("CONFIRM", "This TimeCard is currently read-only. Do you want to edit this TimeCard?");
+                if (!confirm)
+                    return;
+            }
+            if (await cardService.IsTimeCardReadOnlyAsync(TimeCardID, IsAdmin))
             {
                 await App.AlertSvc!.ShowAlertAsync("NOTICE", "This TimeCard is read-only and cannot be edited.").ConfigureAwait(false);
                 return;
             }
 
+            // Auto-fix status if needed
+            if (ErrorCode > 0 && TimeCard_Status == ShiftStatus.ClockedIn)
+                TimeCard_Status = ShiftStatus.ClockedOut;
+
             try
             {
-                TimeCardEditing.TimeCardId = TimeCardID;
-                TimeCardEditing.TimeCard_StartTime = TimeHelper.RoundTimeOnly(new TimeOnly(TimeCard_StartTime.Hour, TimeCard_StartTime.Minute));
-                TimeCardEditing.TimeCard_Date = TimeCard_Date;
-                TimeCardEditing.TimeCard_Status = TimeCard_Status;
-                TimeCardEditing.TimeCard_bReadOnly = TimeCard_bReadOnly;
-                TimeCardEditing.ProjectId = SelectedProject.ProjectId;
-                TimeCardEditing.ProjectName = SelectedProject.Name;
-                TimeCardEditing.PhaseId = SelectedPhase.PhaseId;
-                TimeCardEditing.PhaseTitle = SelectedPhase.PhaseTitle;
-                TimeCardEditing.TimeCard_EndTime = TimeHelper.RoundTimeOnly(new TimeOnly(TimeCard_EndTime.Hour, TimeCard_EndTime.Minute));
+                UpdateTimeCardEntity();
 
-                if (cardService.UpdateTimeCard(TimeCardEditing, IsAdmin))
-                {
-                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "TimeCard saved").ConfigureAwait(false);
-                }
-                else
-                {
-                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "Failed to save TimeCard").ConfigureAwait(false);
-                }
+                bool success = await cardService.UpdateTimeCardAsync(TimeCardEditing, IsAdmin);
+                string message = success ? "TimeCard saved" : "Failed to save TimeCard";
+                await App.AlertSvc!.ShowAlertAsync("NOTICE", message).ConfigureAwait(false);
 
-                await RefreshCard();
-
+                if (success)
+                    await RefreshCard();
             }
-            catch (AggregateException ax)
+            catch (Exception e)
             {
-                TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateException(ax);
-            }
-            catch (Exception ex)
-            {
-                Log.WriteLine(ex.Message + "\n" + ex.InnerException);
+                HasError = true;
+                Log.WriteLine($"{e.Message}\n  -- {e.Source}\n  -- {e.InnerException}", "EditTimeCardViewModel.SaveTimeCardAsync");
             }
         }
 
-        private void RefreshProjectPhases()
+        private void UpdateTimeCardEntity()
         {
-            //Only get data from DB once, unless it has been notified that it has changed
-            ProjectList ??= [];
-
-            if (ProjectList.Count == 0 || App.NoticeProjectHasChanged)
-                ProjectList = cardService.GetProjectsList();
-
-            PhaseList ??= [];
-            if (PhaseList.Count == 0 || App.NoticePhaseHasChanged)
-                PhaseList = cardService.GetPhaseList();
-
-            if (TimeCardID == 0)
-            {
-                if (SelectedProject == null || SelectedProject.ProjectId == 0)
-                    SelectedProject = cardService.GetCurrentProjectEntity();
-
-                if (SelectedPhase == null || SelectedPhase.PhaseId == 0)
-                    SelectedPhase = cardService.GetCurrentPhaseEntity();
-            }
+            TimeCardEditing!.TimeCardId = TimeCardID;
+            TimeCardEditing.TimeCard_StartTime = TimeCard_StartTime;
+            TimeCardEditing.TimeCard_Date = TimeCard_Date;
+            TimeCardEditing.TimeCard_Status = TimeCard_Status;
+            TimeCardEditing.TimeCard_bReadOnly = TimeCard_bReadOnly;
+            TimeCardEditing.ProjectId = SelectedProject!.ProjectId;
+            TimeCardEditing.ProjectName = SelectedProject.Name;
+            TimeCardEditing.PhaseId = SelectedPhase!.PhaseId;
+            TimeCardEditing.PhaseTitle = SelectedPhase.PhaseTitle;
+            TimeCardEditing.TimeCard_EndTime = TimeCard_EndTime;
         }
 
         private async Task RefreshCard()
@@ -206,9 +224,8 @@ namespace TimeClockApp.ViewModels
                     TimeCard_EmployeePayRate = TimeCardEditing.TimeCard_EmployeePayRate;
                     TimeCardEmployeeId = TimeCardEditing.EmployeeId;
                     TimeCard_EndTime = TimeCardEditing.TimeCard_EndTime;
-
-                    SelectedProject = cardService.GetProject(TimeCardEditing.ProjectId);
-                    SelectedPhase = cardService.GetPhase(TimeCardEditing.PhaseId);
+                    SelectedProject = TimeCardEditing.Project;
+                    SelectedPhase = TimeCardEditing.Phase;
                 }
             }
         }

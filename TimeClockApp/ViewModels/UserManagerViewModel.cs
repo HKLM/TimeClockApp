@@ -54,19 +54,19 @@
 
         private void RefreshEmployees(bool isUpdating)
         {
-            if (isUpdating)
-            {
-                App.NoticeUserHasChanged = true;
-            }
+            //if (isUpdating)
+            //{
+            //    App.NoticeUserHasChanged = true;
+            //}
             EmployeeList = HRService.GetAllEmployees(true);
         }
 
         private async Task RefreshEmployeesAsync(bool isUpdating)
         {
-            if (isUpdating)
-            {
-                App.NoticeUserHasChanged = true;
-            }
+            //if (isUpdating)
+            //{
+            //    App.NoticeUserHasChanged = true;
+            //}
             EmployeeList = await HRService.GetAllEmployeesAsync(true);
         }
 
@@ -115,7 +115,7 @@
                     string employeeNewJobTitle = JobTitle.Trim();
                     HRService.AddNewEmployee(employeeNewName, PayRate, employeeNewJobTitle, IsEmployed);
                     await RefreshEmployeesAsync(true);
-                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "Added new employee " + employeeNewName);
+                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "Added new employee " + employeeNewName).ConfigureAwait(false);
                 }
             }
             catch (AggregateException ax)
@@ -139,7 +139,7 @@
                     string eName = SelectedEmployee.Employee_Name;
                     HRService.FireEmployee(SelectedEmployee.EmployeeId);
                     await RefreshEmployeesAsync(true);
-                    await App.AlertSvc!.ShowAlertAsync("NOTICE", eName + " is Fired!");
+                    await App.AlertSvc!.ShowAlertAsync("NOTICE", eName + " is Fired!").ConfigureAwait(false);
                     RefreshInfo();
                 }
             }

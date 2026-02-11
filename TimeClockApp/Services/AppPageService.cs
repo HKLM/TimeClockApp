@@ -4,41 +4,32 @@ namespace TimeClockApp.Services
 {
     public class AppPageService : SQLiteDataStore
     {
+        private const int AppThemeConfigId = 13;
+        private const string AppThemeConfigName = "AppTheme";
+        private const string AppThemeConfigHint = "Override App theme (0=Default-Unspecified, 1=Light, 2=Dark)";
+
         /// <summary>
         /// Override the system theme preference.
         /// </summary>
-        /// <returns></returns>
-        public async Task<Microsoft.Maui.ApplicationModel.AppTheme> GetAppThemeSettingAsync()
+        public AppTheme GetAppThemeSetting()
         {
-            Config? C = await Context.Config.FindAsync(13).ConfigureAwait(false);
-            if (C == null)
-            {
-                //To update the database for prior versions
-                C = new Config { ConfigId = 13, Name = "AppTheme", IntValue = 0, Hint = "Override App theme (0=Default-Unspecified, 1=Light, 2=Dark)" };
-                Context.Add<Config>(C);
-                await Context.SaveChangesAsync().ConfigureAwait(false);
-            }
-            if (C != null && C.IntValue.HasValue)
-                return (Microsoft.Maui.ApplicationModel.AppTheme)C.IntValue.Value;
-            else
-                return Microsoft.Maui.ApplicationModel.AppTheme.Unspecified;
+            Config? config = Context.Config.Find(AppThemeConfigId);
+            config ??= CreateAppThemeConfig();
+            return (AppTheme)(config.IntValue ?? 0);
         }
 
-        public Microsoft.Maui.ApplicationModel.AppTheme GetAppThemeSetting()
+        private Config CreateAppThemeConfig()
         {
-            Config? C = Context.Config.Find(13);
-            if (C == null)
+            Config? config = new()
             {
-                //To update the database for prior versions
-                C = new Config { ConfigId = 13, Name = "AppTheme", IntValue = 0, Hint = "Override App theme (0=Default-Unspecified, 1=Light, 2=Dark)" };
-                Context.Add<Config>(C);
-                Context.SaveChanges();
-            }
-            if (C != null && C.IntValue.HasValue)
-                return (Microsoft.Maui.ApplicationModel.AppTheme)C.IntValue.Value;
-            else
-                return Microsoft.Maui.ApplicationModel.AppTheme.Unspecified;
+                ConfigId = AppThemeConfigId,
+                Name = AppThemeConfigName,
+                IntValue = 0,
+                Hint = AppThemeConfigHint
+            };
+            Context.Add(config);
+            _ = Context.SaveChanges();
+            return config;
         }
-
     }
 }

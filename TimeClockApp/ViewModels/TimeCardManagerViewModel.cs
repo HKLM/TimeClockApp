@@ -10,6 +10,9 @@ namespace TimeClockApp.ViewModels
         public partial ObservableCollection<TimeCard> TimeCards { get; set; } = new();
 
         [ObservableProperty]
+        public partial TimeCard? SelectedTimeCard { get; set; } = null;
+
+        [ObservableProperty]
         public partial int SelectedNumberOfResults { get; set; } = 20;
 
         [RelayCommand]
@@ -23,12 +26,8 @@ namespace TimeClockApp.ViewModels
 
             try
             {
-                await GetCardsAsync();
-            }
-            catch (AggregateException ax)
-            {
-                HasError = true;
-                TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateException(ax);
+                List<TimeCard> t = await cardService.GetTimeCards(SelectedNumberOfResults);
+                TimeCards = t.ToObservableCollection();
             }
             catch (Exception e)
             {
@@ -40,12 +39,6 @@ namespace TimeClockApp.ViewModels
                 Loading = false;
             }
         }
-
-        private Task GetCardsAsync() => Task.Run(async () =>
-                                                       {
-                                                           List<TimeCard> t = await cardService.GetTimeCards(SelectedNumberOfResults);
-                                                           TimeCards = t.ToObservableCollection();
-                                                       });
 
         [RelayCommand]
         private async Task RefreshAllCards()
@@ -60,12 +53,8 @@ namespace TimeClockApp.ViewModels
                 TimeCards.Clear();
             try
             {
-                await GetCardsAsync();
-            }
-            catch (AggregateException ax)
-            {
-                HasError = true;
-                TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateException(ax);
+                List<TimeCard> t = await cardService.GetTimeCards(SelectedNumberOfResults);
+                TimeCards = t.ToObservableCollection();
             }
             catch (Exception e)
             {

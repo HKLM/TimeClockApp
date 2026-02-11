@@ -9,19 +9,12 @@ namespace TimeClockApp.ViewModels
 
         public void ApplyQueryAttributes(IDictionary<string, object> query)
         {
-            if (query.ContainsKey("id"))
-            {
-                if (Int32.TryParse(query["id"].ToString(), out int i))
-                { TimeCardID = i; }
-            }
+            if (query.ContainsKey("id") && Int32.TryParse(query["id"].ToString(), out int t))
+            { TimeCardID = t; }
         }
 
         [ObservableProperty]
         public partial int TimeCardID { get; set; } = 0;
-        partial void OnTimeCardIDChanged(int value)
-        {
-            MainThread.BeginInvokeOnMainThread(async () => { await RefreshCard(); });
-        }
 
         [ObservableProperty]
         public partial TimeCard? TimeCardEditing { get; set; } = null;
@@ -55,9 +48,35 @@ namespace TimeClockApp.ViewModels
 
         public async Task OnAppearing()
         {
+            HasError = false;
             PickerMinDate = cardService.GetAppFirstRunDate();
-            RefreshProjectPhases();
-            await RefreshCard();
+
+            try
+            {
+                List<Project> pro = await cardService.GetProjectsListAsync();
+                ProjectList = pro.ToObservableCollection();
+                List<Phase> ph = await cardService.GetPhaseListAsync();
+                PhaseList = ph.ToObservableCollection();
+
+                if (TimeCardID != 0)
+                {
+                    TimeCardEditing = await cardService.GetTimeCardByIDAsync(TimeCardID);
+                    if (TimeCardEditing != null)
+                    {
+                        StartTime = TimeCardEditing.TimeCard_StartTime;
+                        TimeCard_Date = TimeCardEditing.TimeCard_Date;
+                        TimeCard_EmployeeName = TimeCardEditing.TimeCard_EmployeeName;
+                        SelectedProject = TimeCardEditing.Project;
+                        SelectedPhase = TimeCardEditing.Phase;
+                    }
+                }
+
+            }
+            catch (Exception e)
+            {
+                HasError = true;
+                Log.WriteLine($"{e.Message}\n  -- {e.Source}\n  -- {e.InnerException}", "ChangeStartTimeViewModel.OnAppearing");
+            }
         }
 
         [RelayCommand]
@@ -74,40 +93,17 @@ namespace TimeClockApp.ViewModels
                 TimeCardEditing.PhaseId = SelectedPhase.PhaseId;
                 TimeCardEditing.PhaseTitle = SelectedPhase.PhaseTitle;
 
-                if (cardService.UpdateTimeCard(TimeCardEditing))
-                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "TimeCard saved").ConfigureAwait(false);
+                bool success = await cardService.UpdateTimeCardAsync(TimeCardEditing);
+                string message = success ? "TimeCard saved" : "Failed to save TimeCard";
+                await App.AlertSvc!.ShowAlertAsync("NOTICE", message).ConfigureAwait(false);
 
-                await RefreshCard();
+                if (success)
+                    await RefreshCard();
             }
-            catch (AggregateException ax)
+            catch (Exception e)
             {
-                TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateException(ax);
-            }
-            catch (Exception ex)
-            {
-                Log.WriteLine(ex.Message + "\n" + ex.InnerException);
-            }
-        }
-
-        private void RefreshProjectPhases()
-        {
-            //Only get data from DB once, unless it has been notified that it has changed
-            ProjectList ??= [];
-
-            if (ProjectList.Count == 0 || App.NoticeProjectHasChanged)
-                ProjectList = cardService.GetProjectsList();
-
-            PhaseList ??= [];
-            if (PhaseList.Count == 0 || App.NoticePhaseHasChanged)
-                PhaseList = cardService.GetPhaseList();
-
-            if (TimeCardID == 0)
-            {
-                if (SelectedProject == null || SelectedProject.ProjectId == 0)
-                    SelectedProject = cardService.GetCurrentProjectEntity();
-
-                if (SelectedPhase == null || SelectedPhase.PhaseId == 0)
-                    SelectedPhase = cardService.GetCurrentPhaseEntity();
+                HasError = true;
+                Log.WriteLine($"{e.Message}\n  -- {e.Source}\n  -- {e.InnerException}", "ChangeStartTimeViewModel.SaveTimeCard");
             }
         }
 
@@ -116,14 +112,13 @@ namespace TimeClockApp.ViewModels
             if (TimeCardID > 0)
             {
                 TimeCardEditing = await cardService.GetTimeCardByIDAsync(TimeCardID);
-                if (TimeCardEditing != null && TimeCardEditing.TimeCardId != 0)
+                if (TimeCardEditing != null)
                 {
                     StartTime = TimeCardEditing.TimeCard_StartTime;
                     TimeCard_Date = TimeCardEditing.TimeCard_Date;
                     TimeCard_EmployeeName = TimeCardEditing.TimeCard_EmployeeName;
-
-                    SelectedProject = cardService.GetProject(TimeCardEditing.ProjectId);
-                    SelectedPhase = cardService.GetPhase(TimeCardEditing.PhaseId);
+                    SelectedProject = TimeCardEditing.Project;
+                    SelectedPhase = TimeCardEditing.Phase;
                 }
             }
         }

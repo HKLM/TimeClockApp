@@ -15,11 +15,11 @@
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(PayPeriod))]
         public partial DateTime EndDate { get; set; } = DateTime.Now;
-#region "DatePicker Min/Max Bindings"
+        #region "DatePicker Min/Max Bindings"
         public DateTime PickerMinDate { get; set; }
         private readonly DateTime pickerMaxDate = DateTime.Now;
         public DateTime PickerMaxDate { get => pickerMaxDate; }
-#endregion
+        #endregion
 
         public string PayPeriod => $"Pay Period from {StartDate.ToShortDateString()} to {EndDate.ToShortDateString()}";
 
@@ -32,7 +32,6 @@
         public PayrollPageViewModel(PayrollService service)
         {
             payrollData = service;
-            ErrorMsg = string.Empty;
         }
 
         [RelayCommand]
@@ -52,7 +51,7 @@
                 {
                     foreach (Employee e in EmployeeList)
                     {
-                        TimeSheet t = payrollData.GetPayrollTimeSheetForEmployee(e.EmployeeId, DateOnly.FromDateTime(StartDate), DateOnly.FromDateTime(EndDate), e.Employee_Name, null);
+                        TimeSheet t = await payrollData.GetPayrollTimeSheetForEmployeeAsync(e.EmployeeId, DateOnly.FromDateTime(StartDate), DateOnly.FromDateTime(EndDate), e.Employee_Name, null);
                         if (t != null)
                             SheetList.Add(t);
                     }
@@ -66,7 +65,7 @@
             catch (Exception ex)
             {
                 HasError = true;
-                ErrorMsg = ex.Message;
+                Log.WriteLine($"{ex.Message}\n  -- {ex.Source}\n  -- {ex.InnerException}", "PayrollPageViewModel.OnAppearing");
             }
             finally
             {
@@ -76,11 +75,11 @@
 
         private async Task RefreshEmployeesAsync()
         {
-            if (App.NoticeUserHasChanged || EmployeeList.Count > 0)
+            if (EmployeeList.Count > 0)
             {
                 EmployeeList.Clear();
                 List<Employee> g = await payrollData.GetEmployeeListAsync();
-                EmployeeList =  g.ToObservableCollection();
+                EmployeeList = g.ToObservableCollection();
             }
         }
 
@@ -89,13 +88,13 @@
         {
             if (DateOnly.FromDateTime(StartDate) > DateOnly.FromDateTime(EndDate))
             {
-                await App.AlertSvc!.ShowAlertAsync("VALIDATION ERROR", "StartDate must be before EndDate");
+                await App.AlertSvc!.ShowAlertAsync("VALIDATION ERROR", "StartDate must be before EndDate").ConfigureAwait(false);
                 return;
             }
             SheetList.Clear();
             foreach (Employee e in EmployeeList)
             {
-                TimeSheet t = payrollData.GetPayrollTimeSheetForEmployee(e.EmployeeId, DateOnly.FromDateTime(StartDate), DateOnly.FromDateTime(EndDate), e.Employee_Name, null);
+                TimeSheet t = await payrollData.GetPayrollTimeSheetForEmployeeAsync(e.EmployeeId, DateOnly.FromDateTime(StartDate), DateOnly.FromDateTime(EndDate), e.Employee_Name, null);
                 if (t != null)
                     SheetList.Add(t);
             }
@@ -104,10 +103,20 @@
         [RelayCommand]
         private async Task RefreshEverythingAsync()
         {
-            Task A = RefreshEmployeesAsync();
-            Task B = RefreshCardsAsync();
-            await A;
-            await B;
+            try
+            {
+                await Task.WhenAll(RefreshEmployeesAsync(), RefreshCardsAsync());
+            }
+            catch (AggregateException ax)
+            {
+                HasError = true;
+                TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateException(ax);
+            }
+            catch (Exception ex)
+            {
+                HasError = true;
+                Log.WriteLine($"{ex.Message}\n  -- {ex.Source}\n  -- {ex.InnerException}", "PayrollPageViewModel.RefreshEverythingAsync");
+            }
         }
 
         [RelayCommand]
@@ -115,18 +124,26 @@
         {
             if (sheet != null)
             {
-                foreach (TimeCard item in sheet.TimeCards)
+                try
                 {
-                    if (item != null)
-                    {
-                        Task<bool> b = payrollData.MarkTimeCardAsPaidAsync(item);
-                        if (await b)
-                            Log.WriteLine("Marked card as paid");
-                    }
-                }
+                    List<Task<bool>> markPaidTasks = sheet.TimeCards
+                        .Where(item => item != null)
+                        .Select(item => payrollData.MarkTimeCardAsPaidAsync(item))
+                        .ToList();
 
-                Task refreshed = RefreshCardsAsync();
-                await refreshed;
+                    await Task.WhenAll(markPaidTasks);
+                    await RefreshCardsAsync();
+                }
+                catch (AggregateException ax)
+                {
+                    HasError = true;
+                    TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateException(ax);
+                }
+                catch (Exception ex)
+                {
+                    HasError = true;
+                    Log.WriteLine($"{ex.Message}\n  -- {ex.Source}\n  -- {ex.InnerException}", "PayrollPageViewModel.MarkPaid");
+                }
             }
         }
 

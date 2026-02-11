@@ -4,38 +4,24 @@
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is DateOnly d)
+            return value switch
             {
-                return new DateTime(d.Year, d.Month, d.Day);
-            }
-            else if (value is DateTime dt)
-            {
-                return DateOnly.FromDateTime(dt);
-            }
-            else if (value is string str)
-            {
-                if (DateOnly.TryParse(str, out DateOnly strTime))
-                    return new DateTime(strTime.Year, strTime.Month, strTime.Day);
-            }
-            return null;
+                DateOnly d => d.ToDateTime(TimeOnly.MinValue),
+                DateTime dt => DateOnly.FromDateTime(dt),
+                string str when DateOnly.TryParse(str, out var strTime) => strTime.ToDateTime(TimeOnly.MinValue),
+                _ => null
+            };
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is DateTime dt)
+            return value switch
             {
-                return DateOnly.FromDateTime(dt);
-            }
-            else if (value is DateOnly d)
-            {
-                return new DateTime(d.Year, d.Month, d.Day);
-            }
-            else if (value is string str)
-            {
-                if (DateOnly.TryParse(str, out DateOnly strTime))
-                    return strTime;
-            }
-            return null;
+                DateTime dt => DateOnly.FromDateTime(dt),
+                DateOnly d => d.ToDateTime(TimeOnly.MinValue),
+                string str when DateOnly.TryParse(str, out var strTime) => strTime,
+                _ => null
+            };
         }
     }
 }

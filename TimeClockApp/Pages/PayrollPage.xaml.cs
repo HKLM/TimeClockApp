@@ -13,7 +13,14 @@ public partial class PayrollPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        await viewModel.OnAppearing();
+        try
+        {
+            await viewModel.OnAppearing();
+        }
+        catch (Exception ex)
+        {
+            Log.WriteLine($"{ex.Message}\n  -- {ex.Source}\n  -- {ex.InnerException}", "PayrollPage.OnAppearing");
+        }
     }
 
     private async void TeamPageToolbarButton_Clicked(object sender, EventArgs e)

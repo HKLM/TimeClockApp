@@ -81,7 +81,7 @@ namespace TimeClockApp.ViewModels
         partial void OnSelectedFilterChanged(global::TimeClockApp.Shared.Models.Employee? value)
         {
             TimeCards.Clear();
-            Task.Run(async () => await RefreshingCardsAsync(false));
+            MainThread.BeginInvokeOnMainThread(async () => await RefreshingCardsAsync(false));
         }
         private int? selectedFilterId;
         private bool LastOnlyUnpaid = false;
@@ -114,29 +114,25 @@ namespace TimeClockApp.ViewModels
             WCRate = payrollData.GetWCRate();
             IsAdmin = IntToBool(payrollData.GetConfigInt(9, 0));
 
-            if (EmployeeList.Count == 0 || App.NoticeUserHasChanged)
+            try
             {
-                Task<List<Employee>> tp = payrollData.GetEmployeeListAsync();
-                List<Employee> p = await tp;
-                EmployeeList = p.ToObservableCollection();
-            }
-            if (selectedFilterId > 0)
-            {
-                try
+                List<Employee> e = await payrollData.GetEmployeeListAsync();
+                EmployeeList = e.ToObservableCollection();
+                if (selectedFilterId > 0)
                 {
                     SelectedFilter = payrollData.GetEmployee(selectedFilterId.Value);
                 }
-                catch (AggregateException ax)
-                {
-                    HasError = true;
-                    TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateException(ax);
-                }
-                finally
-                {
-                    selectedFilterId = null;
-                }
+                await RefreshingCardsAsync(LastOnlyUnpaid);
             }
-            await RefreshingCardsAsync(LastOnlyUnpaid);
+            catch (Exception e)
+            {
+                HasError = true;
+                Log.WriteLine($"{e.Message}\n  -- {e.Source}\n  -- {e.InnerException}", "PayrollDetailViewModel.OnAppearing");
+            }
+            finally
+            {
+                selectedFilterId = null;
+            }
         }
 
         [RelayCommand]
@@ -152,7 +148,7 @@ namespace TimeClockApp.ViewModels
                 LastOnlyUnpaid = bOnlyUnpaid;
                 if (DateOnly.FromDateTime(StartDate) > DateOnly.FromDateTime(EndDate))
                 {
-                    await App.AlertSvc!.ShowAlertAsync("VALIDATION ERROR", "StartDate must be before EndDate");
+                    await App.AlertSvc!.ShowAlertAsync("VALIDATION ERROR", "StartDate must be before EndDate").ConfigureAwait(false);
                     return;
                 }
                 ResetItems();
@@ -160,9 +156,8 @@ namespace TimeClockApp.ViewModels
                 if (SelectedFilter == null)
                     return;
 
-                Task<TimeSheet> s = payrollData.GetPayrollTimeSheetForEmployeeAsync(SelectedFilter.EmployeeId, DateOnly.FromDateTime(StartDate), DateOnly.FromDateTime(EndDate), SelectedFilter.Employee_Name, SheetTime, bOnlyUnpaid);
-                SheetTime = await s;
-                if (SheetTime?.TimeCards.Any() == true)
+                SheetTime = await payrollData.GetPayrollTimeSheetForEmployeeAsync(SelectedFilter.EmployeeId, DateOnly.FromDateTime(StartDate), DateOnly.FromDateTime(EndDate), SelectedFilter.Employee_Name, SheetTime, bOnlyUnpaid);
+                if (SheetTime.TimeCards.Any())
                 {
                     List<TimeCard> t = SheetTime.TimeCards.ToList();
                     TimeCards = t.ToObservableCollection();
@@ -183,23 +178,19 @@ namespace TimeClockApp.ViewModels
                     TimeCards.Clear();
                 }
             }
-            catch (AggregateException ax)
+            catch (Exception e)
             {
                 HasError = true;
-                TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateException(ax);
+                Log.WriteLine($"{e.Message}\n  -- {e.Source}\n  -- {e.InnerException}", "PayrollDetailViewModel.RefreshingCardsAsync");
             }
             finally
             {
                 Loading = false;
             }
-
         }
 
         [RelayCommand]
-        private Task GetAllUnpaidTimeCards()
-        {
-            return Task.Run(async () => await RefreshingCardsAsync(true));
-        }
+        private Task GetAllUnpaidTimeCards() => RefreshingCardsAsync(true);
 
         [RelayCommand]
         private async Task ReportClockOut(TimeCard card)
@@ -207,12 +198,9 @@ namespace TimeClockApp.ViewModels
             if (card == null)
                 return;
 
-            Task<bool> c = payrollData.EmployeeClockOutAsync(card.TimeCardId);
-            bool b = await c;
-            if (b)
+            if (await payrollData.EmployeeClockOutAsync(card.TimeCardId))
             {
-                Task r = RefreshingCardsAsync(LastOnlyUnpaid);
-                await r;
+                await RefreshingCardsAsync(LastOnlyUnpaid);
             }
         }
 
@@ -222,15 +210,12 @@ namespace TimeClockApp.ViewModels
             if (card == null)
                 return;
 
-            bool m = await payrollData.MarkTimeCardAsPaidAsync(card);
-            if (m)
+            if (await payrollData.MarkTimeCardAsPaidAsync(card))
             {
                 //TODO fix amount. TotalOwedGrossPay is not for just 1 card
-                Task e = payrollData.AddNewExpenseAsync(card.ProjectId, card.PhaseId, TotalOwedGrossPay, string.Empty, card.ProjectName, card.PhaseTitle, 3);
-                await e;
+                await payrollData.AddNewExpenseAsync(card.ProjectId, card.PhaseId, TotalOwedGrossPay, string.Empty, card.ProjectName, card.PhaseTitle, 3);
                 //add entry for WorkersComp amount too
-                Task r = RefreshingCardsAsync(LastOnlyUnpaid);
-                await r;
+                await RefreshingCardsAsync(LastOnlyUnpaid);
             }
         }
 
@@ -240,9 +225,6 @@ namespace TimeClockApp.ViewModels
             Loading = true;
             HasError = false;
 
-            List<Task> tasks = [];
-            List<Task> taskExpense = [];
-
             try
             {
                 double p = payrollData.GetPayrollInfoForExpense(TimeCards.ToList());
@@ -250,28 +232,29 @@ namespace TimeClockApp.ViewModels
 
                 int i = TimeCards.Count - 1;
                 //default to use the last timecard to file it under that project and phase
-                taskExpense.Add(payrollData.AddNewExpenseAsync(TimeCards[i].ProjectId, TimeCards[i].PhaseId, p, string.Empty, TimeCards[i].ProjectName, TimeCards[i].PhaseTitle, 3));
-                taskExpense.Add(payrollData.AddNewExpenseAsync(TimeCards[i].ProjectId, TimeCards[i].PhaseId, wc, string.Empty, TimeCards[i].ProjectName, TimeCards[i].PhaseTitle, 4));
+                List<Task> expenseTasks = [
+                    payrollData.AddNewExpenseAsync(TimeCards[i].ProjectId, TimeCards[i].PhaseId, p, string.Empty, TimeCards[i].ProjectName, TimeCards[i].PhaseTitle, 3),
+                    payrollData.AddNewExpenseAsync(TimeCards[i].ProjectId, TimeCards[i].PhaseId, wc, string.Empty, TimeCards[i].ProjectName, TimeCards[i].PhaseTitle, 4)
+                ];
+                await Task.WhenAll(expenseTasks);
 
-                foreach (TimeCard item in TimeCards)
-                {
-                    if (item.TimeCard_Status == ShiftStatus.ClockedOut)
-                    {
-                        tasks.Add(payrollData.MarkTimeCardAsPaidAsync(item));
-                    }
-                }
-                await Task.WhenAll(taskExpense);
+                List<Task<bool>> paidTasks = TimeCards
+                    .Where(item => item.TimeCard_Status == ShiftStatus.ClockedOut)
+                    .Select(item => payrollData.MarkTimeCardAsPaidAsync(item))
+                    .ToList();
 
-                if (tasks.Count > 0)
-                {
-                    await Task.WhenAll(tasks);
-                    await RefreshingCardsAsync(LastOnlyUnpaid);
-                }
+                await Task.WhenAll(paidTasks);
+                await RefreshingCardsAsync(LastOnlyUnpaid);
             }
             catch (AggregateException ax)
             {
                 HasError = true;
-                TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateException(ax);
+                TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateException(ax, "PayrollDetailViewModel.MarkAllPaidAsync");
+            }
+            catch (Exception e)
+            {
+                HasError = true;
+                Log.WriteLine($"{e.Message}\n  -- {e.Source}\n  -- {e.InnerException}", "PayrollDetailViewModel.MarkAllPaidAsync");
             }
             finally
             {

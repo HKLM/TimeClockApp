@@ -15,7 +15,6 @@
     <ContentPage.Resources>
         <ResourceDictionary>
             <Converter:TimeOnlyToTimeSpanConverter x:Key="timeOnlyToTimeSpanConverter" />
-            <Converter:DateOnlyConverter x:Key="dateOnlyConverter" />
             <Converter:DateOnlyToDateTimeConverter x:Key="dateOnlyToDateTimeConverter" />
             <Converter:EnumToIntConverter x:Key="enumToIntConverter" />
         </ResourceDictionary>
@@ -41,7 +40,7 @@
 				Text="{Binding TimeCardID, StringFormat='Id={0}'}"
 				VerticalTextAlignment="Center" />
             <Label
-				FontSize="Title"
+				FontSize="24"
 				Text="{Binding TimeCard_EmployeeName}"
 				VerticalTextAlignment="Center" />
 

@@ -42,7 +42,7 @@
         <DataTemplate x:DataType="s:AppShell">
             <Grid BackgroundColor="{StaticResource Tertiary}" VerticalOptions="Center" ColumnDefinitions="50,*" RowDefinitions="50">
                 <Image Source="clock_icon.png" HeightRequest="32" WidthRequest="32" Margin="10,0,0,0" />
-                <Label Text="TimeCard App" TextColor="White" FontAttributes="Bold" FontSize="Title" Grid.Column="1" HorizontalTextAlignment="Start" VerticalTextAlignment="Center" Margin="10,0,0,0" />
+                <Label Text="TimeCard App" TextColor="White" FontAttributes="Bold" FontSize="24" Grid.Column="1" HorizontalTextAlignment="Start" VerticalTextAlignment="Center" Margin="10,0,0,0" />
             </Grid>
         </DataTemplate>
     </Shell.FlyoutHeaderTemplate>
@@ -53,6 +53,7 @@
             </StackLayout>
         </DataTemplate>
     </Shell.FlyoutFooterTemplate>
+
     <ShellContent Title="TimeCard" ContentTemplate="{DataTemplate local:TimeCardPage}" Route="TimeCardPage" Icon="calendar_clock_24px.png" />
     <FlyoutItem Title="Payroll" FlyoutDisplayOptions="AsSingleItem" Icon="paid_outline.png">
         <ShellContent ContentTemplate="{DataTemplate local:PayrollDetailPage}" Route="PayrollDetailPage" />

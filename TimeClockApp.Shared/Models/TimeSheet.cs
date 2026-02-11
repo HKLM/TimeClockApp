@@ -18,13 +18,13 @@ namespace TimeClockApp.Shared.Models
     {
         public TimeSheet() { }
 
-        public TimeSheet(int EmployeeId, DateOnly PayPeriodBegin, DateOnly PayPeriodEnd, string TimeCard_EmployeeName)
+        public TimeSheet(int employeeId, DateOnly payPeriodBegin, DateOnly payPeriodEnd, string timeCardEmployeeName)
         {
-            this.EmployeeId = EmployeeId;
-            this.TimeCard_EmployeeName = TimeCard_EmployeeName;
-            PayPeriodWeekNum = TimeHelper.GetWeekNumber(PayPeriodBegin);
-            this.PayPeriodBegin = PayPeriodBegin;
-            this.PayPeriodEnd = PayPeriodEnd;
+            EmployeeId = employeeId;
+            TimeCard_EmployeeName = timeCardEmployeeName;
+            PayPeriodWeekNum = TimeHelper.GetWeekNumber(payPeriodBegin);
+            PayPeriodBegin = payPeriodBegin;
+            PayPeriodEnd = payPeriodEnd;
         }
 
         [NotMapped]
@@ -83,7 +83,6 @@ namespace TimeClockApp.Shared.Models
         public double TotalOwedGrossPay { get; set; }
         #endregion
 
-        //[NotMapped]
         public string TimeCard_EmployeeName { get; set; } = string.Empty;
 
         public virtual IList<TimeCard> TimeCards { get; set; } = [];
@@ -125,14 +124,9 @@ namespace TimeClockApp.Shared.Models
             UnPaidTotalOT2Pay = 0;
             TotalOwedGrossPay = 0;
 
-            if (TimeCards != null)
-                TimeCards?.Clear();
-
-            if (UnpaidTimeCards != null)
-                UnpaidTimeCards?.Clear();
-
-            if (PaidTimeCards != null)
-                PaidTimeCards?.Clear();
+            TimeCards.Clear();
+            UnpaidTimeCards.Clear();
+            PaidTimeCards.Clear();
         }
     }
 }

@@ -102,7 +102,7 @@
                     <Entry
                         Grid.Row="4"
                         Grid.Column="2"
-                        FontSize="Small"
+                        FontSize="14"
                         HorizontalOptions="Fill"
                         Keyboard="Numeric"
                         Placeholder="Amount"
@@ -127,7 +127,7 @@
                     <Entry
                         Grid.Row="5"
                         Grid.Column="2"
-                        FontSize="Small"
+                        FontSize="14"
                         HorizontalOptions="Fill"
                         Placeholder="Memo"
                         x:Name="entryMemoBox"

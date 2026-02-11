@@ -61,27 +61,26 @@ namespace TimeClockApp.ViewModels
         {
             if (string.IsNullOrEmpty(NewCategoryName))
             {
-                await App.AlertSvc!.ShowAlertAsync("NOTICE", "ExpenseType must have a name.");
+                await App.AlertSvc!.ShowAlertAsync("NOTICE", "ExpenseType must have a name.").ConfigureAwait(false);
                 return;
             }
 
             string newName = NewCategoryName.Trim();
-            var r = dataService.AddExpenseTypeAsync(newName);
-            int i = await r;
+            int i = await dataService.AddExpenseTypeAsync(newName);
             if (i == 1)
             {
                 SelectedExpenseType = null;
                 List<ExpenseType> x = await dataService.GetExpenseTypeListAsync();
                 ExpenseTypeList = x.ToObservableCollection();
                 NewCategoryName = string.Empty;
-                await App.AlertSvc!.ShowAlertAsync("NOTICE", "Saved");
+                await App.AlertSvc!.ShowAlertAsync("NOTICE", "Saved").ConfigureAwait(false);
             }
             else if (i == 2)
             {
-                await App.AlertSvc!.ShowAlertAsync("DUPLICATE", newName + " already exists in database. Failed to add new ExpenseType.");
+                await App.AlertSvc!.ShowAlertAsync("DUPLICATE", newName + " already exists in database. Failed to add new ExpenseType.").ConfigureAwait(false);
             }
             else
-                await App.AlertSvc!.ShowAlertAsync("NOTICE", "Failed to add new ExpenseType");
+                await App.AlertSvc!.ShowAlertAsync("NOTICE", "Failed to add new ExpenseType").ConfigureAwait(false);
         }
 
         [RelayCommand]
@@ -89,6 +88,12 @@ namespace TimeClockApp.ViewModels
         {
             if (SelectedExpenseType == null || string.IsNullOrEmpty(NewCategoryName))
                 return;
+            if (SelectedExpenseType.ExpenseTypeId < 6)
+            {
+                await App.AlertSvc!.ShowAlertAsync("NOTICE", "This ExpenseType is required and can not be edited.").ConfigureAwait(false);
+                return;
+            }
+
             try
             {
                 string newName = NewCategoryName.Trim();
@@ -98,10 +103,10 @@ namespace TimeClockApp.ViewModels
                     List<ExpenseType> x = await dataService.GetExpenseTypeListAsync();
                     ExpenseTypeList = x.ToObservableCollection();
 
-                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "Saved");
+                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "Saved").ConfigureAwait(false);
                 }
                 else
-                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "Failed to save ExpenseType");
+                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "Failed to save ExpenseType").ConfigureAwait(false);
             }
             catch (AggregateException ax)
             {
@@ -119,6 +124,12 @@ namespace TimeClockApp.ViewModels
             if (SelectedExpenseType == null)
                 return;
 
+            if (SelectedExpenseType.ExpenseTypeId < 6)
+            {
+                await App.AlertSvc!.ShowAlertAsync("NOTICE", "This ExpenseType is required and can not be deleted.").ConfigureAwait(false);
+                return;
+            }
+
             try
             {
                 Log.WriteLine("User is attempting to delete a ExpenseType record");
@@ -130,11 +141,11 @@ namespace TimeClockApp.ViewModels
                         List<ExpenseType> x = await dataService.GetExpenseTypeListAsync();
                         ExpenseTypeList = x.ToObservableCollection();
 
-                        await App.AlertSvc!.ShowAlertAsync("NOTICE", "Deleted");
+                        await App.AlertSvc!.ShowAlertAsync("NOTICE", "Deleted").ConfigureAwait(false);
                         //await Shell.Current.GoToAsync("..");
                     }
                     else
-                        await App.AlertSvc!.ShowAlertAsync("NOTICE", "Failed to delete ExpenseType");
+                        await App.AlertSvc!.ShowAlertAsync("NOTICE", "Failed to delete ExpenseType").ConfigureAwait(false);
                 }
             }
             catch (AggregateException ax)

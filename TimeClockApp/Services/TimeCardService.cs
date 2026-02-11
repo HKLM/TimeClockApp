@@ -8,10 +8,10 @@ namespace TimeClockApp.Services
 {
     public class TimeCardService : TimeCardDataStore
     {
-        public async Task<List<TimeCard>> GetLastTimeCardForAllEmployeesAsync()
+        public Task<List<TimeCard>> GetLastTimeCardForAllEmployeesAsync()
         {
             // Get all employed employees with their most recent unpaid timecards in a single query
-            var employeesWithCards = await Context.Employee
+            var employeesWithCards = Context.Employee
                 .Where(e => e.Employee_Employed == EmploymentStatus.Employed)
                 .OrderBy(e => e.Employee_Name)
                 .Select(e => new
@@ -24,12 +24,11 @@ namespace TimeClockApp.Services
                         .OrderByDescending(tc => tc.TimeCard_DateTime)
                         .FirstOrDefault()
                 })
-                .ToListAsync()
-                .ConfigureAwait(false);
+                .AsQueryable();
 
             return employeesWithCards
                 .Select(item => item.LastTimeCard ?? new TimeCard(item.Employee))
-                .ToList();
+                .ToListAsync();
         }
 
         public async Task<bool> EmployeeClockInAsync(TimeCard card, int projectID, int phaseID, string projectName, string phaseTitle)
@@ -37,15 +36,14 @@ namespace TimeClockApp.Services
             if (card.Employee == null || card.EmployeeId == 0 || card.Employee.Employee_Employed != EmploymentStatus.Employed)
                 return false;
 
-            if (IsEmployeeNotOnTheClock(card.EmployeeId))
+            if (await IsEmployeeNotOnTheClockAsync(card.EmployeeId))
             {
                 DateTime entry = DateTime.Now;
                 TimeOnly sTime = TimeHelper.RoundTimeOnly(new TimeOnly(entry.Hour, entry.Minute));
                 TimeCard c = new(card.Employee, projectID, phaseID, projectName, phaseTitle, sTime);
 
                 Context.Add<TimeCard>(c);
-                int saveData = await Context.SaveChangesAsync().ConfigureAwait(false);
-                return saveData != 0;
+                return await Context.SaveChangesAsync().ConfigureAwait(false) != 0;
             }
             return false;
         }
@@ -54,9 +52,8 @@ namespace TimeClockApp.Services
         {
             if (timeCardId > 0)
             {
-                TimeCard t = GetTimeCard(timeCardId);
-                bool valClockOut = await ValidateClockOutAsync(t).ConfigureAwait(false);
-                if (valClockOut)
+                TimeCard t = await GetTimeCardAsync(timeCardId);
+                if (await ValidateClockOutAsync(t))
                 {
                     t.TimeCard_EndTime = TimeHelper.RoundTimeOnly(new TimeOnly(DateTime.Now.Hour, DateTime.Now.Minute));
                     t.TimeCard_Status = ShiftStatus.ClockedOut;
@@ -67,28 +64,26 @@ namespace TimeClockApp.Services
             return false;
         }
 
-        private bool IsEmployeeNotOnTheClock(int employeeID) => !Context.TimeCard
-                .AsNoTracking()
-                .Where(tc => tc.EmployeeId == employeeID
-                    && tc.TimeCard_Status == ShiftStatus.ClockedIn
-                    && !tc.TimeCard_bReadOnly)
-                .Any();
+        private async Task<bool> IsEmployeeNotOnTheClockAsync(int employeeID) => !await Context.TimeCard
+            .AsNoTracking()
+            .Where(tc => tc.EmployeeId == employeeID
+                && tc.TimeCard_Status == ShiftStatus.ClockedIn
+                && !tc.TimeCard_bReadOnly)
+            .AnyAsync();
 
         public async Task<bool> MarkTimeCardAsPaidAsync(TimeCard timeCard)
         {
             if (timeCard != null && timeCard.TimeCardId != 0
-                && !IsTimeCardReadOnly(timeCard.TimeCardId)
+                && !await IsTimeCardReadOnlyAsync(timeCard.TimeCardId)
                 && timeCard.TimeCard_Status == ShiftStatus.ClockedOut)
             {
-                TimeCard? t = Context.TimeCard.Find(timeCard.TimeCardId);
+                TimeCard? t = await Context.TimeCard.FindAsync(timeCard.TimeCardId);
                 if (t != null)
                 {
                     t.TimeCard_Status = ShiftStatus.Paid;
                     t.TimeCard_bReadOnly = true;
                     Context.Update<TimeCard>(t);
-                    int i = await Context.SaveChangesAsync().ConfigureAwait(false);
-                    if (i != 0)
-                        return true;
+                    return await Context.SaveChangesAsync().ConfigureAwait(false) != 0;
                 }
             }
             return false;

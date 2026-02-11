@@ -9,7 +9,12 @@
         /// </summary>
         public DataTemplate OnTheClockTemplate { get; set; }
 
-        protected override DataTemplate OnSelectTemplate(object item, BindableObject container) =>
-            ((TimeCard)item).TimeCard_Status.Equals(ShiftStatus.ClockedIn) ? OnTheClockTemplate : (((TimeCard)item).TimeCard_Status.Equals(ShiftStatus.Paid) ? PaidTemplate : UnpaidTemplate);
+        protected override DataTemplate OnSelectTemplate(object item, BindableObject container)
+        {
+            ShiftStatus status = ((TimeCard)item).TimeCard_Status;
+            return status == ShiftStatus.ClockedIn ? OnTheClockTemplate : 
+                   status == ShiftStatus.Paid ? PaidTemplate : 
+                   UnpaidTemplate;
+        }
     }
 }

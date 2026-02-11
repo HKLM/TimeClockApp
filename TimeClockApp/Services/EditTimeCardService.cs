@@ -7,19 +7,19 @@ namespace TimeClockApp.Services
 {
     public class EditTimeCardService : TimeCardDataStore
     {
+        public TimeCard? GetTimeCardByID(int cardId) => Context.TimeCard.Find(cardId);
+
         public async Task<TimeCard?> GetTimeCardByIDAsync(int cardId) =>
-            await Context.TimeCard.FindAsync(cardId).ConfigureAwait(false);
+            await Context.TimeCard.FindAsync(cardId);
 
         public Task<List<TimeCard>> GetTimeCards(int NumResults) =>
             Context.TimeCard
                 .AsNoTracking()
-                .TagWithCallSite()
-                .Where(item => item.TimeCard_Status != ShiftStatus.Deleted)
                 .OrderByDescending(item => item.TimeCard_DateTime)
                 .Take(NumResults)
                 .ToListAsync();
 
-        public bool UpdateTimeCard(TimeCard newTimeCard, bool isAdmin = false, bool bChangedDate = false)
+        public async Task<bool> UpdateTimeCardAsync(TimeCard newTimeCard, bool isAdmin = false, bool bChangedDate = false)
         {
             if (newTimeCard == null)
                 return false;
@@ -28,7 +28,7 @@ namespace TimeClockApp.Services
                 return false;
 
             DateOnly newDate = new();
-            TimeCard? origTimeCard = Context.TimeCard.Find(newTimeCard.TimeCardId);
+            TimeCard? origTimeCard = await Context.TimeCard.FindAsync(newTimeCard.TimeCardId);
             if (origTimeCard != null)
             {
                 origTimeCard.PhaseId = newTimeCard.PhaseId;
@@ -49,7 +49,7 @@ namespace TimeClockApp.Services
                 }
 
                 Context.Update<TimeCard>(origTimeCard);
-                if (Context.SaveChanges() > 0)
+                if (await Context.SaveChangesAsync() > 0)
                 {
                     return true;
                 }

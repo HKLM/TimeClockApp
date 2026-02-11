@@ -17,8 +17,15 @@ public partial class PayrollDetailPage : ContentPage
     {
         base.OnAppearing();
 
-        await viewModel.OnAppearing();
+        try
+        {
+            await viewModel.OnAppearing();
 
+        }
+        catch (Exception ex)
+        {
+            Log.WriteLine($"EXCEPTION ERROR\n{ex.Message}\n{ex.InnerException}", "PayrollDetailPage");
+        }
         _width = this.Width;
         _height = this.Height;
         if (_width != 0)

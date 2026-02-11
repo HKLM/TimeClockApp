@@ -85,7 +85,6 @@
                     else
                         App.AlertSvc!.ShowAlert("Notice", projectNewName + " saved");
 
-                    App.NoticeProjectHasChanged = true;
                     LoadProjects();
                     Name = string.Empty;
                 }
@@ -105,7 +104,6 @@
                 {
                     string oldProject = SelectedProject.Name;
                     projectService.DeleteProject(SelectedProject);
-                    App.NoticeProjectHasChanged = true;
                     LoadProjects();
                     Name = string.Empty;
                     App.AlertSvc!.ShowAlert("Notice", oldProject + " Deleted");
@@ -130,7 +128,6 @@
                 {
                     string projectNewName = Name.Trim();
                     projectService.UpdateProject(projectNewName, ProjectId, ProjectDate, Project_Status);
-                    App.NoticeProjectHasChanged = true;
                     LoadProjects();
                     App.AlertSvc!.ShowAlert("Notice", projectNewName + " saved");
                     Name = string.Empty;

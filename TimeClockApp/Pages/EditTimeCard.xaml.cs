@@ -14,7 +14,15 @@ public partial class EditTimeCard : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        await viewModel.OnAppearing();
+
+        try
+        {
+            await viewModel.OnAppearing();
+        }
+        catch (Exception ex)
+        {
+            Log.WriteLine($"EXCEPTION ERROR\n{ex.Message}\n{ex.InnerException}", "EditTimeCard");
+        }
     }
 
     protected override void OnDisappearing()

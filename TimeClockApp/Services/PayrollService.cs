@@ -1,5 +1,4 @@
 ﻿using System.Data;
-using System.Diagnostics.CodeAnalysis;
 
 #nullable enable
 
@@ -12,11 +11,37 @@ namespace TimeClockApp.Services
         /// </summary>
         /// <returns></returns>
         public double GetWCRate() => GetRate(5);
+        public Task<double> GetWCRateAsync() => GetRateAsync(5);
 
-        protected double GetRate(int i)
+        public double GetRate(int i)
         {
             Config? c = Context.Config.Find(i);
-            return c != null && double.TryParse(c?.StringValue, out double wc) ? wc : 0;
+            return double.TryParse(c?.StringValue, out double wc) ? (double)wc : 0;
+        }
+
+        public async Task<double> GetRateAsync(int i)
+        {
+            if (i == 7 || i == 8)
+                return await FixGetRateAsync(i);
+
+            Config? c = Context.Config.Find(i);
+            return double.TryParse(c?.StringValue, out double wc) ? (double)wc : 0;
+        }
+
+        //TODO: Remove this method after a few versions to clean up old int values.
+        public async Task<double> FixGetRateAsync(int i)
+        {
+            Config? c = Context.Config.Find(i);
+            if (c != null && c.IntValue.HasValue)
+            {
+                var ic = c.IntValue.Value;
+                c.StringValue = ic.ToString();
+                c.IntValue = null;
+                Context.Config.Update(c);
+                await Context.SaveChangesAsync().ConfigureAwait(false);
+                return (double)ic;
+            }
+            else return double.TryParse(c?.StringValue, out double wc) ? (double)wc : 0;
         }
 
         private void CalculateWages(TimeSheet sheet, double payRate)
@@ -37,7 +62,7 @@ namespace TimeClockApp.Services
 
         private void CategorizeAndSummarizeTimeCards(IGrouping<DateOnly, TimeCard> dayGroup, TimeSheet sheet, out double payRate)
         {
-            payRate = dayGroup.Select(x => x.TimeCard_EmployeePayRate).First();
+            payRate = dayGroup.First().TimeCard_EmployeePayRate;
 
             foreach (TimeCard item in dayGroup)
             {
@@ -51,18 +76,16 @@ namespace TimeClockApp.Services
                 }
             }
 
-            TimeCardDayTotal dayHours = new TimeCardDayTotal(dayGroup
-                .Where(x => x.TimeCard_Status == ShiftStatus.ClockedOut || x.TimeCard_Status == ShiftStatus.Paid)
-                .Sum(x => x.TimeCard_WorkHours));
+            List<TimeCard> paidAndClockedOut = dayGroup.Where(x => x.TimeCard_Status == ShiftStatus.ClockedOut || x.TimeCard_Status == ShiftStatus.Paid).ToList();
+            TimeCardDayTotal dayHours = new(paidAndClockedOut.Sum(x => x.TimeCard_WorkHours));
 
             sheet.TotalWorkHours += dayHours.TotalWorkHours;
             sheet.RegTotalHours += dayHours.RegTotalHours;
             sheet.TotalOTHours += dayHours.TotalOTHours;
             sheet.TotalOT2Hours += dayHours.TotalOT2Hours;
 
-            double unpaidHours = dayGroup
-                .Where(x => x.TimeCard_Status == ShiftStatus.ClockedOut)
-                .Sum(x => x.TimeCard_WorkHours);
+            List<TimeCard> clockedOutCards = dayGroup.Where(x => x.TimeCard_Status == ShiftStatus.ClockedOut).ToList();
+            double unpaidHours = clockedOutCards.Sum(x => x.TimeCard_WorkHours);
 
             if (unpaidHours > 0)
             {
@@ -79,30 +102,16 @@ namespace TimeClockApp.Services
             sheet ??= new TimeSheet(employeeId, start, end, employeeName);
             sheet.Reset();
 
-            sheet.TimeCards = await GetTimeCardsForPayPeriodAsync(employeeId, start, end, onlyUnpaid).ConfigureAwait(false);
-            if (sheet.TimeCards?.Count == 0)
-                return sheet;
-
-            double payRate = 0;
-            foreach (var dayGroup in sheet.TimeCards!.GroupBy(x => x.TimeCard_Date))
-            {
-                CategorizeAndSummarizeTimeCards(dayGroup, sheet, out payRate);
-            }
-
-            CalculateWages(sheet, payRate);
-            CalculateUnpaidWages(sheet, payRate);
+            sheet.TimeCards = await GetTimeCardsForPayPeriodAsync(employeeId, start, end, onlyUnpaid);
+            ProcessTimeSheetPayroll(sheet);
 
             return sheet;
         }
 
-        public TimeSheet GetPayrollTimeSheetForEmployee(int employeeId, DateOnly start, DateOnly end, string employeeName, TimeSheet? sheet = null, bool showPaid = true)
+        private void ProcessTimeSheetPayroll(TimeSheet sheet)
         {
-            sheet ??= new(employeeId, start, end, employeeName);
-            sheet.Reset();
-
-            sheet.TimeCards = GetTimeCardsForPayPeriod(employeeId, start, end, showPaid);
             if (sheet.TimeCards?.Count == 0)
-                return sheet;
+                return;
 
             double payRate = 0;
             foreach (var dayGroup in sheet.TimeCards!.GroupBy(x => x.TimeCard_Date))
@@ -112,8 +121,6 @@ namespace TimeClockApp.Services
 
             CalculateWages(sheet, payRate);
             CalculateUnpaidWages(sheet, payRate);
-
-            return sheet;
         }
 
         public double GetPayrollInfoForExpense(List<TimeCard> cards)
@@ -122,27 +129,23 @@ namespace TimeClockApp.Services
                 return 0;
 
             TimeSheet sheet = new TimeSheet(cards[0].EmployeeId, DateOnly.FromDateTime(DateTime.Now), DateOnly.FromDateTime(DateTime.Now), cards[0].TimeCard_EmployeeName);
-            sheet.TimeCards = cards.ToList();
+            sheet.TimeCards = cards;
 
-            if (sheet.TimeCards?.Count == 0)
+            if (sheet.TimeCards.Count == 0)
                 return 0;
 
             double payRate = 0;
-            foreach (var dayGroup in sheet.TimeCards!.GroupBy(x => x.TimeCard_Date))
+            foreach (var dayGroup in sheet.TimeCards.GroupBy(x => x.TimeCard_Date))
             {
-                payRate = dayGroup.Select(x => x.TimeCard_EmployeePayRate).First();
+                payRate = dayGroup.First().TimeCard_EmployeePayRate;
 
-                foreach (TimeCard item in dayGroup)
+                List<TimeCard> clockedOutCards = dayGroup.Where(x => x.TimeCard_Status == ShiftStatus.ClockedOut).ToList();
+                foreach (var item in clockedOutCards)
                 {
-                    if (item.TimeCard_Status == ShiftStatus.ClockedOut)
-                    {
-                        sheet.UnpaidTimeCards.Add(item);
-                    }
+                    sheet.UnpaidTimeCards.Add(item);
                 }
 
-                double unpaidHours = dayGroup
-                    .Where(x => x.TimeCard_Status == ShiftStatus.ClockedOut)
-                    .Sum(x => x.TimeCard_WorkHours);
+                double unpaidHours = clockedOutCards.Sum(x => x.TimeCard_WorkHours);
 
                 if (unpaidHours > 0)
                 {

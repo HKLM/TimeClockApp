@@ -1,21 +1,23 @@
 ﻿#nullable enable
 
+using Microsoft.EntityFrameworkCore;
+
 namespace TimeClockApp.Services
 {
     public class SettingsService : SQLiteDataStore
     {
-        public ObservableCollection<Config> GetSettingsList() => Context.Config.ToObservableCollection();
+        public Task<List<Config>> GetSettingsListAsync() => Context.Config.ToListAsync();
 
-        public bool SaveConfig(Config item)
+        public async Task<bool> SaveConfigAsync(Config item)
         {
             string? newStringValue = string.IsNullOrEmpty(item.StringValue) ? null : item.StringValue.Trim();
-            Config? C = Context.Config.Find(item.ConfigId);
+            Config? C = await Context.Config.FindAsync(item.ConfigId);
             if (C != null)
             {
                 C.IntValue = item.IntValue ?? null;
                 C.StringValue = newStringValue;
                 Context.Update<Config>(C);
-                return Context.SaveChanges() > 0;
+                return await Context.SaveChangesAsync().ConfigureAwait(false) > 0;
             }
             return false;
         }

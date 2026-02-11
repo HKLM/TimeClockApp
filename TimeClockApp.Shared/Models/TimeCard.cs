@@ -70,12 +70,14 @@ namespace TimeClockApp.Shared.Models
         public TimeCard(Employee Employee)
         {
             ArgumentNullException.ThrowIfNull(Employee);
+            ArgumentNullException.ThrowIfNull(Employee.Employee_Name);
+            var now = DateTime.Now;
             EmployeeId = Employee.EmployeeId;
-            TimeCard_EmployeeName = Employee.Employee_Name ?? throw new ArgumentNullException(nameof(Employee.Employee_Name));
+            TimeCard_EmployeeName = Employee.Employee_Name;
             TimeCard_EmployeePayRate = Employee.Employee_PayRate;
-            this.Employee = Employee ?? throw new ArgumentNullException(nameof(Employee));
-            TimeCard_DateTime = DateTime.Now;
-            TimeCard_Date = DateOnly.FromDateTime(DateTime.Now);
+            this.Employee = Employee;
+            TimeCard_DateTime = now;
+            TimeCard_Date = DateOnly.FromDateTime(now);
             TimeCard_Status = ShiftStatus.NA;
             ProjectId = 1;
             ProjectName = ".None";
@@ -87,18 +89,20 @@ namespace TimeClockApp.Shared.Models
         public TimeCard(Employee Employee, int ProjectId, int PhaseId, string ProjectName, string PhaseTitle, TimeOnly TimeCard_StartTime)
         {
             ArgumentNullException.ThrowIfNull(Employee);
+            ArgumentNullException.ThrowIfNull(Employee.Employee_Name);
+            var now = DateTime.Now;
             EmployeeId = Employee.EmployeeId;
-            TimeCard_EmployeeName = Employee.Employee_Name ?? throw new ArgumentNullException(nameof(Employee.Employee_Name));
+            TimeCard_EmployeeName = Employee.Employee_Name;
             TimeCard_EmployeePayRate = Employee.Employee_PayRate;
-            this.Employee = Employee ?? throw new ArgumentNullException(nameof(Employee));
-            TimeCard_DateTime = DateTime.Now;
-            TimeCard_Date = DateOnly.FromDateTime(DateTime.Now);
+            this.Employee = Employee;
+            TimeCard_DateTime = now;
+            TimeCard_Date = DateOnly.FromDateTime(now);
             this.TimeCard_StartTime = TimeCard_StartTime;
             TimeCard_Status = ShiftStatus.ClockedIn;
             this.ProjectId = ProjectId;
-            this.ProjectName = string.IsNullOrEmpty(ProjectName) ? ".None" : ProjectName;
+            this.ProjectName = string.IsNullOrWhiteSpace(ProjectName) ? ".None" : ProjectName;
             this.PhaseId = PhaseId;
-            this.PhaseTitle = string.IsNullOrEmpty(PhaseTitle) ? ".Misc" : PhaseTitle;
+            this.PhaseTitle = string.IsNullOrWhiteSpace(PhaseTitle) ? ".Misc" : PhaseTitle;
             TimeCard_bReadOnly = false;
         }
 
@@ -189,18 +193,12 @@ namespace TimeClockApp.Shared.Models
             get
             {
                 if (TimeCard_Status == ShiftStatus.NA || TimeCard_Status == ShiftStatus.Deleted)
-                {
                     return TimeSpan.Zero;
-                }
-                else
-                {
-                    if (TimeCard_EndTime == new TimeOnly(0, 0))
-                    {
-                        TimeOnly o = TimeOnly.FromDateTime(DateTime.Now);
-                        return o - TimeCard_StartTime;
-                    }
-                    return TimeCard_EndTime - TimeCard_StartTime;
-                }
+
+                if (TimeCard_EndTime == TimeOnly.MinValue)
+                    return TimeOnly.FromDateTime(DateTime.Now) - TimeCard_StartTime;
+
+                return TimeCard_EndTime - TimeCard_StartTime;
             }
         }
 

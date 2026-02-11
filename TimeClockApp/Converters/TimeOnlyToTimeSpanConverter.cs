@@ -1,37 +1,29 @@
-﻿namespace TimeClockApp.Converters
+﻿#nullable enable
+
+namespace TimeClockApp.Converters
 {
     public class TimeOnlyToTimeSpanConverter : IValueConverter
     {
         /// <summary>
         /// TimeOnly -> TimeSpan
         /// </summary>
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            if (value is not null and string str)
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+            => value switch
             {
-                if (TimeSpan.TryParse(str, out TimeSpan strTime))
-                    return strTime;
-            }
-            else if (value is not null and TimeOnly time)
-            {
-                return time.ToTimeSpan();
-            }
-            return null;
-        }
+                TimeOnly time => time.ToTimeSpan(),
+                string str when TimeSpan.TryParse(str, culture, out var parsed) => parsed,
+                _ => null
+            };
 
         /// <summary>
         /// TimeSpan -> TimeOnly
         /// </summary>
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            if (value is not null and TimeSpan time)
-                return TimeOnly.FromTimeSpan(time);
-            else if (value is not null and string str)
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+            => value switch
             {
-                if (TimeOnly.TryParse(str, out var strTime))
-                    return strTime;
-            }
-            return null;
-        }
+                TimeSpan time => TimeOnly.FromTimeSpan(time),
+                string str when TimeOnly.TryParse(str, culture, out var parsed) => parsed,
+                _ => null
+            };
     }
 }

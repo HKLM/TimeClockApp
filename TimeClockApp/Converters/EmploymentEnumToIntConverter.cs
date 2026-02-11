@@ -4,21 +4,21 @@
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is not null and EmploymentStatus)
+            if (value is EmploymentStatus status)
             {
-                return System.Convert.ToInt32(value);
+                return (int)(object)status;
             }
             return value;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is int @int)
-                return (EmploymentStatus)Enum.ToObject(typeof(EmploymentStatus), @int);
-            else if (value is string @str)
-                return (EmploymentStatus)Enum.ToObject(typeof(EmploymentStatus), @str);
-            else
-                return value;
+            return value switch
+            {
+                int @int => (EmploymentStatus)@int,
+                string @str => Enum.Parse<EmploymentStatus>(@str),
+                _ => value
+            };
         }
     }
 }

@@ -14,7 +14,8 @@
         <ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png"  />
         <ToolbarItem x:Name="AddExpenseTypeBtn" Clicked="AddExpenseTypeBtn_Clicked" IconImageSource="post_add.png" />
         <ToolbarItem Command="{Binding ToggleOptionsBoxVisibleCommand}" IconImageSource="settings.png" />
-        <ToolbarItem x:Name="ArchiveButton" Clicked="ArchiveButton_ClickedAsync" IconImageSource="archive.png" Text="Archive" />
+        <ToolbarItem Command="{Binding RefreshCommand}" IconImageSource="refresh.png" />
+        <!--<ToolbarItem x:Name="ArchiveButton" Clicked="ArchiveButton_ClickedAsync" IconImageSource="archive.png" Text="Archive" />-->
     </ContentPage.ToolbarItems>
     <ContentPage.Resources>
         <ResourceDictionary>
@@ -131,12 +132,12 @@
 						Style="{StaticResource LabelSmall}"
 						Text="Show Archived"
 						VerticalTextAlignment="Center" />
-                    <CheckBox
+                    <!--<CheckBox
 						x:Name="ShowArchivedChkBox"
                         Grid.Row="2"
 						Grid.Column="2"
 						CheckedChanged="ShowArchivedChkBox_CheckedChanged"
-						IsChecked="{Binding ShowArchived}" />
+						IsChecked="{Binding ShowArchived}" />-->
                     <Label
                         Grid.Row="3"
 						Style="{StaticResource LabelSmall}"
@@ -223,7 +224,7 @@
                     <Entry
 						Grid.Row="4"
 						Grid.Column="2"
-						FontSize="Small"
+						FontSize="14"
 						Keyboard="Numeric"
 						Placeholder="Amount"
                         x:Name="entryAmmountBox"

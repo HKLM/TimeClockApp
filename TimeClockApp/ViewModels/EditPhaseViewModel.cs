@@ -53,7 +53,6 @@
                 {
                     string phaseNewTitle = PhaseTitle.Trim();
                     phaseService.AddNewPhase(phaseNewTitle);
-                    App.NoticePhaseHasChanged = true;
                     RefreshPhases();
                     App.AlertSvc!.ShowAlert("NOTICE", phaseNewTitle + " saved");
                 }
@@ -75,9 +74,8 @@
                     {
                         string pTitle = SelectedPhase.PhaseTitle;
                         await phaseService.DeletePhase(SelectedPhase);
-                        App.NoticePhaseHasChanged = true;
                         RefreshPhases();
-                        await App.AlertSvc!.ShowAlertAsync("NOTICE", pTitle + " deleted");
+                        await App.AlertSvc!.ShowAlertAsync("NOTICE", pTitle + " deleted").ConfigureAwait(false);
                     }
                 }
             }
@@ -100,7 +98,6 @@
                 {
                     string phaseNewTitle = PhaseTitle.Trim();
                     phaseService.UpdatePhase(phaseNewTitle, PhaseId);
-                    App.NoticePhaseHasChanged = true;
                     RefreshPhases();
                     App.AlertSvc!.ShowAlert("NOTICE", phaseNewTitle + " saved");
                 }

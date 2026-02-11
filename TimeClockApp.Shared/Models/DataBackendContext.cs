@@ -38,8 +38,6 @@ namespace TimeClockApp.Shared.Models
 + "more details.")]
         public DataBackendContext(DbContextOptions<DataBackendContext> options) : base(options) 
         {
-            //Initialize();
-
 #if MSSQL
             Database.Migrate();
             Thread.Sleep(3000);
@@ -139,30 +137,21 @@ namespace TimeClockApp.Shared.Models
             modelBuilder.Entity<Expense>()
                 .Property(t => t.ExpenseDate)
                 .HasColumnType("date");
-            modelBuilder.Entity<TimeCard>()
-                .Property(t => t.TimeCard_DateTime)
+            modelBuilder.Entity<ExpenseType>()
+                .Property(t => t.CategoryName)
+                .HasMaxLength(50)
                 .IsRequired(true);
-            modelBuilder.Entity<TimeCard>()
-                .Property(t => t.TimeCard_Date)
-                .HasColumnType("date")
-                .IsRequired(true);
-            modelBuilder.Entity<TimeCard>()
-                .Property(t => t.TimeCard_StartTime)
-                .HasColumnType("time")
-                .HasPrecision(0);
-            modelBuilder.Entity<TimeCard>()
-                .Property(t => t.TimeCard_EndTime)
-                .HasColumnType("time")
-                .HasPrecision(0);
-            modelBuilder.Entity<TimeCard>()
-                .Property(t => t.TimeCard_EmployeeName)
-                .HasMaxLength(50);
-            modelBuilder.Entity<TimeCard>()
-                .Property(t => t.ProjectName)
-                .HasMaxLength(50);
-            modelBuilder.Entity<TimeCard>()
-                .Property(t => t.PhaseTitle)
-                .HasMaxLength(50);
+            modelBuilder.Entity<TimeCard>(
+                e =>
+                {
+                    e.Property(t => t.TimeCard_DateTime).IsRequired(true);
+                    e.Property(t => t.TimeCard_Date).HasColumnType("date").IsRequired(true);
+                    e.Property(t => t.TimeCard_StartTime).HasColumnType("time").HasPrecision(0);
+                    e.Property(t => t.TimeCard_EndTime).HasColumnType("time").HasPrecision(0);
+                    e.Property(t => t.TimeCard_EmployeeName).HasMaxLength(50);
+                    e.Property(t => t.ProjectName).HasMaxLength(50);
+                    e.Property(t => t.PhaseTitle).HasMaxLength(50);
+                });
             modelBuilder.Entity<Project>()
                 .Property(t => t.ProjectDate)
                 .HasColumnType("date");
@@ -214,18 +203,18 @@ namespace TimeClockApp.Shared.Models
                 .HasDefaultValue(1);
 #if MSSQL
             modelBuilder.Entity<TimeCard>()
-                    .Property(b => b.TimeCard_DateTime)
-                    .HasDefaultValueSql("GETDATE()");
+                .Property(b => b.TimeCard_DateTime)
+                .HasDefaultValueSql("GETDATE()");
             modelBuilder.Entity<TimeCard>()
-                    .Property(t => t.TimeCard_WorkHours)
-                    .HasComputedColumnSql("CONVERT([decimal](4,2),datediff(minute,[TimeCard_StartTime],[TimeCard_EndTime])/(60.0))", stored: true);
+                .Property(t => t.TimeCard_WorkHours)
+                .HasComputedColumnSql("CONVERT([decimal](4,2),datediff(minute,[TimeCard_StartTime],[TimeCard_EndTime])/(60.0))", stored: true);
 #else
             modelBuilder.Entity<TimeCard>()
-                    .Property(b => b.TimeCard_DateTime)
-                    .HasDefaultValueSql("datetime('now', 'localtime')");
+                .Property(b => b.TimeCard_DateTime)
+                .HasDefaultValueSql("datetime('now', 'localtime')");
             modelBuilder.Entity<TimeCard>()
-                    .Property(t => t.TimeCard_WorkHours)
-                    .HasComputedColumnSql("round((strftime('%s', [TimeCard_EndTime]) - strftime('%s', [TimeCard_StartTime])) / 3600.0, 2)", stored: true);
+                .Property(t => t.TimeCard_WorkHours)
+                .HasComputedColumnSql("round((strftime('%s', [TimeCard_EndTime]) - strftime('%s', [TimeCard_StartTime])) / 3600.0, 2)", stored: true);
 #endif
             modelBuilder.Entity<Project>()
                 .Property(b => b.Status)
@@ -244,6 +233,10 @@ namespace TimeClockApp.Shared.Models
 
             modelBuilder.Entity<ExpenseType>()
                 .HasIndex(t => new { t.CategoryName })
+                .IsUnique(true);
+
+            modelBuilder.Entity<Phase>()
+                .HasIndex(t => new { t.PhaseTitle })
                 .IsUnique(true);
 
 #endregion Indexs
@@ -326,7 +319,7 @@ namespace TimeClockApp.Shared.Models
             {
                 ConfigId = 12,
                 Name = "Version",
-                StringValue = "1.7",
+                StringValue = "1.8",
                 Hint = "Application Database version"
             },
             new Config

@@ -16,24 +16,32 @@ namespace TimeClockApp.ViewModels
             configService = new();
         }
 
-        public void OnAppearing()
+        public async Task OnAppearing()
         {
-            RefreshSettings();
+            try
+            {
+                await RefreshSettings();
+            }
+            catch (Exception e)
+            {
+                HasError = true;
+                Log.WriteLine($"{e.Message}\n  -- {e.Source}\n  -- {e.InnerException}", "SettingsPageViewModel.OnAppearing");
+            }
         }
 
         [RelayCommand]
-        private void SaveSetting(Config? item)
+        private async Task SaveSetting(Config? item)
         {
             if (item == null) return;
 
-            if (configService.SaveConfig(item))
+            if (await configService.SaveConfigAsync(item))
             {
                 // Save the AppTheme setting
                 if (item.ConfigId == 13 && item.IntValue.HasValue)
                 {
                     Application.Current!.UserAppTheme = (AppTheme)item.IntValue!.Value;
                 }
-                RefreshSettings();
+                await RefreshSettings();
             }
         }
 
@@ -47,11 +55,21 @@ namespace TimeClockApp.ViewModels
         }
 
         [RelayCommand]
-        private void RefreshSettings()
+        private async Task RefreshSettings()
         {
-            if (SettingsList.Count > 0)
-                SettingsList.Clear();
-            SettingsList = configService.GetSettingsList();
+            try
+            {
+                if (SettingsList.Count > 0)
+                    SettingsList.Clear();
+
+                List<Config> S = await configService.GetSettingsListAsync();
+                SettingsList = S.ToObservableCollection();
+            }
+            catch (Exception e)
+            {
+                HasError = true;
+                Log.WriteLine($"{e.Message}\n  -- {e.Source}\n  -- {e.InnerException}", "SettingsPageViewModel.RefreshSettings");
+            }
         }
 
         [RelayCommand]

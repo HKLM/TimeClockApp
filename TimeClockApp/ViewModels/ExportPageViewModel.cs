@@ -1,9 +1,9 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using CsvHelper;
-using Microsoft.Maui.ApplicationModel.DataTransfer;
 using Microsoft.Maui.Storage;
 using TimeClockApp.Shared;
-using TimeClockApp.Utilities;
+
+#nullable enable
 
 namespace TimeClockApp.ViewModels
 {
@@ -11,8 +11,8 @@ namespace TimeClockApp.ViewModels
     {
         private readonly ExportDataService dataService = new();
         private readonly FileService fhs = new();
-        private readonly ExportUtilities util = new();
-        internal string CSVFilePath { get; set; }
+
+        internal string CSVFilePath { get; set; } = string.Empty;
 
         [ObservableProperty]
         public partial string ExportLog { get; set; } = string.Empty;
@@ -51,6 +51,49 @@ namespace TimeClockApp.ViewModels
             Loading = false;
         }
 
+        static async Task<bool> ArePermissionsGranted(bool ReadPermission, bool ReadWritePermission)
+        {
+            if (ReadPermission)
+            {
+                PermissionStatus readPermissionStatus = await Permissions.CheckStatusAsync<Permissions.StorageRead>();
+                if (readPermissionStatus is not PermissionStatus.Granted)
+                {
+                    if (await App.AlertSvc!.ShowConfirmationAsync("Storage permission is not granted.", "Please grant the READ STORAGE permissions to use this feature.", "OK","CANCEL"))
+                        readPermissionStatus = await Permissions.RequestAsync<Permissions.StorageRead>();
+                }
+                if (readPermissionStatus is PermissionStatus.Granted) return true;
+            }
+            else if (ReadWritePermission)
+            {
+                //PermissionStatus rPermissionStatus = await Permissions.CheckStatusAsync<Permissions.StorageRead>();
+                PermissionStatus wPermissionStatus = await Permissions.CheckStatusAsync<Permissions.StorageWrite>();
+                if (wPermissionStatus is not PermissionStatus.Granted)
+                {
+                    if (await App.AlertSvc!.ShowConfirmationAsync("Storage permission is not granted.", "Please grant the WRITE STORAGE permissions to use this feature.", "OK", "CANCEL"))
+                        wPermissionStatus = await Permissions.RequestAsync<Permissions.StorageWrite>();
+                } 
+                if (wPermissionStatus is PermissionStatus.Granted)
+                    return true;
+            }
+
+            return false;
+        }
+
+        private async Task<FileResult?> SelectFile()
+        {
+            FilePickerFileType customFileType = new(new Dictionary<DevicePlatform, IEnumerable<string>>
+                            {
+                                { DevicePlatform.Android, new[] { "application/zip" } },
+                                { DevicePlatform.WinUI, new[] { ".zip" } },
+                            });
+            FileResult? openResult = await FilePicker.Default.PickAsync(new PickOptions
+            {
+                PickerTitle = "ZIP file to import",
+                FileTypes = customFileType,
+            });
+            return openResult;
+        }
+
         [RelayCommand]
         private async Task ImportData()
         {
@@ -59,22 +102,23 @@ namespace TimeClockApp.ViewModels
             HasError = false;
             try
             {
+                if (!await ArePermissionsGranted(true, false))
+                {
+                    Loading = false;
+                    return;
+                }
+
                 ExportLog = "Preparing for Import ... \n";
 
-                FilePickerFileType customFileType = new(new Dictionary<DevicePlatform, IEnumerable<string>>
-                            {
-                                { DevicePlatform.Android, new[] { "application/zip" } },
-                                { DevicePlatform.WinUI, new[] { ".zip" } },
-                            });
-
-                FileResult result = await FilePicker.PickAsync(new PickOptions
-                {
-                    PickerTitle = "ZIP file to import",
-                    FileTypes = customFileType,
-
-                });
+                FileResult? result = await SelectFile();
                 string fileCopyName = String.Empty;
-                if (result != null)
+                if (result == null)
+                {
+                    ExportLog += "No file selected, import cancelled.\n";
+                    Loading = false;
+                    return;
+                }
+                else
                 {
                     if (File.Exists(result.FullPath))
                         fileCopyName = result.FullPath;
@@ -95,14 +139,11 @@ namespace TimeClockApp.ViewModels
                 ExportLog += "Start Unzip file...\n";
                 ImportDataModel dataModel = new();
 
-                dataModel = util.UnzipArchive(fileCopyName, UnZipPath);
+                dataModel = await dataService.UnzipArchive(fileCopyName, UnZipPath);
                 if (dataModel.IsAnyTrue())
                 {
                     ExportLog += "Done!...\n";
-                    ExportLog += dataService.ImportData(dataModel, ExportLog, OverwriteData);
-                    App.NoticeProjectHasChanged = true;
-                    App.NoticePhaseHasChanged = true;
-                    App.NoticeUserHasChanged = true;
+                    ExportLog += await dataService.ImportData(dataModel, ExportLog, OverwriteData);
                     int icd = dataModel.DeleteCachedFile();
                     ExportLog += "\nCleaned up " + icd + " temp files\n";
                 }
@@ -121,13 +162,13 @@ namespace TimeClockApp.ViewModels
                 HasError = true;
                 Log.WriteLine("ImportData Exception =================\n");
                 string f = TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateExceptionForPopup(ax, "ExportPageViewModel");
-                await dataService.ShowPopupErrorAsync(f, "ABORTING DUE TO ERROR");
+                await dataService.ShowPopupErrorAsync(f, "ABORTING DUE TO ERROR").ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 HasError = true;
                 Log.WriteLine("\nEXCEPTION ERROR\n" + ex.Message + "\n" + ex.InnerException, "ExportPageViewModel");
-                await dataService.ShowPopupErrorAsync("EXCEPTION ERROR\n" + ex.Message + "\n" + ex.InnerException, "ABORTING DUE TO ERROR");
+                await dataService.ShowPopupErrorAsync("EXCEPTION ERROR\n" + ex.Message + "\n" + ex.InnerException, "ABORTING DUE TO ERROR").ConfigureAwait(false);
             }
             finally
             {
@@ -142,6 +183,12 @@ namespace TimeClockApp.ViewModels
             HasError = false;
             try
             {
+                if (!await ArePermissionsGranted(false, true))
+                {
+                    Loading = false;
+                    return;
+                }
+
                 ExportLog = "Preparing for export ... \n";
 
                 //  Create a location for our data
@@ -156,31 +203,32 @@ namespace TimeClockApp.ViewModels
                 catch (Exception ex)
                 {
                     // Log things and move on, don't want to fail just because of a left over lock or something
-                    Log.WriteLine("\nEXPECTED POSSIBLE EXCEPTION\n" + ex.Message + "\n" + ex.InnerException);
+                    Log.WriteLine("\nExportData EXPECTED POSSIBLE EXCEPTION\n" + ex.Message + "\n" + ex.InnerException);
                     ExportLog += ex.Message + "\n";
                 }
 
                 Directory.CreateDirectory(CSVFilePath);
                 ExportLog += "Start Database export\n";
-                Task<string> taskA = Task.Run(() => MakeCSVFilesAsync());
+                Task<string> taskA = MakeCSVFilesAsync();
 
                 //  Zip everything and present a share dialog to the user
                 ExportLog += "Zipping ... \n";
-                await taskA.ContinueWith(async antecedent => await util.CompressAndExportFolder((await antecedent))).Unwrap();
+                await taskA.ContinueWith(async antecedent => await dataService.CompressAndExportFolder((await antecedent))).Unwrap();
 
                 ExportLog += "Done!\n";
+                ExportLog += "Exported File name: " + ExportDataService.ZIPFILENAME + "\nLocation: Downloads folder";
             }
             catch (AggregateException ax)
             {
                 HasError = true;
                 string f = TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateExceptionForPopup(ax, "ExportPageViewModel");
-                await dataService.ShowPopupErrorAsync(f, "ABORTING DUE TO ERROR");
+                await dataService.ShowPopupErrorAsync(f, "ExportData ABORTING DUE TO ERROR").ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 HasError = true;
                 Log.WriteLine("\nEXCEPTION ERROR\n" + ex.Message + "\n" + ex.InnerException);
-                await dataService.ShowPopupErrorAsync("EXCEPTION ERROR\n" + ex.Message + "\n" + ex.InnerException, "ABORTING DUE TO ERROR");
+                await dataService.ShowPopupErrorAsync("EXCEPTION ERROR\n" + ex.Message + "\n" + ex.InnerException, "ExportData ABORTING DUE TO ERROR").ConfigureAwait(false);
             }
             finally
             {
@@ -188,112 +236,112 @@ namespace TimeClockApp.ViewModels
             }
         }
 
-        private async Task<string> MakeCSVFilesAsync()
-        {
-            List<Task> tableTaskList = [];
-            for (int i = 0; i < Enum.GetNames(typeof(SQLTables)).Length; i++)
-            {
-                SQLTables sQL = (SQLTables)i;
-                ExportLog += "Exporting " + sQL.ToString() + " table\n";
-                tableTaskList.Add(CreateFileAsync(sQL, CSVFilePath, sQL.ToString() + ".csv"));
-            }
-            await Task.WhenAll(tableTaskList);
-            ExportLog += "Table export complete\n";
+		private async Task<string> MakeCSVFilesAsync()
+		{
+			List<Task> tableTaskList = [];
+			for (int i = 0; i < Enum.GetNames(typeof(SQLTables)).Length; i++)
+			{
+				SQLTables sQL = (SQLTables)i;
+				ExportLog += "Exporting " + sQL.ToString() + " table\n";
+				tableTaskList.Add(CreateFileAsync(sQL, CSVFilePath, sQL.ToString() + ".csv"));
+			}
+			await Task.WhenAll(tableTaskList);
+			ExportLog += "Table export complete\n";
 
-            return CSVFilePath;
-        }
+			return CSVFilePath;
+		}
 
-        [RequiresUnreferencedCode("Calls DynamicBehavior for Import or Export to CSV.")]
-        private async Task CreateFileAsync(SQLTables table, string filePath, string fileName)
-        {
-            string file = Path.Combine(filePath, fileName);
-            switch (table)
-            {
-                case SQLTables.TimeCard:
-                    List<TimeCard> w = await dataService.BackupGetTimeCard();
-                    await using (StreamWriter writer = new(file))
-                    await using (CsvWriter csv = new(writer, CultureInfo.InvariantCulture))
-                    {
-                        csv.Context.RegisterClassMap<TimeCardMap>();
-                        await csv.WriteRecordsAsync(w);
-                        await csv.FlushAsync();
-                    }
-                    return;
-                case SQLTables.Employee:
-                    List<Employee> emp = await dataService.BackupGetEmployee();
-                    await using (StreamWriter writer = new(file))
-                    await using (CsvWriter csv = new(writer, CultureInfo.InvariantCulture))
-                    {
-                        csv.Context.RegisterClassMap<EmployeeMap>();
-                        await csv.WriteRecordsAsync(emp);
-                        await csv.FlushAsync();
-                    }
-                    return;
-                case SQLTables.Project:
-                    List<Project> pr = await dataService.BackupGetProject();
-                    await using (StreamWriter writer = new(file))
-                    await using (CsvWriter csv = new(writer, CultureInfo.InvariantCulture))
-                    {
-                        csv.Context.RegisterClassMap<ProjectMap>();
-                        await csv.WriteRecordsAsync(pr);
-                        await csv.FlushAsync();
-                    }
-                    return;
-                case SQLTables.Phase:
-                    List<Phase> ph = await dataService.BackupGetPhase();
-                    await using (StreamWriter writer = new(file))
-                    await using (CsvWriter csv = new(writer, CultureInfo.InvariantCulture))
-                    {
-                        csv.Context.RegisterClassMap<PhaseMap>();
-                        await csv.WriteRecordsAsync(ph);
-                        await csv.FlushAsync();
-                    }
-                    return;
-                case SQLTables.Config:
-                    List<Config> c = await dataService.BackupGetConfig();
-                    await using (StreamWriter writer = new(file))
-                    await using (CsvWriter csv = new(writer, CultureInfo.InvariantCulture))
-                    {
-                        csv.Context.RegisterClassMap<ConfigMap>();
-                        await csv.WriteRecordsAsync(c);
-                        await csv.FlushAsync();
-                    }
-                    return;
-                case SQLTables.Expense:
-                    List<Expense> e = await dataService.BackupGetExpense();
-                    await using (StreamWriter writer = new(file))
-                    await using (CsvWriter csv = new(writer, CultureInfo.InvariantCulture))
-                    {
-                        csv.Context.RegisterClassMap<ExpenseMap>();
-                        await csv.WriteRecordsAsync(e);
-                        await csv.FlushAsync();
-                    }
-                    return;
-                case SQLTables.ExpenseType:
-                    List<ExpenseType> et = await dataService.BackupGetExpenseType();
-                    await using (StreamWriter writer = new(file))
-                    await using (CsvWriter csv = new(writer, CultureInfo.InvariantCulture))
-                    {
-                        csv.Context.RegisterClassMap<ExpenseTypeMap>();
-                        await csv.WriteRecordsAsync(et);
-                        await csv.FlushAsync();
-                    }
-                    return;
-                case SQLTables.Version:
-                    using (StreamWriter outputFile = new StreamWriter(Path.Combine(filePath, "FILE_ID.DIZ")))
-                    {
-                        await outputFile.WriteAsync(dataService.GetVERSIONCHECKNUMBER.ToString());
-                    }
-                    return;
+		[RequiresUnreferencedCode("Calls DynamicBehavior for Import or Export to CSV.")]
+		private async Task CreateFileAsync(SQLTables table, string filePath, string fileName)
+		{
+			string file = Path.Combine(filePath, fileName);
+			switch (table)
+			{
+				case SQLTables.TimeCard:
+					List<TimeCard> w = await dataService.BackupGetTimeCard();
+					using (StreamWriter writer = new(file))
+					using (CsvWriter csv = new(writer, CultureInfo.InvariantCulture))
+					{
+						csv.Context.RegisterClassMap<TimeCardMap>();
+						await csv.WriteRecordsAsync(w);
+						await csv.FlushAsync().ConfigureAwait(false);
+					}
+					return;
+				case SQLTables.Employee:
+					List<Employee> emp = await dataService.BackupGetEmployee();
+					using (StreamWriter writer = new(file))
+					using (CsvWriter csv = new(writer, CultureInfo.InvariantCulture))
+					{
+						csv.Context.RegisterClassMap<EmployeeMap>();
+						await csv.WriteRecordsAsync(emp);
+						await csv.FlushAsync().ConfigureAwait(false);
+					}
+					return;
+				case SQLTables.Project:
+					List<Project> pr = await dataService.BackupGetProject();
+					using (StreamWriter writer = new(file))
+					using (CsvWriter csv = new(writer, CultureInfo.InvariantCulture))
+					{
+						csv.Context.RegisterClassMap<ProjectMap>();
+						await csv.WriteRecordsAsync(pr);
+						await csv.FlushAsync().ConfigureAwait(false);
+					}
+					return;
+				case SQLTables.Phase:
+					List<Phase> ph = await dataService.BackupGetPhase();
+					using (StreamWriter writer = new(file))
+					using (CsvWriter csv = new(writer, CultureInfo.InvariantCulture))
+					{
+						csv.Context.RegisterClassMap<PhaseMap>();
+						await csv.WriteRecordsAsync(ph);
+						await csv.FlushAsync().ConfigureAwait(false);
+					}
+					return;
+				case SQLTables.Config:
+					List<Config> c = await dataService.BackupGetConfig();
+					using (StreamWriter writer = new(file))
+					using (CsvWriter csv = new(writer, CultureInfo.InvariantCulture))
+					{
+						csv.Context.RegisterClassMap<ConfigMap>();
+						await csv.WriteRecordsAsync(c);
+						await csv.FlushAsync().ConfigureAwait(false);
+					}
+					return;
+				case SQLTables.Expense:
+					List<Expense> e = await dataService.BackupGetExpense();
+					using (StreamWriter writer = new(file))
+					using (CsvWriter csv = new(writer, CultureInfo.InvariantCulture))
+					{
+						csv.Context.RegisterClassMap<ExpenseMap>();
+						await csv.WriteRecordsAsync(e);
+						await csv.FlushAsync().ConfigureAwait(false);
+					}
+					return;
+				case SQLTables.ExpenseType:
+					List<ExpenseType> et = await dataService.BackupGetExpenseType();
+					using (StreamWriter writer = new(file))
+					using (CsvWriter csv = new(writer, CultureInfo.InvariantCulture))
+					{
+						csv.Context.RegisterClassMap<ExpenseTypeMap>();
+						await csv.WriteRecordsAsync(et);
+						await csv.FlushAsync().ConfigureAwait(false);
+					}
+					return;
+				case SQLTables.Version:
+					using (StreamWriter outputFile = new StreamWriter(Path.Combine(filePath, "FILE_ID.DIZ")))
+					{
+						await outputFile.WriteAsync(dataService.GetVERSIONCHECKNUMBER.ToString());
+					}
+					return;
 
-                default:
-                    break;
-            }
+				default:
+					break;
+			}
 
-            return;
-        }
+			return;
+		}
 
-        [RelayCommand]
+		[RelayCommand]
         private async Task OnBackupDBRequest()
         {
             Loading = true;
@@ -361,19 +409,19 @@ namespace TimeClockApp.ViewModels
             {
                 HasError = true;
                 Log.WriteLine(io.Message + "\n" + io.InnerException + "\n", "Backup");
-                await dataService.ShowPopupErrorAsync(io.Message + "\n" + io.InnerException, "BACKUP1 ABORTING BACKUP DUE TO ERROR");
+                await dataService.ShowPopupErrorAsync(io.Message + "\n" + io.InnerException, "BACKUP1 ABORTING BACKUP DUE TO ERROR").ConfigureAwait(false);
             }
             catch (AggregateException ax)
             {
                 HasError = true;
                 string f = TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateExceptionForPopup(ax, "ExportPageViewModel");
-                await dataService.ShowPopupErrorAsync(f, "BACKUP2 ABORTING DUE TO ERROR");
+                await dataService.ShowPopupErrorAsync(f, "BACKUP2 ABORTING DUE TO ERROR").ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 HasError = true;
                 Log.WriteLine("\nEXCEPTION ERROR\n" + ex.Message + "\n" + ex.InnerException, "ExportPageViewModel");
-                await dataService.ShowPopupErrorAsync("EXCEPTION ERROR\n" + ex.Message + "\n" + ex.InnerException, "BACKUP3 ABORTING DUE TO ERROR");
+                await dataService.ShowPopupErrorAsync("EXCEPTION ERROR\n" + ex.Message + "\n" + ex.InnerException, "BACKUP3 ABORTING DUE TO ERROR").ConfigureAwait(false);
             }
             finally
             {

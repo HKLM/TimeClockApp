@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.EntityFrameworkCore;
 
 #nullable enable
 
@@ -6,6 +7,7 @@ namespace TimeClockApp.Services
 {
     public class ReportPageService : PayrollService
     {
+        [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions))]
         public async Task<List<TimeSheet>> RunFullReportAsync(bool useEmployeeFilter, bool useProjectFilter, bool usePhaseFilter, bool useDateFilter, List<Employee> employeeList, Project? project, Phase? phase, DateOnly? start, DateOnly? end)
         {
             List<TimeSheet> t = [];
@@ -18,7 +20,7 @@ namespace TimeClockApp.Services
             foreach (Employee emp in employeeList)
             {
                 TimeSheet sheet = new TimeSheet(emp.EmployeeId, start.Value, end.Value, emp.Employee_Name);
-                sheet.TimeCards = await ReportListPaidTimeCardsForPayPeriodAsync(useProjectFilter, usePhaseFilter, useDateFilter, emp, project, phase, start, end).ConfigureAwait(false);
+                sheet.TimeCards = await ReportListPaidTimeCardsForPayPeriodAsync(useProjectFilter, usePhaseFilter, useDateFilter, emp, project, phase, start, end);
 
                 if (sheet.TimeCards.Count > 0)
                 {
@@ -68,10 +70,10 @@ namespace TimeClockApp.Services
             .Where(e => e.Employee_Employed != EmploymentStatus.Deleted)
             .ToList();
 
+        [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions))]
         protected Task<List<TimeCard>> ReportListPaidTimeCardsForPayPeriodAsync(bool useProjectFilter, bool usePhaseFilter, bool useDateFilter, Employee employee, Project? project, Phase? phase, DateOnly? start, DateOnly? end)
         {
             IQueryable<TimeCard> q = Context.TimeCard
-                .TagWith("ReportListPaidTimeCardsForPayPeriodAsync")
                 .AsNoTrackingWithIdentityResolution()
                 .AsQueryable();
 

@@ -16,7 +16,6 @@
             catch (Exception e)
             {
                 Log.WriteLine($"{e.Message}\n{e.InnerException}");
-                //throw;
             }
             return false;
         }

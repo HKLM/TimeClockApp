@@ -11,16 +11,14 @@ namespace TimeClockApp.Services
                 .Where(item => item.ExpenseTypeId > 1)
                 .OrderBy(item => item.CategoryName)];
 
-        public ObservableCollection<Expense> GetAllExpenses(int projectId, bool showRecent = true) =>
-            Context.Expense
-                .Where(item => item.ProjectId == projectId
-                    && item.ExpenseTypeId > 1
-                    && item.IsRecent == showRecent)
-                .OrderByDescending(e => e.ExpenseDate)
-                .ToObservableCollection();
+        public async Task<List<ExpenseType>> GetExpenseTypeListAsync() =>
+            await Context.ExpenseType
+                .Where(item => item.ExpenseTypeId > 1)
+                .OrderBy(item => item.CategoryName)
+                .ToListAsync();
 
-        public Task<List<Expense>> GetRecentExpensesListAsync(int projectId, bool showRecent = true, int numOfResults = 20) =>
-            Context.Expense
+        public async Task<List<Expense>> GetRecentExpensesListAsync(int projectId, bool showRecent = true, int numOfResults = 20) =>
+            await Context.Expense
                 .Where(item => item.ProjectId == projectId
                     && item.ExpenseTypeId > 1
                     && item.IsRecent == showRecent)
@@ -28,26 +26,12 @@ namespace TimeClockApp.Services
                 .Take(numOfResults)
                 .ToListAsync();
 
-        public Task<List<Expense>> GetAllExpensesListAsync(int numOfResults) => 
-            Context.Expense
+        public async Task<List<Expense>> GetAllExpensesListAsync(int numOfResults) =>
+            await Context.Expense
                 .Where(item => item.ExpenseTypeId > 1)
                 .OrderByDescending(e => e.ExpenseDate)
                 .Take(numOfResults)
                 .ToListAsync();
-
-        public Task<List<Expense>> ExpensesListAsync(int numOfResults) => 
-            Context.Expense
-                .Where(item => item.ExpenseTypeId > 1
-                    && item.IsRecent == true)
-                .OrderByDescending(e => e.ExpenseDate)
-                .Take(numOfResults)
-                .ToListAsync();
-
-
-
-        public async Task<List<Expense>> GetExpenseListAsync(int? projectId, bool showRecent = true, bool showAll = false, int numOfResults = 20) => showAll
-        ? await Task.Run(() => GetAllExpensesListAsync(numOfResults)).ConfigureAwait(false)
-        : await Task.Run(() => GetRecentExpensesListAsync(projectId.Value, showRecent, numOfResults)).ConfigureAwait(false);
 
         public bool UpdateExpense(Expense newExpense)
         {
@@ -87,31 +71,31 @@ namespace TimeClockApp.Services
             {
                 origExpense.ExpenseTypeId = 1;
                 Context.Update<Expense>(origExpense);
-                return await Context.SaveChangesAsync().ConfigureAwait(false) > 0;
+                return await Context.SaveChangesAsync() > 0;
             }
             return false;
         }
 
-        public bool ArchiveExpense(ObservableCollection<Expense> expenseList)
-        {
-            if (expenseList == null || expenseList.Count == 0)
-                return false;
+        //public bool ArchiveExpense(ObservableCollection<Expense> expenseList)
+        //{
+        //    if (expenseList == null || expenseList.Count == 0)
+        //        return false;
 
-            try
-            {
-                foreach (Expense item in expenseList)
-                {
-                    item.IsRecent = false;
-                    Context.Update<Expense>(item);
-                }
-                return Context.SaveChanges() > 0;
-            }
-            catch (Exception ex)
-            {
-                Log.WriteLine(ex.Message + "\n" + ex.InnerException);
-                ShowPopupError(ex.Message + "\n" + ex.InnerException, "Exception");
-            }
-            return false;
-        }
+        //    try
+        //    {
+        //        foreach (Expense item in expenseList)
+        //        {
+        //            item.IsRecent = false;
+        //            Context.Update<Expense>(item);
+        //        }
+        //        return Context.SaveChanges() > 0;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Log.WriteLine(ex.Message + "\n" + ex.InnerException);
+        //        ShowPopupError(ex.Message + "\n" + ex.InnerException, "Exception");
+        //    }
+        //    return false;
+        //}
     }
 }

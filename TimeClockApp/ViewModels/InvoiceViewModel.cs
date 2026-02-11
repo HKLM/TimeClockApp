@@ -14,7 +14,8 @@ namespace TimeClockApp.ViewModels
 
         [ObservableProperty]
         public partial bool UseDateFilter { get; set; } = true;
-
+        [ObservableProperty]
+        public partial bool AllExpenseTypes { get; set; }
         [ObservableProperty]
         public partial DateOnly StartDate { get; set; } = DateOnly.FromDateTime(DateTime.Now.AddDays(-7));
         [ObservableProperty]
@@ -24,7 +25,7 @@ namespace TimeClockApp.ViewModels
         private readonly DateTime pickerMaxDate = DateTime.Now;
         public DateTime PickerMaxDate { get => pickerMaxDate; }
 #endregion
-        
+
         //For paid timecards active during the invoice period and already have a expense entry for the WC
         private double TotalPaidGrossPay = 0.00;
         //For unpaid timecards active during the invoice period. This will be used to estimate the WC cost.
@@ -46,7 +47,7 @@ namespace TimeClockApp.ViewModels
         [NotifyPropertyChangedFor(nameof(GetTotalLaborBurden))]
         [NotifyPropertyChangedFor(nameof(GetTotalInvoice))]
         public partial double TotalLaborBurden { get; set; } = 0.00;
-        public double GetTotalLaborBurden => TotalLaborBurden = TotalPaidGrossPay + TotalUnpaidGrossPay;
+        public double GetTotalLaborBurden => TotalPaidGrossPay + TotalUnpaidGrossPay;
 
         // UI display value
         [ObservableProperty]
@@ -56,11 +57,7 @@ namespace TimeClockApp.ViewModels
         public partial double OverheadRate { get; set; } = 0.00;
         public double GetTotalOverhead
         {
-            get
-            {
-                TotalOverhead = OverheadRate * (TotalEstimatedWC + TotalPaidWC + GetTotalOtherOverhead);
-                return TotalOverhead;
-            }
+            get => OverheadRate * (TotalEstimatedWC + TotalPaidWC + GetTotalOtherOverhead);
         }
 
         // UI display value
@@ -71,11 +68,7 @@ namespace TimeClockApp.ViewModels
         public partial double ProfitRate { get; set; } = 0.00;
         public double GetTotalProfit
         {
-            get
-            {
-                TotalProfit = ProfitRate * (TotalExpenses + GetTotalLaborBurden + GetTotalOverhead + GetTotalOtherFee);
-                return TotalProfit;
-            }
+            get => ProfitRate * (TotalExpenses + GetTotalLaborBurden + GetTotalOverhead + TotalOtherFee);
         }
 
         [ObservableProperty]
@@ -84,15 +77,13 @@ namespace TimeClockApp.ViewModels
 
         public double GetTotalInvoice
         {
-            get { return TotalExpenses + GetTotalLaborBurden + GetTotalOverhead + GetTotalProfit; }
+            get { return TotalExpenses + GetTotalLaborBurden + GetTotalOverhead + GetTotalProfit + TotalOtherFee; }
         }
 #region TODO
+
         //OtherFee (markup) for other fee, tax, etc
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(GetTotalProfit))]
-        [NotifyPropertyChangedFor(nameof(GetTotalInvoice))]
-        public partial double TotalOtherFee { get; set; } = 0;
-        public double GetTotalOtherFee => TotalOtherFee;
+        public partial double TotalOtherFee { get; set; } = 0.00;
 
         //display name for OtherFee
         [ObservableProperty]
@@ -101,12 +92,14 @@ namespace TimeClockApp.ViewModels
         //OtherFee for other fee, tax, etc
         [ObservableProperty]
         public partial double? TotalOtherOverhead { get; set; }
+        //TODO
         public double GetTotalOtherOverhead => TotalOtherOverhead ?? 0;
 
         //display name for OtherFee
         [ObservableProperty]
         public partial string? TotalOtherOverheadName { get; set; }
 #endregion
+
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(GetTotalInvoice))]
         public partial double TotalExpenses { get; set; } = 0.00;
@@ -140,24 +133,31 @@ namespace TimeClockApp.ViewModels
 
         public async Task OnAppearing()
         {
-            PickerMinDate = invoiceData.GetAppFirstRunDate();
-            WCRate = invoiceData.GetWCRate();
-            ProfitRate = invoiceData.GetProfitRate();
-            OverheadRate = invoiceData.GetOverheadRate();
-            List<Project> p = await invoiceData.GetProjectsListAsync();
-            ProjectList = p.ToObservableCollection();
-            var tcp = invoiceData.GetCurrentProjectEntityAsync();
-            Project cp = await tcp;
-            SelectedProject = cp;
-        }
+			Loading = true;
+			HasError = false;
+            try
+            {
+                PickerMinDate = invoiceData.GetAppFirstRunDate();
+                WCRate = await invoiceData.GetWCRateAsync();
+                ProfitRate = await invoiceData.GetProfitRateAsync();
+                TotalOtherOverhead = await invoiceData.GetOverheadRateAsync();
+                List<Project> p = await invoiceData.GetProjectsListAsync();
+                ProjectList = p.ToObservableCollection();
+                SelectedProject = await invoiceData.GetCurrentProjectEntityAsync();
+            }
+            catch (Exception e)
+            {
+                HasError = true;
+                Log.WriteLine($"{e.Message}\n  -- {e.Source}\n  -- {e.InnerException}", "InvoiceViewModel.OnAppearing");
+            }
+			finally
+			{
+				Loading = false;
+			}
+		}
 
         [RelayCommand]
         private async Task MakeInvoice()
-        {
-            await Task.Run(() => TheInvoice());
-        }
-
-        private async Task TheInvoice()
         {
             if (Loading) return;
 
@@ -168,33 +168,30 @@ namespace TimeClockApp.ViewModels
             {
                 if (SelectedProject == null)
                 {
-                    var p = invoiceData.ShowPopupErrorAsync("Select a Project to continue.", "NOTICE");
-                    await p;
+                    await invoiceData.ShowPopupErrorAsync("Select a Project to continue.", "NOTICE").ConfigureAwait(false);
                     return;
                 }
                 ResetItems();
                 if (SelectedPhase == null)
                     UsePhaseFilter = false;
-                List<TimeSheet> t = await invoiceData.RunInvoiceReportAsync(UsePhaseFilter, SelectedProject, SelectedPhase, StartDate, EndDate);
-                TimeSheetList = t;
-                foreach (TimeSheet i in TimeSheetList)
+                List<TimeSheet> timeSheetList = await invoiceData.RunInvoiceReportAsync(UsePhaseFilter, SelectedProject, SelectedPhase, StartDate, EndDate); 
+                TimeSheetList = timeSheetList;
+                foreach (TimeSheet sheet in timeSheetList)
                 {
-                    TotalUnpaidGrossPay += i.TotalGrossPay;
-                    CardList.AddRange(i.TimeCards);
+                    TotalUnpaidGrossPay += sheet.TotalGrossPay;
+                    CardList.AddRange(sheet.TimeCards);
                 }
-                double te = await invoiceData.GetProjectExpensesAmountAsync(SelectedProject.ProjectId, StartDate, EndDate);
-                TotalExpenses = te;
+                //FIX
+                TotalExpenses = await invoiceData.GetProjectExpensesAmountAsync(SelectedProject.ProjectId, StartDate, EndDate, AllExpenseTypes);
+                TotalLaborBurden = GetTotalLaborBurden;
+                TotalOverhead = GetTotalOverhead;
+                TotalProfit = GetTotalProfit;
                 TotalInvoice = GetTotalInvoice;
-            }
-            catch (AggregateException ax)
-            {
-                HasError = true;
-                TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateException(ax);
             }
             catch (Exception e)
             {
                 HasError = true;
-                Log.WriteLine(e.Message + "\n  -- " + e.Source + "\n  -- " + e.InnerException);
+                Log.WriteLine($"{e.Message}\n  -- {e.Source}\n  -- {e.InnerException}", "InvoiceViewModel.MakeInvoice");
             }
             finally
             {
@@ -203,14 +200,14 @@ namespace TimeClockApp.ViewModels
         }
 
         //TODO - Save invoice as a PDF file
-/*
-        [RelayCommand]
-        private async Task MakePDFInvoice()
-        {
-            await Task.Run(() => MakePDF());
-        }
+        /*
+                [RelayCommand]
+                private async Task MakePDFInvoice()
+                {
+                    await Task.Run(() => MakePDF());
+                }
 
-*/
+        */
         [RelayCommand]
         private async Task GoToInvoiceDetailTimecards()
         {
@@ -218,24 +215,20 @@ namespace TimeClockApp.ViewModels
             {
                 try
                 {
-                    InvoiceDetailTimecardsViewModel x = ServiceHelper.GetService<InvoiceDetailTimecardsViewModel>();
+                    InvoiceDetailTimecardsViewModel viewModel = ServiceHelper.GetService<InvoiceDetailTimecardsViewModel>();
                     _SharedService.Add<List<TimeCard>>("CardList", CardList);
-                    await Task.Run(() => MainThread.BeginInvokeOnMainThread(async () => await App.Current.Windows[0].Page!.Navigation.PushAsync(new InvoiceDetailTimecards(x), true)));
-                }
-                catch (AggregateException ax)
-                {
-                    string z = TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateExceptionForPopup(ax, "InvoiceViewModel");
-                    await App.AlertSvc!.ShowAlertAsync("Exception", z);
+                    await MainThread.InvokeOnMainThreadAsync(() => App.Current!.Windows[0].Page!.Navigation.PushAsync(new InvoiceDetailTimecards(viewModel), true));
                 }
                 catch (Exception ex)
                 {
-                    Log.WriteLine("EXCEPTION ERROR\n" + ex.Message + "\n" + ex.InnerException, "InvoiceViewModel");
-                    await App.AlertSvc!.ShowAlertAsync("Exception", ex.Message + "\n" + ex.InnerException);
+                    HasError = true;
+                    Log.WriteLine($"EXCEPTION ERROR\n{ex.Message}\n{ex.InnerException}", "InvoiceViewModel");
+                    await App.AlertSvc!.ShowAlertAsync("Exception", $"{ex.Message}\n{ex.InnerException}").ConfigureAwait(false);
                 }
             }
             else
             {
-                await App.AlertSvc!.ShowAlertAsync("INFO", "No data found.");
+                await App.AlertSvc!.ShowAlertAsync("INFO", "No data found.").ConfigureAwait(false);
             }
         }
 
@@ -244,30 +237,29 @@ namespace TimeClockApp.ViewModels
         {
             if (SelectedProject != null && App.Current != null)
             {
-                ExpenseList = new();
                 try
                 {
-                    List<Expense> l = await invoiceData.GetProjectExpensesListAsync(SelectedProject.ProjectId, StartDate, EndDate);
-                    ExpenseList = l;
+                    ExpenseList = await invoiceData.GetProjectExpensesListAsync(SelectedProject.ProjectId, StartDate, EndDate, AllExpenseTypes);
                     if (ExpenseList is null || !ExpenseList.Any())
                     {
-                        await App.AlertSvc!.ShowAlertAsync("INFO", "No data to view.");
+                        await App.AlertSvc!.ShowAlertAsync("INFO", "No data to view.").ConfigureAwait(false);
                         return;
                     }
-                    InvoiceDetailExpensesViewModel x = ServiceHelper.GetService<InvoiceDetailExpensesViewModel>();
-
+                    InvoiceDetailExpensesViewModel viewModel = ServiceHelper.GetService<InvoiceDetailExpensesViewModel>();
                     _SharedService.Add<List<Expense>>("ExpenseList", ExpenseList);
-                    MainThread.BeginInvokeOnMainThread(async () => await App.Current.Windows[0].Page!.Navigation.PushAsync(new InvoiceDetailExpenses(x), true));
+                    await MainThread.InvokeOnMainThreadAsync(() => App.Current!.Windows[0].Page!.Navigation.PushAsync(new InvoiceDetailExpenses(viewModel), true));
                 }
                 catch (AggregateException ax)
                 {
-                    string z = TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateExceptionForPopup(ax, "InvoiceViewModel");
-                    await App.AlertSvc!.ShowAlertAsync("Exception", z);
+                    HasError = true;
+                    string message = TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateExceptionForPopup(ax, "InvoiceViewModel");
+                    await App.AlertSvc!.ShowAlertAsync("Exception", message).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
-                    Log.WriteLine("EXCEPTION ERROR\n" + ex.Message + "\n" + ex.InnerException, "InvoiceViewModel");
-                    await App.AlertSvc!.ShowAlertAsync("Exception", ex.Message + "\n" + ex.InnerException);
+                    HasError = true;
+                    Log.WriteLine($"EXCEPTION ERROR\n{ex.Message}\n{ex.InnerException}", "InvoiceViewModel");
+                    await App.AlertSvc!.ShowAlertAsync("Exception", $"{ex.Message}\n{ex.InnerException}").ConfigureAwait(false);
                 }
             }
         }
@@ -286,8 +278,6 @@ namespace TimeClockApp.ViewModels
             TotalUnpaidGrossPay = 0;
             TotalPaidGrossPay = 0;
             TotalPaidWC = 0;
-            TotalOtherFee = 0;
-            TotalOtherFeeName = null;
 
             CardList.Clear();
         }

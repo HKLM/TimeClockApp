@@ -40,7 +40,7 @@
 
         [ObservableProperty]
         public partial DateOnly ExpenseDate { get; set; }
-        #region "DatePicker Min/Max Bindings"
+#region "DatePicker Min/Max Bindings"
         public DateTime PickerMinDate { get; set; }
         private readonly DateTime pickerMaxDate = DateTime.Now;
         public DateTime PickerMaxDate { get => pickerMaxDate; }
@@ -86,12 +86,10 @@
         {
             //Only get data from DB once, unless it has been notified that it has changed
             ProjectList ??= [];
-            if (!ProjectList.Any() || App.NoticeProjectHasChanged)
-                ProjectList = dataService.GetAllProjectsList(IsAdmin);
+            ProjectList = dataService.GetAllProjectsList(IsAdmin);
 
             PhaseList ??= [];
-            if (!PhaseList.Any() || App.NoticePhaseHasChanged)
-                PhaseList = dataService.GetPhaseList();
+            PhaseList = dataService.GetPhaseList();
 
             ExpenseTypeList ??= [];
             List<ExpenseType> x = dataService.GetExpenseTypeList();
@@ -105,7 +103,7 @@
                 return;
             if (string.IsNullOrEmpty(SelectedProject.Name))
             {
-                await App.AlertSvc!.ShowAlertAsync("NOTICE", "This record can not be edited. This maybe due to the Project has been archived and only a Admin can edit this record.");
+                await App.AlertSvc!.ShowAlertAsync("NOTICE", "This record can not be edited. This maybe due to the Project has been archived and only a Admin can edit this record.").ConfigureAwait(false);
                 return;
             }
 
@@ -124,15 +122,11 @@
 
                 if (dataService.UpdateExpense(ExpenseItem))
                 {
-                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "Saved");
+                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "Saved").ConfigureAwait(false);
                     Refresh();
                 }
                 else
-                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "Failed to save Expense");
-            }
-            catch (AggregateException ax)
-            {
-                TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateException(ax);
+                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "Failed to save Expense").ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -157,12 +151,8 @@
                         await Shell.Current.GoToAsync("..");
                     }
                     else
-                        await App.AlertSvc!.ShowAlertAsync("NOTICE", "Failed to delete Expense");
+                        await App.AlertSvc!.ShowAlertAsync("NOTICE", "Failed to delete Expense").ConfigureAwait(false);
                 }
-            }
-            catch (AggregateException ax)
-            {
-                TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateException(ax);
             }
             catch (Exception ex)
             {

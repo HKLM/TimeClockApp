@@ -18,18 +18,12 @@ public class TimeCardDayTotal
     {
         _totalWorkHours = totalWorkHours;
         RegTotalHours = Math.Clamp(totalWorkHours, 0.0, 8.0);
-        if (totalWorkHours > 8)
-        {
-            double z = totalWorkHours - 8;
-            if (z > 4)
-            {
-                TotalOTHours = 4;
-                TotalOT2Hours = Math.Max(0.0, z - 4);
-            }
-            else
-            {
-                TotalOTHours = Math.Clamp(z, 0.0, 4.0);
-            }
-        }
+
+        if (totalWorkHours <= 8)
+            return;
+
+        double overtime = totalWorkHours - 8;
+        TotalOTHours = Math.Min(overtime, 4.0);
+        TotalOT2Hours = Math.Max(0.0, overtime - 4.0);
     }
 }

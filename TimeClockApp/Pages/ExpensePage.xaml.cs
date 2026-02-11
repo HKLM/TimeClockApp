@@ -14,7 +14,15 @@ public partial class ExpensePage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        await viewModel.OnAppearing();
+
+        try
+        {
+            await viewModel.OnAppearing();
+        }
+        catch (Exception ex)
+        {
+            Log.WriteLine($"EXCEPTION ERROR\n{ex.Message}\n{ex.InnerException}", "ExpensePage");
+        }
     }
 
     private async void ExpenseEditAction_Clicked(object sender, EventArgs e)
@@ -29,16 +37,16 @@ public partial class ExpensePage : ContentPage
         }
     }
 
-    private async void ArchiveButton_ClickedAsync(object sender, EventArgs e)
-    {
-        if (await App.AlertSvc.ShowConfirmationAsync("Notice", "Do you want to Archive all currently displayed expenses?"))
-            viewModel?.ArchiveExpenseListCommand.Execute(null);
-    }
+    //private async void ArchiveButton_ClickedAsync(object sender, EventArgs e)
+    //{
+    //    if (await App.AlertSvc.ShowConfirmationAsync("Notice", "Do you want to Archive all currently displayed expenses?"))
+    //        viewModel?.ArchiveExpenseListCommand.Execute(null);
+    //}
 
-    private void ShowArchivedChkBox_CheckedChanged(object sender, CheckedChangedEventArgs e)
-    {
-        viewModel?.ToggleShowArchivedCommand.Execute(e.Value);
-    }
+    //private void ShowArchivedChkBox_CheckedChanged(object sender, CheckedChangedEventArgs e)
+    //{
+    //    viewModel?.ToggleShowArchivedCommand.Execute(e.Value);
+    //}
 
     private void ShowOnlyProjectChkBox_CheckedChanged(object sender, CheckedChangedEventArgs e)
     {

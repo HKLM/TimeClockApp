@@ -16,14 +16,14 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
             });
-        builder.Services.AddTransient<DataBackendContext>((services) => new());
+        builder.Services.AddSingleton<DataBackendContext>((services) => new());
 
         builder.Services.AddSingleton<IAlertService, AlertService>();
         builder.Services.AddSingleton<ISharedService, SharedService>();
 
         builder.Services.AddSingleton<TimeCardService>();
         builder.Services.AddTransient<TimeCardPageViewModel>();
-        builder.Services.AddSingleton<TimeCardPage>();
+        builder.Services.AddTransient<TimeCardPage>();
 
         builder.Services.AddSingleton<EditTimeCardService>();
         builder.Services.AddTransient<EditTimeCardViewModel>();
@@ -34,28 +34,29 @@ public static class MauiProgram
 
         builder.Services.AddSingleton<PayrollService>();
         builder.Services.AddTransient<PayrollPageViewModel>();
-        builder.Services.AddSingleton<PayrollPage>();
+        builder.Services.AddTransient<PayrollPage>();
 
         builder.Services.AddTransient<PayrollDetailViewModel>();
-        builder.Services.AddSingleton<PayrollDetailPage>();
+        builder.Services.AddTransient<PayrollDetailPage>();
 
         builder.Services.AddSingleton<ExpenseService>();
         builder.Services.AddTransient<ExpenseViewModel>();
         builder.Services.AddSingleton<ExpensePage>();
 
         builder.Services.AddTransient<EditExpenseTypeViewModel>();
-        builder.Services.AddSingleton<EditExpenseTypeTab>();
+        builder.Services.AddTransient<EditExpenseTypeTab>();
 
         builder.Services.AddTransient<EditExpenseTypePage>();
 
         builder.Services.AddTransient<TeamEmployeesViewModel>();
-        builder.Services.AddSingleton<TeamEmployeesPage>();
+        builder.Services.AddTransient<TeamEmployeesPage>();
 
         builder.Services.AddTransient<TimeCardManagerViewModel>();
-        builder.Services.AddSingleton<TimeCardManagerPage>();
+        builder.Services.AddTransient<TimeCardManagerPage>();
 
+        builder.Services.AddSingleton<ReportPageService>();
         builder.Services.AddTransient<ReportPageViewModel>();
-        builder.Services.AddSingleton<ReportPage>();
+        builder.Services.AddTransient<ReportPage>();
 
         builder.Services.AddSingleton<InvoiceService>();
         builder.Services.AddTransient<InvoiceViewModel>();

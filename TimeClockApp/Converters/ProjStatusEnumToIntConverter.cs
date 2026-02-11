@@ -4,21 +4,21 @@
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is not null and ProjectStatus)
+            if (value is ProjectStatus status)
             {
-                return System.Convert.ToInt32(value);
+                return (int)status;
             }
             return value;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is int @int)
-                return (ProjectStatus)Enum.ToObject(typeof(ProjectStatus), @int);
-            else if (value is string @str)
-                return (ProjectStatus)Enum.ToObject(typeof(ProjectStatus), @str);
-            else
-                return value;
+            return value switch
+            {
+                int @int => (ProjectStatus)@int,
+                string @str when int.TryParse(@str, out var parsedInt) => (ProjectStatus)parsedInt,
+                _ => value
+            };
         }
     }
 }

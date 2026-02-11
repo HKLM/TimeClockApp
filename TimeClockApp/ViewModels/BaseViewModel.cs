@@ -11,23 +11,6 @@ namespace TimeClockApp.ViewModels
         public partial bool HelpInfoBoxVisible { get; set; } = false;
 
         /// <summary>
-        /// Page title bindable property
-        /// </summary>
-        [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(PageTitle))]
-        public partial string? Title { get; set; } = string.Empty;
-        /// <summary>
-        /// Displays the page Title value
-        /// </summary>
-        public virtual string? PageTitle => Title;
-
-        /// <summary>
-        /// Used to display any errors to the user
-        /// </summary>
-        [ObservableProperty]
-        public partial string? ErrorMsg { get; set; } = string.Empty;
-
-        /// <summary>
         /// If true allows editing locked TimeCards. By default after a TimeCard has been marked paid, it is locked by being set to ReadOnly.
         /// </summary>
         [ObservableProperty]

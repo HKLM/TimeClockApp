@@ -11,8 +11,6 @@ namespace TimeClockApp.Shared.Models
         [Key]
         public int ExpenseTypeId { get; set; }
 
-        [Required]
-        [StringLength(50)]
         public string CategoryName { get; set; } = string.Empty;
 
         public virtual ICollection<Expense> Expenses { get; set; } = new List<Expense>();

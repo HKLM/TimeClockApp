@@ -18,32 +18,42 @@
 		<ApplicationId>com.alexanderbuilder.timeclockapp</ApplicationId>
 		 <!--Versions--> 
 		<ApplicationIdGuid>AA699F0D-F30D-4094-AAEC-745B07309A2B</ApplicationIdGuid>
-		<ApplicationVersion>7</ApplicationVersion>
-		<ApplicationDisplayVersion>2.1</ApplicationDisplayVersion>
-		<FileVersion>2.1</FileVersion>
-		<AssemblyVersion>2.1</AssemblyVersion>
-		<Version>2.1</Version>
+		<ApplicationVersion>8</ApplicationVersion>
+		<ApplicationDisplayVersion>2.2</ApplicationDisplayVersion>
+		<FileVersion>2.2</FileVersion>
+		<AssemblyVersion>2.2</AssemblyVersion>
+		<Version>2.2</Version>
 		
 		<!--<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>-->
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">30.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
 		<Configurations>Debug;Release;MSSQL Migration;SQLite Migration</Configurations>
-		<Copyright>2025 (c) Brian Alexander</Copyright>
+		<Copyright>2026 (c) Brian Alexander</Copyright>
 		<Authors>Brian Alexander</Authors>
 		<Company>Alexander Builder</Company>
 		<Description>Employee TimeCard app to track amount of time employees has worked and for reporting weekly hours for payroll.</Description>
 		<SourceRevisionId>build$([System.DateTime]::Now.ToString("yy.M.d:HH.mm"))</SourceRevisionId>
 		<Title>TimeClock App</Title>
 		<DefaultLanguage>en-us</DefaultLanguage>
-		<SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
+	    <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
 		<EnableSplashScreenProcessing>false</EnableSplashScreenProcessing>
+
+	  <!-- Enable XAML source generation for faster build times and improved performance.
+		     This generates C# code from XAML at compile time instead of runtime inflation.
+		     To disable, remove this line.
+		     For individual files, you can override by setting Inflator metadata:
+		       <MauiXaml Update="MyPage.xaml" Inflator="Default" /> (reverts to defaults: Runtime for Debug, XamlC for Release)
+		       <MauiXaml Update="MyPage.xaml" Inflator="Runtime" /> (force runtime inflation) -->
+		<MauiXamlInflator>SourceGen</MauiXamlInflator>
 		<MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
 		<WindowsPackageType>MSIX</WindowsPackageType>
 		<DefineConstants>$(DefineConstants);SQLITE</DefineConstants>
 		<!-- Replace xxxxxxxxxxxxxxx with your own PackageCertificateThumbprint value -->
 		<!--<PackageCertificateThumbprint>xxxxxxxxxxxxxxx</PackageCertificateThumbprint>
+		<AnalysisLevel>preview</AnalysisLevel>
 		<AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>-->
+		<WarningsNotAsErrors>$(WarningsNotAsErrors);IL2037</WarningsNotAsErrors>
 	</PropertyGroup>
 
 	<!-- Use CoreCLR on Android -->
@@ -53,9 +63,10 @@
 	
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net10.0-android|AnyCPU'">
 	  <AndroidLinkTool>r8</AndroidLinkTool>
-	  <!--<AndroidEnableProfiledAot>True</AndroidEnableProfiledAot>-->
+	  <AndroidEnableProfiledAot>True</AndroidEnableProfiledAot>
 	  <EnableLLVM>False</EnableLLVM>
 	  <RunAOTCompilation>True</RunAOTCompilation>
+	  <PublishTrimmed>True</PublishTrimmed>
 	</PropertyGroup>
   
 	<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows' and '$(Configuration)' == 'Release'">
@@ -65,13 +76,14 @@
 	</PropertyGroup>
   
 	<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows' and '$(RuntimeIdentifierOverride)' != ''">
+	    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<RuntimeIdentifier>$(RuntimeIdentifierOverride)</RuntimeIdentifier>
 	</PropertyGroup>
     
 	<ItemGroup>
-      		<MauiImage Include="Resources\Images\*.svg" />
-		<MauiImage Include="Resources\Images\*.png" />
-      		<MauiImage Include="Resources\Images\ui\check_box_white.svg">
+      <MauiImage Include="Resources\Images\*.svg" />
+	  <MauiImage Include="Resources\Images\*.png" />
+      <MauiImage Include="Resources\Images\ui\check_box_white.svg">
 		  <TintColor>#EFEFEF</TintColor>
 		</MauiImage>
 		<MauiFont Include="Resources\Fonts\*" />
@@ -107,9 +119,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="CommunityToolkit.Maui" Version="13.0.0" />
-		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-		<PackageReference Include="Microsoft.Maui.Controls" Version="10.0.20" />
+		<PackageReference Include="CommunityToolkit.Maui" Version="14.0.0" />
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.1" />
+		<PackageReference Include="Microsoft.Maui.Controls" Version="10.0.31" />
 	</ItemGroup>
 	
 	<ItemGroup>

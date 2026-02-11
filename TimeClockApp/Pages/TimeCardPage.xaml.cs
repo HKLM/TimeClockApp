@@ -20,10 +20,6 @@ public partial class TimeCardPage : ContentPage
         {
             await viewModel.OnAppearing();
         }
-        catch (AggregateException ax)
-        {
-            TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateException(ax, "TimeCardPage");
-        }
         catch (Exception ex)
         {
             Log.WriteLine($"EXCEPTION ERROR\n{ex.Message}\n{ex.InnerException}", "TimeCardPage");
@@ -34,11 +30,18 @@ public partial class TimeCardPage : ContentPage
     {
         if (id == 0)
         {
-            await App.AlertSvc!.ShowAlertAsync("NOTICE", NoTimeCardMessage);
+            await App.AlertSvc!.ShowAlertAsync("NOTICE", NoTimeCardMessage).ConfigureAwait(false);
             return;
         }
 
-        await Shell.Current.GoToAsync($"{route}?id={id}");
+        try
+        {
+            await Shell.Current.GoToAsync($"{route}?id={id}");
+        }
+        catch (Exception e)
+        {
+            Log.WriteLine($"{e.Message}\n  -- {e.Source}\n  -- {e.InnerException}", "TimeCardPage.HandleTimeCardNavigationAsync");
+        }
     }
 
     private async void Swipeitemaction_Clicked(object sender, EventArgs e)

@@ -15,6 +15,13 @@ public partial class InvoicePage : ContentPage
     {
         base.OnAppearing();
 
-        await viewModel.OnAppearing();
+        try
+        {
+            await viewModel.OnAppearing();
+        }
+        catch (Exception ex)
+        {
+            Log.WriteLine($"EXCEPTION ERROR\n{ex.Message}\n{ex.InnerException}", "InvoicePage");
+        }
     }
 }

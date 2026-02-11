@@ -156,7 +156,7 @@
                     <Label
                         Grid.ColumnSpan="2" 
                         FontAttributes="Bold"
-                        FontSize="Medium" 
+                        FontSize="17" 
                         HorizontalTextAlignment="Center"
                         Text="Project Totals" />
                     <Label 

@@ -44,11 +44,5 @@ namespace TimeClockApp.Services
             Config? C = Context.Config.Find(keyId);
             return C?.IntValue ?? defaultValue;
         }
-
-        internal async Task<int> GetConfigIntAsync(int keyId, int defaultValue = 1)
-        {
-            Config? C = await Context.Config.FindAsync(keyId).ConfigureAwait(false);
-            return C?.IntValue ?? defaultValue;
-        }
     }
 }

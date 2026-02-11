@@ -6,31 +6,22 @@ namespace TimeClockApp.Converters
     {
         public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
-            if (value is not null and string str)
+            return value switch
             {
-                if (TimeOnly.TryParse(str, out var strTime))
-                    return strTime;
-            }
-            else if (value is not null and TimeOnly time)
-            {
-                return time.ToShortTimeString();
-            }
-
-            return null;
+                string str => TimeOnly.TryParse(str, out var time) ? time : null,
+                TimeOnly time => time.ToShortTimeString(),
+                _ => null
+            };
         }
 
         public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
-            if (value is not null and TimeOnly time)
+            return value switch
             {
-                return time.ToShortTimeString();
-            }
-            else if (value is not null and string str)
-            {
-                if (TimeOnly.TryParse(str, out var strTime))
-                    return strTime;
-            }
-            return null;
+                TimeOnly time => time.ToShortTimeString(),
+                string str => TimeOnly.TryParse(str, out var time) ? time : null,
+                _ => null
+            };
         }
     }
 }

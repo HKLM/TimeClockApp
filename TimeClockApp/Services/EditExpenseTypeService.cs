@@ -24,7 +24,7 @@ namespace TimeClockApp.Services
             if (string.IsNullOrEmpty(categoryName))
                 return 0;
 
-            if (Context.ExpenseType.AsNoTracking().Where(x => x.CategoryName == categoryName).Any())
+            if (await Context.ExpenseType.AsNoTracking().Where(x => x.CategoryName == categoryName).AnyAsync())
             {
                 return 2;
             }
@@ -35,13 +35,13 @@ namespace TimeClockApp.Services
                     CategoryName = categoryName
                 };
                 Context.Add<ExpenseType>(et);
-                return (await Context.SaveChangesAsync().ConfigureAwait(false) > 0) ? 1 : 0;
+                return (await Context.SaveChangesAsync() > 0) ? 1 : 0;
             }
         }
 
         public async Task<bool> UpdateExpenseTypeAsync(int expenseTypeId, string categoryName)
         {
-            if (string.IsNullOrEmpty(categoryName) || expenseTypeId == 0)
+            if (string.IsNullOrEmpty(categoryName) || expenseTypeId < 6)
                 return false;
 
             ExpenseType origExpense = Context.ExpenseType.Find(expenseTypeId);
@@ -49,24 +49,21 @@ namespace TimeClockApp.Services
             {
                 origExpense.CategoryName = categoryName;
                 Context.Update<ExpenseType>(origExpense);
-                return (await Context.SaveChangesAsync().ConfigureAwait(false) > 0);
+                return (await Context.SaveChangesAsync() > 0);
             }
             return false;
         }
 
         public async Task<bool> DeleteExpenseTypeAsync(int expenseTypeId)
         {
-            if (expenseTypeId == 0)
+            if (expenseTypeId < 6)
                 return false;
 
             ExpenseType origExpense = Context.ExpenseType.Find(expenseTypeId);
             if (origExpense != null)
             {
-                if (await Context.ExpenseType.CountAsync().ConfigureAwait(false) > 2)
-                {
-                    Context.Remove<ExpenseType>(origExpense);
-                    return (await Context.SaveChangesAsync().ConfigureAwait(false) > 0);
-                }
+                Context.Remove<ExpenseType>(origExpense);
+                return (await Context.SaveChangesAsync() > 0);
             }
             return false;
         }

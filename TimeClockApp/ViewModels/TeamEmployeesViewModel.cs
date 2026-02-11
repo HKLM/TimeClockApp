@@ -22,7 +22,6 @@ namespace TimeClockApp.ViewModels
             bool u = employeeService.UpdateEmployee(employee.EmployeeId, EmploymentStatus.Employed);
             if (u)
             {
-                App.NoticeUserHasChanged = true;
                 List<Employee> e = await employeeService.GetEmployeesGroupInStatusAsync();
                 Employee_List = e.ToObservableCollection<Employee>();
             }
@@ -37,7 +36,6 @@ namespace TimeClockApp.ViewModels
             bool u = employeeService.UpdateEmployee(employee.EmployeeId, EmploymentStatus.Inactive);
             if (u)
             {
-                App.NoticeUserHasChanged = true;
                 List<Employee> e = await employeeService.GetEmployeesGroupInStatusAsync();
                 Employee_List = e.ToObservableCollection<Employee>();
             }

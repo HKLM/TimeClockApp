@@ -2,7 +2,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using CsvHelper.Configuration;
-using Microsoft.EntityFrameworkCore;
 #nullable enable
 
 namespace TimeClockApp.Shared.Models
@@ -75,8 +74,6 @@ namespace TimeClockApp.Shared.Models
 
         [StringLength(50)]
         public string JobTitle { get; set; } = string.Empty;
-
-        //public int? GroupId { get; set; } = null;
 
         public virtual ICollection<TimeCard> TimeCards { get; set; }
     }

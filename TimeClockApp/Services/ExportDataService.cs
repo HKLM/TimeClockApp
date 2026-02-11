@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.IO.Compression;
 using CsvHelper;
 #if SQLITE
 using Microsoft.Data.Sqlite;
@@ -17,123 +18,125 @@ namespace TimeClockApp.Services
         private static readonly double VERSIONCHECKNUMBER = 1.0;
         public double GetVERSIONCHECKNUMBER => VERSIONCHECKNUMBER;
 
-        public Task<List<TimeCard>> BackupGetTimeCard() => Context.TimeCard
-             .IgnoreAutoIncludes().ToListAsync();
-        public Task<List<Employee>> BackupGetEmployee() => Context.Employee
-            .IgnoreAutoIncludes().ToListAsync();
-        public Task<List<Project>> BackupGetProject() => Context.Project
-            .IgnoreAutoIncludes().ToListAsync();
-        public Task<List<Phase>> BackupGetPhase() => Context.Phase
-            .IgnoreAutoIncludes().ToListAsync();
-        public Task<List<Config>> BackupGetConfig() => Context.Config
-            .IgnoreAutoIncludes().ToListAsync();
-        public Task<List<Expense>> BackupGetExpense() => Context.Expense
-            .IgnoreAutoIncludes().ToListAsync();
-        public Task<List<ExpenseType>> BackupGetExpenseType() => Context.ExpenseType
-            .IgnoreAutoIncludes().ToListAsync();
+        // Used to return the filename of the exported zip file for user notification
+        static string zip_filename = string.Empty;
+        public static string ZIPFILENAME
+        {
+            get => zip_filename;
+            private set => zip_filename = value;
+        }   
+
+        public Task<List<TimeCard>> BackupGetTimeCard() => Context.TimeCard.IgnoreAutoIncludes().ToListAsync();
+        public Task<List<Employee>> BackupGetEmployee() => Context.Employee.IgnoreAutoIncludes().ToListAsync();
+        public Task<List<Project>> BackupGetProject() => Context.Project.IgnoreAutoIncludes().ToListAsync();
+        public Task<List<Phase>> BackupGetPhase() => Context.Phase.IgnoreAutoIncludes().ToListAsync();
+        public Task<List<Config>> BackupGetConfig() => Context.Config.IgnoreAutoIncludes().ToListAsync();
+        public Task<List<Expense>> BackupGetExpense() => Context.Expense.IgnoreAutoIncludes().ToListAsync();
+        public Task<List<ExpenseType>> BackupGetExpenseType() => Context.ExpenseType.IgnoreAutoIncludes().ToListAsync();
 
 #region READCSV
-        private string? ReadFileVersion(string csvFile)
+
+        private async Task<string?> ReadFileVersionAsync(string csvFile)
         {
             string? records;
             using (var reader = new StreamReader(csvFile))
             {
-                records = reader.ReadToEnd();
+                records = await reader.ReadToEndAsync();
             }
             return records;
         }
 
         [RequiresUnreferencedCode("Calls DynamicBehavior for Import or Export to CSV.")]
-        private List<TimeCard> ReadCSVTimeCards(string csvFile)
+        private async Task<List<TimeCard>> ReadCSVTimeCardsAsync(string csvFile)
         {
             List<TimeCard> records = new();
             using (var reader = new StreamReader(csvFile))
             using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
             {
                 csv.Context.RegisterClassMap<TimeCardMap>();
-                records = csv.GetRecords<TimeCard>().ToList();
+                records = await csv.GetRecordsAsync<TimeCard>().ToListAsync();
             }
             return records;
         }
 
         [RequiresUnreferencedCode("Calls DynamicBehavior for Import or Export to CSV.")]
-        private List<Employee> ReadCSVEmployee(string csvFile)
+        private async Task<List<Employee>> ReadCSVEmployeeAsync(string csvFile)
         {
             List<Employee> records = new();
             using (var reader = new StreamReader(csvFile))
             using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
             {
                 csv.Context.RegisterClassMap<EmployeeMap>();
-                records = csv.GetRecords<Employee>().ToList();
+                records = await csv.GetRecordsAsync<Employee>().ToListAsync();
             }
             return records;
         }
         [RequiresUnreferencedCode("Calls DynamicBehavior for Import or Export to CSV.")]
-        private List<Project> ReadCSVProject(string csvFile)
+        private async Task<List<Project>> ReadCSVProjectAsync(string csvFile)
         {
             List<Project> records = new();
             using (var reader = new StreamReader(csvFile))
             using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
             {
                 csv.Context.RegisterClassMap<ProjectMap>();
-                records = csv.GetRecords<Project>().ToList();
+                records = await csv.GetRecordsAsync<Project>().ToListAsync();
             }
             return records;
         }
 
         [RequiresUnreferencedCode("Calls DynamicBehavior for Import or Export to CSV.")]
-        private List<Phase> ReadCSVPhase(string csvFile)
+        private async Task<List<Phase>> ReadCSVPhaseAsync(string csvFile)
         {
             List<Phase> records = new();
             using (var reader = new StreamReader(csvFile))
             using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
             {
                 csv.Context.RegisterClassMap<PhaseMap>();
-                records = csv.GetRecords<Phase>().ToList();
+                records = await csv.GetRecordsAsync<Phase>().ToListAsync();
             }
             return records;
         }
 
         [RequiresUnreferencedCode("Calls DynamicBehavior for Import or Export to CSV.")]
-        private List<Config> ReadCSVConfig(string csvFile)
+        private async Task<List<Config>> ReadCSVConfigAsync(string csvFile)
         {
             List<Config> records = new();
             using (var reader = new StreamReader(csvFile))
             using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
             {
                 csv.Context.RegisterClassMap<ConfigMap>();
-                records = csv.GetRecords<Config>().ToList();
+                records = await csv.GetRecordsAsync<Config>().ToListAsync();
             }
             return records;
         }
 
         [RequiresUnreferencedCode("Calls DynamicBehavior for Import or Export to CSV.")]
-        private List<Expense> ReadCSVExpense(string csvFile)
+        private async Task<List<Expense>> ReadCSVExpenseAsync(string csvFile)
         {
             List<Expense> records = new();
             using (var reader = new StreamReader(csvFile))
             using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
             {
                 csv.Context.RegisterClassMap<ExpenseMap>();
-                records = csv.GetRecords<Expense>().ToList();
+                records = await csv.GetRecordsAsync<Expense>().ToListAsync();
             }
             return records;
         }
 
         [RequiresUnreferencedCode("Calls DynamicBehavior for Import or Export to CSV.")]
-        private List<ExpenseType> ReadCSVExpenseType(string csvFile)
+        private async Task<List<ExpenseType>> ReadCSVExpenseTypeAsync(string csvFile)
         {
             List<ExpenseType> records = new();
             using (var reader = new StreamReader(csvFile))
             using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
             {
                 csv.Context.RegisterClassMap<ExpenseTypeMap>();
-                records = csv.GetRecords<ExpenseType>().ToList();
+                records = await csv.GetRecordsAsync<ExpenseType>().ToListAsync();
             }
             return records;
         }
 
-        #endregion READCSV
+#endregion READCSV
 
         public async Task BackupDatabase(string? savePath = null)
         {
@@ -159,7 +162,7 @@ namespace TimeClockApp.Services
                     await target.OpenAsync();
                     source.BackupDatabase(target);
                     Log.WriteLine("Successfully completed SQLite file backup.\n", "Backup");
-                    target.Close();
+                    await target.CloseAsync();
                 }
             }
             catch (IOException io)
@@ -188,17 +191,19 @@ namespace TimeClockApp.Services
 #endif
         }
 
-        public string ImportData(ImportDataModel dataModel, string ExportLog, bool overWriteData)
+#region IMPORT DATA
+
+        public async Task<string> ImportData(ImportDataModel dataModel, string ExportLog, bool overWriteData)
         {
             if (dataModel.IsAnyTrue())
             {
-                using (IDbContextTransaction transaction = Context.Database.BeginTransaction())
+                using (IDbContextTransaction transaction = await Context.Database.BeginTransactionAsync())
                 {
                     // Version check
                     if (dataModel.bVersion)
                     {
                         ExportLog += "Checking compatibility...\n";
-                        dataModel.ImportVersionString = ReadFileVersion(dataModel.FileVersion);
+                        dataModel.ImportVersionString = await ReadFileVersionAsync(dataModel.FileVersion);
                         if (!string.IsNullOrEmpty(dataModel.ImportVersionString) && dataModel.ImportVersionNumber > 0)
                         {
                             dataModel.bCompatibleVersion = true;
@@ -210,79 +215,79 @@ namespace TimeClockApp.Services
                         ExportLog += "No data to import!\nABORTING DUE TO INCOMPATIBLE DATA FILES\n";
                         return ExportLog;
                     }
-#nullable restore
+
                     ExportLog += "Starting to import...\n";
                     try
                     {
-                        transaction.CreateSavepoint("optimistic-update");
+                        await transaction.CreateSavepointAsync("optimistic-update");
 
                         if (dataModel.bTimeCard)
                         {
                             ExportLog += "Importing TimeCard\n";
-                            dataModel.ImTimeCard = ReadCSVTimeCards(dataModel.FileTimeCard);
+                            dataModel.ImTimeCard = await ReadCSVTimeCardsAsync(dataModel.FileTimeCard);
                             for (int i = 0; i < dataModel.ImTimeCard.Count; i++)
                             {
-                                if (ImportTimeCard(dataModel.ImTimeCard[i], overWriteData))
+                                if (await ImportTimeCard(dataModel.ImTimeCard[i], overWriteData))
                                     dataModel.ReadyToSave++;
                             }
                         }
                         if (dataModel.bEmployee)
                         {
                             ExportLog += "Importing Employee\n";
-                            dataModel.ImEmployee = ReadCSVEmployee(dataModel.FileEmployee);
+                            dataModel.ImEmployee = await ReadCSVEmployeeAsync(dataModel.FileEmployee);
                             for (int i = 0; i < dataModel.ImEmployee.Count; i++)
                             {
-                                if (ImportEmployee(dataModel.ImEmployee[i]))
+                                if (await ImportEmployee(dataModel.ImEmployee[i]))
                                     dataModel.ReadyToSave++;
                             }
                         }
                         if (dataModel.bProject)
                         {
                             ExportLog += "Importing Project\n";
-                            dataModel.ImProject = ReadCSVProject(dataModel.FileProject);
+                            dataModel.ImProject = await ReadCSVProjectAsync(dataModel.FileProject);
                             for (int i = 0; i < dataModel.ImProject.Count; i++)
                             {
-                                if (ImportProject(dataModel.ImProject[i]))
+                                if (await ImportProject(dataModel.ImProject[i]))
                                     dataModel.ReadyToSave++;
                             }
                         }
                         if (dataModel.bPhase)
                         {
                             ExportLog += "Importing Phase\n";
-                            dataModel.ImPhase = ReadCSVPhase(dataModel.FilePhase);
+                            dataModel.ImPhase = await ReadCSVPhaseAsync(dataModel.FilePhase);
                             for (int i = 0; i < dataModel.ImPhase.Count; i++)
                             {
-                                if (ImportPhase(dataModel.ImPhase[i]))
+                                if (await ImportPhase(dataModel.ImPhase[i]))
                                     dataModel.ReadyToSave++;
                             }
                         }
                         if (dataModel.bConfig)
                         {
                             ExportLog += "Importing Config\n";
-                            dataModel.ImConfig = ReadCSVConfig(dataModel.FileConfig);
+                            dataModel.ImConfig = await ReadCSVConfigAsync(dataModel.FileConfig);
                             for (int i = 0; i < dataModel.ImConfig.Count; i++)
                             {
-                                if (ImportConfig(dataModel.ImConfig[i]))
+                                if (await ImportConfig(dataModel.ImConfig[i]))
                                     dataModel.ReadyToSave++;
                             }
                         }
                         if (dataModel.bExpense)
                         {
                             ExportLog += "Importing Expense\n";
-                            dataModel.ImExpense = ReadCSVExpense(dataModel.FileExpense);
+                            dataModel.ImExpense = await ReadCSVExpenseAsync(dataModel.FileExpense);
                             for (int i = 0; i < dataModel.ImExpense.Count; i++)
                             {
-                                if (ImportExpense(dataModel.ImExpense[i], overWriteData))
+                                if (await ImportExpense(dataModel.ImExpense[i], overWriteData))
                                     dataModel.ReadyToSave++;
                             }
                         }
                         if (dataModel.bExpenseType)
                         {
                             ExportLog += "Importing ExpenseType\n";
-                            dataModel.ImExpenseType = ReadCSVExpenseType(dataModel.FileExpenseType);
+                            dataModel.ImExpenseType = await ReadCSVExpenseTypeAsync(dataModel.FileExpenseType);
                             for (int i = 0; i < dataModel.ImExpenseType.Count; i++)
                             {
-                                if (ImportExpenseType(dataModel.ImExpenseType[i], overWriteData))
+                                if (await ImportExpenseType(dataModel.ImExpenseType[i], overWriteData))
                                     dataModel.ReadyToSave++;
                             }
                         }
@@ -303,17 +308,17 @@ namespace TimeClockApp.Services
                     {
                         //To prevent saving in the finally block of this try-catch
                         dataModel.ReadyToSave = 0;
-                        Log.WriteLine(ex.Message + "\n" + ex.InnerException + "\nUNDOING CHANGES\n", "Import");
+                        Log.WriteLine("ImportData: " + ex.Message + "\n" + ex.InnerException + "\nUNDOING CHANGES\n", "Import");
 
-                        transaction.RollbackToSavepoint("optimistic-update");
+                        await transaction.RollbackToSavepointAsync("optimistic-update");
 
-                        ShowPopupError(ex.Message + "\n" + ex.InnerException, "ABORTING DUE TO ERROR");
+                        ShowPopupError(ex.Message + "\n" + ex.InnerException, "ImportData ABORTING DUE TO ERROR");
                     }
                     finally
                     {
                         if (dataModel.ReadyToSave > 0)
                         {
-                            transaction.Commit();
+                            await transaction.CommitAsync();
                             ExportLog += "Committed Data to Database!\n";
                             ShowPopupError("Committed Data to Database.", "COMPLETED");
                         }
@@ -327,16 +332,16 @@ namespace TimeClockApp.Services
             return ExportLog;
         }
 
-#region INSERT DATA TO DB
-        private bool ImportTimeCard(TimeCard card, bool overWriteData)
+        private async Task<bool> ImportTimeCard(TimeCard card, bool overWriteData)
         {
             try
             {
-                TimeCard t = Context.TimeCard.Find(card.TimeCardId);
+                TimeCard? t = Context.TimeCard.Find(card.TimeCardId);
                 if (t != null && overWriteData)
                 {
-                    TimeCard updateCard = Context.TimeCard.IgnoreAutoIncludes().FirstOrDefault(x => x.TimeCardId == card.TimeCardId);
-
+                    TimeCard? updateCard = await Context.TimeCard.IgnoreAutoIncludes().FirstOrDefaultAsync(x => x.TimeCardId == card.TimeCardId);
+                    if (updateCard == null)
+                        return false;
                     updateCard.EmployeeId = card.EmployeeId;
                     updateCard.ProjectId = card.ProjectId;
                     updateCard.PhaseId = card.PhaseId;
@@ -363,19 +368,21 @@ namespace TimeClockApp.Services
             catch (Exception ex)
             {
                 Log.WriteLine(ex.Message + "\n" + ex.InnerException + "\n", "Import");
-                ShowPopupError(ex.Message + "\n" + ex.InnerException, "ABORTING DUE TO ERROR");
+                ShowPopupError(ex.Message + "\n" + ex.InnerException, "ImportTimeCard ABORTING DUE TO ERROR");
             }
             return false;
         }
 
-        private bool ImportEmployee(Employee card)
+        private async Task<bool> ImportEmployee(Employee card)
         {
             try
             {
-                Employee t = Context.Employee.Find(card.EmployeeId);
+                Employee? t = Context.Employee.Find(card.EmployeeId);
                 if (t != null)
                 {
-                    Employee updateCard = Context.Employee.IgnoreAutoIncludes().FirstOrDefault(x => x.EmployeeId == card.EmployeeId);
+                    Employee? updateCard = await Context.Employee.IgnoreAutoIncludes().FirstOrDefaultAsync(x => x.EmployeeId == card.EmployeeId);
+                    if (updateCard == null)
+                        return false;
                     updateCard.Employee_Name = card.Employee_Name;
                     updateCard.Employee_PayRate = card.Employee_PayRate;
                     updateCard.Employee_Employed = card.Employee_Employed;
@@ -402,14 +409,16 @@ namespace TimeClockApp.Services
             return false;
         }
 
-        private bool ImportProject(Project card)
+        private async Task<bool> ImportProject(Project card)
         {
             try
             {
-                Project t = Context.Project.Find(card.ProjectId);
+                Project? t = Context.Project.Find(card.ProjectId);
                 if (t != null)
                 {
-                    Project updateCard = Context.Project.IgnoreAutoIncludes().FirstOrDefault(x => x.ProjectId == card.ProjectId);
+                    Project? updateCard = await Context.Project.IgnoreAutoIncludes().FirstOrDefaultAsync(x => x.ProjectId == card.ProjectId);
+                    if (updateCard == null)
+                        return false;
                     updateCard.Name = card.Name;
                     updateCard.Status = card.Status;
                     updateCard.ProjectDate = card.ProjectDate;
@@ -430,14 +439,16 @@ namespace TimeClockApp.Services
             return false;
         }
 
-        private bool ImportPhase(Phase card)
+        private async Task<bool> ImportPhase(Phase card)
         {
             try
             {
-                Phase t = Context.Phase.Find(card.PhaseId);
+                Phase? t = Context.Phase.Find(card.PhaseId);
                 if (t != null)
                 {
-                    Phase updateCard = Context.Phase.IgnoreAutoIncludes().FirstOrDefault(x => x.PhaseId == card.PhaseId);
+                    Phase? updateCard = await Context.Phase.IgnoreAutoIncludes().FirstOrDefaultAsync(x => x.PhaseId == card.PhaseId);
+                    if (updateCard == null)
+                        return false;
                     updateCard.PhaseTitle = card.PhaseTitle;
                     Context.Update<Phase>(updateCard);
                     return true;
@@ -456,14 +467,16 @@ namespace TimeClockApp.Services
             return false;
         }
 
-        private bool ImportConfig(Config card)
+        private async Task<bool> ImportConfig(Config card)
         {
             try
             {
-                Config t = Context.Config.Find(card.ConfigId);
+                Config? t = Context.Config.Find(card.ConfigId);
                 if (t != null)
                 {
-                    Config updateCard = Context.Config.IgnoreAutoIncludes().FirstOrDefault(x => x.ConfigId == card.ConfigId);
+                    Config? updateCard = await Context.Config.IgnoreAutoIncludes().FirstOrDefaultAsync(x => x.ConfigId == card.ConfigId);
+                    if (updateCard == null)
+                        return false;
                     updateCard.IntValue = card.IntValue ?? null;
                     updateCard.StringValue = card.StringValue ?? null;
                     updateCard.Name = card.Name;
@@ -485,14 +498,16 @@ namespace TimeClockApp.Services
             return false;
         }
 
-        private bool ImportExpense(Expense card, bool overWriteData)
+        private async Task<bool> ImportExpense(Expense card, bool overWriteData)
         {
             try
             {
-                Expense t = Context.Expense.Find(card.ExpenseId);
+                Expense? t = Context.Expense.Find(card.ExpenseId);
                 if (t != null && overWriteData)
                 {
-                    Expense updateCard = Context.Expense.IgnoreAutoIncludes().FirstOrDefault(x => x.ExpenseId == card.ExpenseId);
+                    Expense? updateCard = await Context.Expense.IgnoreAutoIncludes().FirstOrDefaultAsync(x => x.ExpenseId == card.ExpenseId);
+                    if (updateCard == null)
+                        return false;
                     updateCard.ProjectId = card.ProjectId;
                     updateCard.PhaseId = card.PhaseId;
                     updateCard.ExpenseTypeId = card.ExpenseTypeId;
@@ -520,14 +535,16 @@ namespace TimeClockApp.Services
             return false;
         }
 
-        private bool ImportExpenseType(ExpenseType card, bool overWriteData)
+        private async Task<bool> ImportExpenseType(ExpenseType card, bool overWriteData)
         {
             try
             {
-                ExpenseType t = Context.ExpenseType.Find(card.ExpenseTypeId);
+                ExpenseType? t = Context.ExpenseType.Find(card.ExpenseTypeId);
                 if (t != null && overWriteData)
                 {
-                    ExpenseType updateCard = Context.ExpenseType.IgnoreAutoIncludes().FirstOrDefault(x => x.ExpenseTypeId == card.ExpenseTypeId);
+                    ExpenseType? updateCard = await Context.ExpenseType.IgnoreAutoIncludes().FirstOrDefaultAsync(x => x.ExpenseTypeId == card.ExpenseTypeId);
+                    if (updateCard == null)
+                        return false    ;
                     updateCard.CategoryName = card.CategoryName;
                     Context.Update<ExpenseType>(updateCard);
                     return true;
@@ -546,6 +563,113 @@ namespace TimeClockApp.Services
             return false;
         }
 
+        public async Task<ImportDataModel> UnzipArchive(string fileToUNZipPath, string unZipTempDirectory)
+        {
+            ImportDataModel dataModel = new();
+            try
+            {
+                // UnZip everything 
+                await ZipFile.ExtractToDirectoryAsync(fileToUNZipPath, unZipTempDirectory, true);
+
+                string versionFile = Path.Combine(unZipTempDirectory, "FILE_ID.DIZ");
+                dataModel.bVersion = File.Exists(versionFile);
+                if (dataModel.bVersion)
+                    dataModel.FileVersion = versionFile;
+
+                string timecardFile = Path.Combine(unZipTempDirectory, "TimeCard.csv");
+                dataModel.bTimeCard = File.Exists(timecardFile);
+                dataModel.FileTimeCard = timecardFile;
+                string employeeFile = Path.Combine(unZipTempDirectory, "Employee.csv");
+                dataModel.bEmployee = File.Exists(employeeFile);
+                dataModel.FileEmployee = employeeFile;
+                string projectFile = Path.Combine(unZipTempDirectory, "Project.csv");
+                dataModel.bProject = File.Exists(projectFile);
+                dataModel.FileProject = projectFile;
+                string phaseFile = Path.Combine(unZipTempDirectory, "Phase.csv");
+                dataModel.bPhase = File.Exists(phaseFile);
+                dataModel.FilePhase = phaseFile;
+                string configFile = Path.Combine(unZipTempDirectory, "Config.csv");
+                dataModel.bConfig = File.Exists(configFile);
+                dataModel.FileConfig = configFile;
+                string expenseFile = Path.Combine(unZipTempDirectory, "Expense.csv");
+                dataModel.bExpense = File.Exists(expenseFile);
+                dataModel.FileExpense = expenseFile;
+                string expenseTypeFile = Path.Combine(unZipTempDirectory, "ExpenseType.csv");
+                dataModel.bExpenseType = File.Exists(expenseTypeFile);
+                dataModel.FileExpenseType = expenseTypeFile;
+            }
+            catch (Exception ex)
+            {
+                string ExportLog = "\nUnzipArchive EXCEPTION ERROR\n" + ex.Message + "\n" + ex.InnerException;
+                Log.WriteLine(ExportLog);
+                await ShowPopupErrorAsync(ExportLog, "UnzipArchive ABORTING DUE TO ERROR");
+            }
+            return dataModel;
+        }
+
 #endregion
+
+#region EXPORT DATA
+
+        public async Task<bool> CompressAndExportFolder(string folderToZipPath)
+        {
+            ExportDataService.ZIPFILENAME = string.Empty;
+            // Get a temporary cache directory
+            string exportZipTempDirectory = Path.Combine(Microsoft.Maui.Storage.FileSystem.CacheDirectory, "Export");
+
+            // Delete folder incase anything from previous exports, it will be recreated later anyway
+            try
+            {
+                if (Directory.Exists(exportZipTempDirectory))
+                    Directory.Delete(exportZipTempDirectory, true);
+            }
+            catch (AggregateException ax)
+            {
+                TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateException(ax);
+            }
+            catch (Exception ex)
+            {
+                // Log things and move on, don't want to fail just because of a left over lock or something
+                Log.WriteLine("CompressAndExportFolder" + ex.Message + "\n" + ex.InnerException);
+            }
+
+            // Get a timestamped filename
+            string exportZipFilename = $"TimeClockAppData_{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.zip";
+            Directory.CreateDirectory(exportZipTempDirectory);
+
+            string exportZipFilePath = Path.Combine(exportZipTempDirectory, exportZipFilename);
+            if (File.Exists(exportZipFilePath))
+            {
+                File.Delete(exportZipFilePath);
+            }
+
+            // Zip everything up
+            await ZipFile.CreateFromDirectoryAsync(folderToZipPath, exportZipFilePath, CompressionLevel.Fastest, false);
+
+            FileService fhs = new();
+            // Copy zip file to public accessible download folder, outside of app sandbox
+            string publicDownloadPath = fhs.GetDownloadPath();
+            string filePublic = Path.Combine(publicDownloadPath, exportZipFilename);
+            if (File.Exists(filePublic))
+            {
+                File.Delete(filePublic);
+            }
+            byte[] bytes = await File.ReadAllBytesAsync(exportZipFilePath);
+            await File.WriteAllBytesAsync(filePublic, bytes);
+
+            ExportDataService.ZIPFILENAME = exportZipFilename;
+
+            // Give the user the option to share this using whatever medium they like
+            await Share.Default.RequestAsync(new ShareFileRequest
+            {
+                Title = "TimeClock App Export Data",
+                File = new ShareFile(filePublic),
+            });
+
+            return true;
+        }
+
+#endregion
+
     }
 }

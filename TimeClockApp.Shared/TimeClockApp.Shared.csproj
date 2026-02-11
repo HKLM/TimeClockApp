@@ -17,13 +17,16 @@
 		<Authors>Brian Alexander</Authors>
 		<Company>Alexander Builder</Company>
 		<Title>TimeClockApp.Shared</Title>
-		<Copyright>2025 (c) Brian Alexander</Copyright>
-		<ApplicationVersion>7</ApplicationVersion>
-		<ApplicationDisplayVersion>2.1</ApplicationDisplayVersion>
-		<FileVersion>2.1</FileVersion>
-		<AssemblyVersion>2.1</AssemblyVersion>
-		<Version>2.1</Version>
+		<Copyright>2026 (c) Brian Alexander</Copyright>
+		<ApplicationVersion>8</ApplicationVersion>
+		<ApplicationDisplayVersion>2.2</ApplicationDisplayVersion>
+		<FileVersion>2.2</FileVersion>
+		<AssemblyVersion>2.2</AssemblyVersion>
+		<Version>2.2</Version>
 		<SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
+		
+		<!--SET THE DATABASE TYPE HERE SQLITE OR MSSQL-->
+		<!--<DefineConstants>$(DefineConstants);SQLITE</DefineConstants>-->
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net10.0-android|AnyCPU'">
@@ -38,7 +41,7 @@
 		<RuntimeIdentifier>$(RuntimeIdentifierOverride)</RuntimeIdentifier>
 	</PropertyGroup>
 	
-	<!--THE DATABASE TYPE-->
+	<!--SET THE DATABASE TYPE HERE SQLITE OR MSSQL-->
 	<Choose>
 		<When Condition="'$(Configuration)'=='MSSQL Migration'">
 			<PropertyGroup>
@@ -52,7 +55,6 @@
 		</When>
 		<Otherwise>
 			<PropertyGroup>
-				<!--SET THE DATABASE TYPE HERE SQLITE OR MSSQL-->
 				<DefineConstants>$(DefineConstants);SQLITE</DefineConstants>
 			</PropertyGroup>
 		</Otherwise>
@@ -64,9 +66,9 @@
 
 	<ItemGroup>
 		<PackageReference Include="CsvHelper" Version="33.1.0" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.1" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.2" />
 		<!--<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.0" />-->
-		<PackageReference Include="Microsoft.Maui.Controls" Version="10.0.20" />
+		<PackageReference Include="Microsoft.Maui.Controls" Version="10.0.31" />
 	</ItemGroup>
 
 </Project>

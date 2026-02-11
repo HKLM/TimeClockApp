@@ -4,26 +4,31 @@ namespace TimeClockApp.Converters
 {
     public class StringToDoubleConverter : IValueConverter
     {
+        private static readonly char[] TrimChars = { ' ', '$', ',' };
+
         public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
-            if (value == null || string.IsNullOrEmpty(value.ToString()) || value.ToString() == "") return 0;
             if (value is double @double)
                 return @double.ToString("C");
 
-            return "$" + value.ToString();
+            var stringValue = value?.ToString();
+            if (string.IsNullOrEmpty(stringValue))
+                return 0;
+
+            return $"${stringValue}";
         }
 
         public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
-            if (value == null || string.IsNullOrEmpty(value.ToString()))
+            var stringValue = value as string;
+            if (string.IsNullOrEmpty(stringValue))
                 return 0;
 
-            string v = (string)value;
-            string z = v.Trim(new Char[] { ' ', '$', ',' });
-            if (double.TryParse(z, out double x))
-                return x;
+            var trimmed = stringValue.Trim(TrimChars);
+            if (double.TryParse(trimmed, out var result))
+                return result;
 
-            return z;
+            return trimmed;
         }
     }
 }

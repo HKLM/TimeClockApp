@@ -27,7 +27,7 @@
                 <SwipeView.LeftItems>
                     <SwipeItems>
                         <SwipeItem
-                            x:Name="SwipeitemStart"                             
+                            x:Name="SwipeitemStart"
                             Clicked="SwipeitemStart_Clicked"
                             CommandParameter="{Binding TimeCardId}"
                             StyleClass="SwpieOrange" 
@@ -66,7 +66,7 @@
                                  HeightRequest="2" 
                                  HorizontalOptions="Fill" />
                         <Button
-                            Command="{Binding ClockInCommand, Source={RelativeSource AncestorType={x:Type vm:TimeCardPageViewModel}}, x:DataType=vm:TimeCardPageViewModel}"                           
+                            Command="{Binding ClockInCommand, Source={RelativeSource AncestorType={x:Type vm:TimeCardPageViewModel}}, x:DataType=vm:TimeCardPageViewModel}" 
                             CommandParameter="{Binding}"
                             HorizontalOptions="End"
                             Style="{StaticResource GreenButton}"
