@@ -1,6 +1,6 @@
 namespace TimeClockApp.Pages;
 
-[XamlCompilation(XamlCompilationOptions.Compile)]
+
 public partial class ReportPage : ContentPage
 {
     protected readonly ReportPageViewModel viewModel;
@@ -11,9 +11,9 @@ public partial class ReportPage : ContentPage
         BindingContext = viewModel = ViewModel;
     }
 
-    protected override void OnAppearing()
-    {
+	protected override async void OnAppearing()
+	{
         base.OnAppearing();
-        viewModel.OnAppearing();
+        await viewModel.OnAppearing();
     }
 }

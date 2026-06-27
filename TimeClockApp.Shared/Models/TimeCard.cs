@@ -106,7 +106,6 @@ namespace TimeClockApp.Shared.Models
             TimeCard_bReadOnly = false;
         }
 
-        [Key]
         public int TimeCardId { get; set; }
         public int EmployeeId { get; set; }
         public int ProjectId { get; set; }
@@ -115,7 +114,6 @@ namespace TimeClockApp.Shared.Models
         /// <summary>
         /// Copied from the associated Employee entity at the time this TimeCard is created.
         /// </summary>
-        [Required]
         public string TimeCard_EmployeeName { get; set; } = string.Empty;
 
         /// <summary>ShiftStatus enum
@@ -154,7 +152,6 @@ namespace TimeClockApp.Shared.Models
         /// </item>
         /// </list>
         /// </remarks>
-        [Required]
         public ShiftStatus TimeCard_Status { get; set; }
 
         /// <summary>
@@ -216,13 +213,11 @@ namespace TimeClockApp.Shared.Models
         /// <summary>
         /// The Employee's payrate, at the time of this TimeCard
         /// </summary>
-        [Required]
         public double TimeCard_EmployeePayRate { get; set; }
 
         /// <summary>
         /// When set to TRUE, Permanently prevents all further changes to this TimeCard.
         /// </summary>
-        [Required]
         public bool TimeCard_bReadOnly { get; set; }
 
         /// <summary>

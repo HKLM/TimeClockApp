@@ -3,7 +3,7 @@ namespace TimeClockApp.Pages;
 /// <summary>
 /// Shell tab page for EditExpenseType
 /// </summary>
-[XamlCompilation(XamlCompilationOptions.Compile)]
+
 public partial class EditExpenseTypeTab : ContentPage
 {
     protected readonly EditExpenseTypeViewModel viewModel;

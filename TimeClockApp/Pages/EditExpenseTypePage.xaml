@@ -59,7 +59,8 @@
                     x:Name="CategoryNameBox"
                     Grid.Row="4"
                     Keyboard="Text"
-                    Text="{Binding NewCategoryName, Mode=TwoWay}">
+                    Text="{Binding NewCategoryName, Mode=TwoWay}" 
+                    Placeholder="Category Name">
                     <Entry.Behaviors>
                         <toolkit:TextValidationBehavior 
                             BindingContext="{Binding Path=BindingContext, Source={x:Reference CategoryNameBox}, x:DataType=Entry}"

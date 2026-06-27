@@ -98,23 +98,26 @@ namespace TimeClockApp.ViewModels
             { TimeCardID = t; }
         }
 
-        public async Task OnAppearing()
+		[RelayCommand]
+		public async Task OnAppearing()
         {
-            HasError = false;
-            SetPageTitle(ErrorCode);
-            PickerMinDate = cardService.GetAppFirstRunDate();
-            IsAdmin = ErrorCode > 0 || IntToBool(cardService.GetConfigInt(9, 0));
+			Loading = true;
+			HasError = false;
 
             try
             {
-                List<Project> pro = await cardService.GetProjectsListAsync();
+				SetPageTitle(ErrorCode);
+				PickerMinDate = cardService.GetAppFirstRunDate();
+				IsAdmin = ErrorCode > 0 || IntToBool(cardService.GetConfigInt(9, 0));
+
+				List<Project> pro = await cardService.GetProjectsListAsync();
                 ProjectList = pro.ToObservableCollection();
                 List<Phase> ph = await cardService.GetPhaseListAsync();
                 PhaseList = ph.ToObservableCollection();
 
                 if (TimeCardID != 0)
                 {
-                    TimeCardEditing = cardService.GetTimeCardByID(TimeCardID);
+                    TimeCardEditing = cardService.GetTimeCard(TimeCardID);
                     if (TimeCardEditing != null)
                     {
                         TimeCard_StartTime = TimeCardEditing.TimeCard_StartTime;
@@ -136,67 +139,79 @@ namespace TimeClockApp.ViewModels
                 HasError = true;
                 Log.WriteLine($"{e.Message}\n  -- {e.Source}\n  -- {e.InnerException}", "EditTimeCardViewModel.OnAppearing");
             }
-        }
+			finally
+			{
+				Loading = false;
+			}
+		}
 
-        public void OnDisappearing()
+		public void OnDisappearing()
         {
             //reset error code
             ErrorCode = 0;
         }
 
         [RelayCommand]
-        private async Task SaveTimeCardAsync()
-        {
-            // Validate time range
-            if (TimeCard_EndTime < TimeCard_StartTime)
-            {
-                await App.AlertSvc!.ShowAlertAsync("ERROR", "StartTime must be before EndTime.").ConfigureAwait(false);
-                return;
-            }
+		private async Task SaveTimeCardAsync()
+		{
+			Loading = true;
+			HasError = false;
+			bool success = false;
+			try
+			{
+				// Validate time range
+				if (TimeCard_EndTime < TimeCard_StartTime)
+				{
+					await App.AlertSvc!.ShowAlertAsync("ERROR", "StartTime must be before EndTime.").ConfigureAwait(false);
+					return;
+				}
 
-            // Validate required data
-            if (TimeCardEditing == null || TimeCardID == 0 || TimeCardEditing.TimeCardId == 0 || 
-                SelectedProject == null || SelectedPhase == null)
-                return;
+				// Validate required data
+				if (TimeCardEditing == null || TimeCardID == 0 || TimeCardEditing.TimeCardId == 0 ||
+					SelectedProject == null || SelectedPhase == null)
+					return;
 
-            // Check read-only status
-            if (TimeCard_bReadOnly && IsAdmin)
-            {
-                bool confirm = await App.AlertSvc!.ShowConfirmationAsync("CONFIRM", "This TimeCard is currently read-only. Do you want to edit this TimeCard?");
-                if (!confirm)
-                    return;
-            }
-            if (await cardService.IsTimeCardReadOnlyAsync(TimeCardID, IsAdmin))
-            {
-                await App.AlertSvc!.ShowAlertAsync("NOTICE", "This TimeCard is read-only and cannot be edited.").ConfigureAwait(false);
-                return;
-            }
+				// Check read-only status
+				if (TimeCard_bReadOnly && IsAdmin)
+				{
+					bool confirm = await App.AlertSvc!.ShowConfirmationAsync("CONFIRM", "This TimeCard is currently read-only. Do you want to edit this TimeCard?");
+					if (!confirm)
+						return;
+				}
+				if (cardService.IsTimeCardReadOnly(TimeCardID, IsAdmin))
+				{
+					await App.AlertSvc!.ShowAlertAsync("NOTICE", "This TimeCard is read-only and cannot be edited.").ConfigureAwait(false);
+					return;
+				}
 
-            // Auto-fix status if needed
-            if (ErrorCode > 0 && TimeCard_Status == ShiftStatus.ClockedIn)
-                TimeCard_Status = ShiftStatus.ClockedOut;
+				// Auto-fix status if needed
+				if (ErrorCode > 0 && TimeCard_Status == ShiftStatus.ClockedIn)
+					TimeCard_Status = ShiftStatus.ClockedOut;
 
-            try
-            {
-                UpdateTimeCardEntity();
+				UpdateTimeCardEntity();
+				await Task.Run(async () =>
+				{
+					success = await cardService.UpdateTimeCardAsync(TimeCardEditing, IsAdmin);
+				});
+				if (success)
+					RefreshCard();
+			}
+			catch (Exception e)
+			{
+				HasError = true;
+				Log.WriteLine($"{e.Message}\n  -- {e.Source}\n  -- {e.InnerException}", "EditTimeCardViewModel.SaveTimeCardAsync");
+			}
+			finally
+			{
+				Loading = false;
+			}
+			string message = success ? "TimeCard saved" : "Failed to save TimeCard";
+			await App.AlertSvc!.ShowAlertAsync("NOTICE", message).ConfigureAwait(false);
+		}
 
-                bool success = await cardService.UpdateTimeCardAsync(TimeCardEditing, IsAdmin);
-                string message = success ? "TimeCard saved" : "Failed to save TimeCard";
-                await App.AlertSvc!.ShowAlertAsync("NOTICE", message).ConfigureAwait(false);
-
-                if (success)
-                    await RefreshCard();
-            }
-            catch (Exception e)
-            {
-                HasError = true;
-                Log.WriteLine($"{e.Message}\n  -- {e.Source}\n  -- {e.InnerException}", "EditTimeCardViewModel.SaveTimeCardAsync");
-            }
-        }
-
-        private void UpdateTimeCardEntity()
-        {
-            TimeCardEditing!.TimeCardId = TimeCardID;
+		private void UpdateTimeCardEntity()
+		{
+			TimeCardEditing!.TimeCardId = TimeCardID;
             TimeCardEditing.TimeCard_StartTime = TimeCard_StartTime;
             TimeCardEditing.TimeCard_Date = TimeCard_Date;
             TimeCardEditing.TimeCard_Status = TimeCard_Status;
@@ -208,29 +223,29 @@ namespace TimeClockApp.ViewModels
             TimeCardEditing.TimeCard_EndTime = TimeCard_EndTime;
         }
 
-        private async Task RefreshCard()
-        {
-            if (TimeCardID > 0)
-            {
-                TimeCardEditing = await cardService.GetTimeCardByIDAsync(TimeCardID);
-                if (TimeCardEditing != null)
-                {
-                    TimeCard_StartTime = TimeCardEditing.TimeCard_StartTime;
-                    TimeCard_Status = TimeCardEditing.TimeCard_Status;
-                    TimeCard_WorkHours = TimeCardEditing.TimeCard_WorkHours;
-                    TimeCard_bReadOnly = TimeCardEditing.TimeCard_bReadOnly;
-                    TimeCard_Date = TimeCardEditing.TimeCard_Date;
-                    TimeCard_EmployeeName = TimeCardEditing.TimeCard_EmployeeName;
-                    TimeCard_EmployeePayRate = TimeCardEditing.TimeCard_EmployeePayRate;
-                    TimeCardEmployeeId = TimeCardEditing.EmployeeId;
-                    TimeCard_EndTime = TimeCardEditing.TimeCard_EndTime;
-                    SelectedProject = TimeCardEditing.Project;
-                    SelectedPhase = TimeCardEditing.Phase;
-                }
-            }
-        }
+		private void RefreshCard()
+		{
+			if (TimeCardID > 0)
+			{
+				TimeCardEditing = cardService.GetTimeCard(TimeCardID);
+				if (TimeCardEditing != null)
+				{
+					TimeCard_StartTime = TimeCardEditing.TimeCard_StartTime;
+					TimeCard_Status = TimeCardEditing.TimeCard_Status;
+					TimeCard_WorkHours = TimeCardEditing.TimeCard_WorkHours;
+					TimeCard_bReadOnly = TimeCardEditing.TimeCard_bReadOnly;
+					TimeCard_Date = TimeCardEditing.TimeCard_Date;
+					TimeCard_EmployeeName = TimeCardEditing.TimeCard_EmployeeName;
+					TimeCard_EmployeePayRate = TimeCardEditing.TimeCard_EmployeePayRate;
+					TimeCardEmployeeId = TimeCardEditing.EmployeeId;
+					TimeCard_EndTime = TimeCardEditing.TimeCard_EndTime;
+					SelectedProject = TimeCardEditing.Project;
+					SelectedPhase = TimeCardEditing.Phase;
+				}
+			}
+		}
 
-        [RelayCommand]
+		[RelayCommand]
         private void OnToggleHelpInfoBox()
         {
             HelpInfoBoxVisible = !HelpInfoBoxVisible;

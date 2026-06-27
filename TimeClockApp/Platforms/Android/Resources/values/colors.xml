@@ -1,6 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <!-- Legacy Android/MaterialComponents aliases still used by some platform surfaces. -->
   <color name="colorPrimary">#A4BDE5</color>
   <color name="colorPrimaryDark">#3559AA</color>
   <color name="colorAccent">#4C98F3</color>
+  <color name="colorActionMenuTextColor">#FFFFFF</color>
+
+  <!-- Material 3 light color roles. -->
+  <color name="m3_sys_color_light_primary">#4682b4</color>
+  <color name="m3_sys_color_light_on_primary">#FFFFFF</color>
+  <color name="m3_sys_color_light_primary_container">#36557D</color>
+  <color name="m3_sys_color_light_on_primary_container">#002020</color>
+  <color name="m3_sys_color_light_secondary">#4A6363</color>
+  <color name="m3_sys_color_light_on_secondary">#FFFFFF</color>
+  <color name="m3_sys_color_light_secondary_container">#CCE8E7</color>
+  <color name="m3_sys_color_light_on_secondary_container">#051F1F</color>
+  <color name="m3_sys_color_light_surface">#ECEEF4</color>
+  <color name="m3_sys_color_light_on_surface">#161D1D</color>
+  <color name="m3_sys_color_light_surface_variant">#DAE5E3</color>
+  <color name="m3_sys_color_light_on_surface_variant">#3F4948</color>
+  <color name="m3_sys_color_light_outline">#6F7978</color>
+  <color name="m3_sys_color_light_outline_variant">#BEC9C8</color>
+  <color name="m3_sys_color_light_error">#BA1A1A</color>
+  <color name="m3_sys_color_light_on_error">#FFFFFF</color>
+
+  <!-- Material 3 dark color roles. -->
+  <color name="m3_sys_color_dark_primary">#4682b4</color>
+  <color name="m3_sys_color_dark_on_primary">#003737</color>
+  <color name="m3_sys_color_dark_primary_container">#36557D</color>
+  <color name="m3_sys_color_dark_on_primary_container">#5292E4</color>
+  <color name="m3_sys_color_dark_secondary">#B0CCCB</color>
+  <color name="m3_sys_color_dark_on_secondary">#343C4F</color>
+  <color name="m3_sys_color_dark_secondary_container">#36557D</color>
+  <color name="m3_sys_color_dark_on_secondary_container">#CCE8E7</color>
+  <color name="m3_sys_color_dark_surface">#0E1515</color>
+  <color name="m3_sys_color_dark_on_surface">#DEE4E3</color>
+  <color name="m3_sys_color_dark_surface_variant">#3A4A6F</color>
+  <color name="m3_sys_color_dark_on_surface_variant">#BEC9C8</color>
+  <color name="m3_sys_color_dark_outline">#899392</color>
+  <color name="m3_sys_color_dark_outline_variant">#3F4948</color>
+  <color name="m3_sys_color_dark_error">#FFB4AB</color>
+  <color name="m3_sys_color_dark_on_error">#690005</color>
 </resources>

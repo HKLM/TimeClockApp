@@ -1,6 +1,6 @@
 namespace TimeClockApp.Pages;
 
-[XamlCompilation(XamlCompilationOptions.Compile)]
+
 public partial class PayrollDetailPage : ContentPage
 {
     protected readonly PayrollDetailViewModel viewModel;

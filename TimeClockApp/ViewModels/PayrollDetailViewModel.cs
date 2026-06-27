@@ -108,21 +108,25 @@ namespace TimeClockApp.ViewModels
         [RelayCommand]
         public async Task OnAppearing()
         {
-            StartDate = payrollData.GetStartOfPayPeriod(DateTime.Now);
-            PickerMinDate = payrollData.GetAppFirstRunDate();
+			if (Loading)
+				return;
 
-            WCRate = payrollData.GetWCRate();
-            IsAdmin = IntToBool(payrollData.GetConfigInt(9, 0));
-
+			Loading = true;
+			HasError = false;
             try
             {
-                List<Employee> e = await payrollData.GetEmployeeListAsync();
+				StartDate = payrollData.GetStartOfPayPeriod(DateTime.Now);
+				PickerMinDate = payrollData.GetAppFirstRunDate();
+
+				WCRate = payrollData.GetWCRate();
+				IsAdmin = IntToBool(payrollData.GetConfigInt(9, 0));
+
+				List<Employee> e = await payrollData.GetEmployeeListAsync();
                 EmployeeList = e.ToObservableCollection();
                 if (selectedFilterId > 0)
                 {
                     SelectedFilter = payrollData.GetEmployee(selectedFilterId.Value);
                 }
-                await RefreshingCardsAsync(LastOnlyUnpaid);
             }
             catch (Exception e)
             {
@@ -132,7 +136,9 @@ namespace TimeClockApp.ViewModels
             finally
             {
                 selectedFilterId = null;
-            }
+				Loading = false;
+			}
+            await RefreshingCardsAsync(LastOnlyUnpaid);
         }
 
         [RelayCommand]
@@ -156,8 +162,12 @@ namespace TimeClockApp.ViewModels
                 if (SelectedFilter == null)
                     return;
 
-                SheetTime = await payrollData.GetPayrollTimeSheetForEmployeeAsync(SelectedFilter.EmployeeId, DateOnly.FromDateTime(StartDate), DateOnly.FromDateTime(EndDate), SelectedFilter.Employee_Name, SheetTime, bOnlyUnpaid);
-                if (SheetTime.TimeCards.Any())
+				await Task.Run(async () =>
+				{
+					SheetTime = await payrollData.GetPayrollTimeSheetForEmployeeAsync(SelectedFilter.EmployeeId, DateOnly.FromDateTime(StartDate), DateOnly.FromDateTime(EndDate), SelectedFilter.Employee_Name, SheetTime, bOnlyUnpaid);
+				});
+
+				if (SheetTime.TimeCards.Any())
                 {
                     List<TimeCard> t = SheetTime.TimeCards.ToList();
                     TimeCards = t.ToObservableCollection();
@@ -244,7 +254,6 @@ namespace TimeClockApp.ViewModels
                     .ToList();
 
                 await Task.WhenAll(paidTasks);
-                await RefreshingCardsAsync(LastOnlyUnpaid);
             }
             catch (AggregateException ax)
             {
@@ -260,6 +269,7 @@ namespace TimeClockApp.ViewModels
             {
                 Loading = false;
             }
+            await RefreshingCardsAsync(LastOnlyUnpaid);
         }
 
         [RelayCommand]

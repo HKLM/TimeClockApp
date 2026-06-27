@@ -22,7 +22,7 @@ namespace TimeClockApp.ViewModels
             }
             catch (Exception ex)
             {
-                Log.WriteLine(ex.Message + "\n" + ex.InnerException);
+                Log.WriteLine($"EXCEPTION ERROR\n{ex.Message}\n{ex.InnerException}", "InvoiceDetailTimecardsViewModel");
             }
         }
 

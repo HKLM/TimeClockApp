@@ -1,6 +1,6 @@
 namespace TimeClockApp.Pages;
 
-[XamlCompilation(XamlCompilationOptions.Compile)]
+
 public partial class TimeCardManagerPage : ContentPage
 {
     protected readonly TimeCardManagerViewModel viewModel;

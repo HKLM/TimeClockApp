@@ -77,6 +77,9 @@
         <Tab Title="BackUp" Icon="backup.png">
             <ShellContent ContentTemplate="{DataTemplate local:ExportPage}" Route="ExportPage" />
         </Tab>
+        <Tab Title="Alarm" Icon="calendar_clock_24px.png">
+            <ShellContent ContentTemplate="{DataTemplate local:NotificationConfigurationPage}" Route="NotificationConfigurationPage" />
+        </Tab>
         <Tab Title="Settings" Icon="settings.png">
             <ShellContent ContentTemplate="{DataTemplate local:SettingsPage}" Route="SettingsPage" />
         </Tab>
@@ -85,10 +88,10 @@
         <Tab Title="HR" Icon="manage_accounts.png">
             <ShellContent ContentTemplate="{DataTemplate local:UserManagerPage}" Route="UserManagerPage" />
         </Tab>
-        <Tab Title="Projects" Icon="work_twotone.png">
+        <Tab Title="Projects" Icon="warehouse.png">
             <ShellContent ContentTemplate="{DataTemplate local:EditProjectPage}" Route="EditProjectPage" />
         </Tab>
-        <Tab Title="Phase" Icon="plumbing.png">
+        <Tab Title="Phase" Icon="tools_power_drill.png">
             <ShellContent ContentTemplate="{DataTemplate local:EditPhasePage}" Route="EditPhasePage" />
         </Tab>
         <Tab Title="Expense Types" Icon="folder_copy.png">

@@ -47,27 +47,24 @@
             HRService = new();
         }
 
-        public void OnAppearing()
+        public async Task OnAppearing()
         {
-            RefreshEmployees(false);
-        }
+            try
+            {
+				List<Employee> e = await HRService.GetAllEmployeesAsync();
+				EmployeeList = e.ToObservableCollection();
+			}
+			catch (Exception e)
+            {
+				HasError = true;
+				Log.WriteLine($"{e.Message}\n  -- {e.Source}\n  -- {e.InnerException}", "UserManagerViewModel.OnAppearing");
+			}
+		}
 
-        private void RefreshEmployees(bool isUpdating)
-        {
-            //if (isUpdating)
-            //{
-            //    App.NoticeUserHasChanged = true;
-            //}
-            EmployeeList = HRService.GetAllEmployees(true);
-        }
-
-        private async Task RefreshEmployeesAsync(bool isUpdating)
-        {
-            //if (isUpdating)
-            //{
-            //    App.NoticeUserHasChanged = true;
-            //}
-            EmployeeList = await HRService.GetAllEmployeesAsync(true);
+        private async Task RefreshEmployeesAsync()
+		{
+			List<Employee> e = await HRService.GetAllEmployeesAsync();
+			EmployeeList = e.ToObservableCollection();
         }
 
         [RelayCommand]
@@ -75,9 +72,10 @@
         {
             try
             {
-                await RefreshEmployeesAsync(false);
-            }
-            catch (AggregateException ax)
+				List<Employee> e = await HRService.GetAllEmployeesAsync();
+				EmployeeList = e.ToObservableCollection();
+			}
+			catch (AggregateException ax)
             {
                 HasError = true;
                 TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateException(ax);
@@ -114,7 +112,7 @@
                     string employeeNewName = EmployeeName.Trim();
                     string employeeNewJobTitle = JobTitle.Trim();
                     HRService.AddNewEmployee(employeeNewName, PayRate, employeeNewJobTitle, IsEmployed);
-                    await RefreshEmployeesAsync(true);
+                    await RefreshEmployeesAsync();
                     await App.AlertSvc!.ShowAlertAsync("NOTICE", "Added new employee " + employeeNewName).ConfigureAwait(false);
                 }
             }
@@ -138,7 +136,7 @@
                 {
                     string eName = SelectedEmployee.Employee_Name;
                     HRService.FireEmployee(SelectedEmployee.EmployeeId);
-                    await RefreshEmployeesAsync(true);
+                    await RefreshEmployeesAsync();
                     await App.AlertSvc!.ShowAlertAsync("NOTICE", eName + " is Fired!").ConfigureAwait(false);
                     RefreshInfo();
                 }
@@ -155,7 +153,7 @@
         }
 
         [RelayCommand]
-        private void SaveEditEmployee()
+        private async Task SaveEditEmployeeAsync()
         {
             if (string.IsNullOrEmpty(EmployeeName))
                 return;
@@ -166,9 +164,8 @@
                 string employeeNewJobTitle = JobTitle.Trim();
                 if (EmployeeId > 0 && HRService.UpdateEmployee(EmployeeId, employeeNewName, PayRate, IsEmployed, employeeNewJobTitle))
                 {
-
-                    RefreshEmployees(true);
-                    App.AlertSvc!.ShowAlert("NOTICE", "Saved " + employeeNewName);
+                    await RefreshEmployeesAsync();
+                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "Saved " + employeeNewName).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)

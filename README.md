@@ -1,6 +1,6 @@
 # TimeClockApp
 
-## .NET 10 MAUI app for Android 10+ using a SQLite database.
+## .NET 11.0 MAUI app for Android 10+ using a SQLite database.
 
 Simple app for employer to track employees time cards for payroll use. Supports multiple employees over different projects.
 
@@ -24,23 +24,30 @@ Add version check during data Import, Prior exported data will not be allowed to
 
 ### Notes
 
-Built using .NET 10.0.1
+Built using .NET 11.0.0-preview.5.26304.4
 and the following nuget packages:
 ```
-"CommunityToolkit.Maui" Version="13.0.0"
-"CommunityToolkit.Mvvm" Version="8.4.0"
-"Microsoft.Maui.Controls" Version="10.0.2"
+"CommunityToolkit.Maui" Version="14.2.0"
+"CommunityToolkit.Mvvm" Version="8.4.2"
+"Microsoft.Maui.Controls" Version="11.0.0-preview.5.26304.4"
 "CsvHelper" Version="33.1.0"
-"Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.1"
+"Microsoft.EntityFrameworkCore.Sqlite" Version="11.0.0-preview.5.26302.115"
+"Plugin.LocalNotification" Version="14.1.1"
 ```
 
-To change the default items that are added during the database creation,
+To change the default seed items that are added during the database creation,
 see the file [TimeClockApp.Shared\Models\DataBackendContext.cs](/TimeClockApp.Shared/Models/DataBackendContext.cs)
 
-To change the name of the database file for creation,
+To change the name or location of the database file for creation,
 see the property 'sQLiteDbFileName' in file [TimeClockApp\TimeClockApp.Shared\SQLiteSetting.cs](/TimeClockApp.Shared/SQLiteSetting.cs)
 
 ### Release Notes
+2.2
+* Added support for .NET 11.0.0-preview.5.26304.4 and latest nuget packages.
+* Added Material 3 design on Android
+* Preliminary support for LocalNotification on Android 13+ devices. (Requires user to allow notifications for the app)
+* Use CoreCLR on Android
+
 2.1
 * Minor bug fixes
 * Many code cleanup and optimizations

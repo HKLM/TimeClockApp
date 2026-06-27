@@ -62,7 +62,8 @@
 						ItemsSource="{Binding ProjectList, Source={RelativeSource AncestorType={x:Type vm:EditProjectViewModel}}, x:DataType=vm:EditProjectViewModel}"
 						SelectedIndexChanged="ProjectPicker_SelectedIndexChanged"
 						SelectedItem="{Binding SelectedProject, Source={RelativeSource AncestorType={x:Type vm:EditProjectViewModel}}, x:DataType=vm:EditProjectViewModel, Mode=TwoWay}"
-						VerticalOptions="Center" />
+						VerticalOptions="Center" 
+                        Title="Project To Edit" />
                     <Label
 						Grid.Row="2"
 						Style="{StaticResource LabelSmallCenter}"
@@ -75,14 +76,9 @@
 						VerticalOptions="Center" />
                     <Label
 						Grid.Row="3"
-						Style="{StaticResource LabelSmallCenter}"
-						Text="ProjectId:" />
-                    <Label
-						Grid.Row="3"
 						Grid.Column="1"
-						HorizontalOptions="Center"
 						Style="{StaticResource LabelSmallCenter}"
-						Text="{Binding ProjectId}" />
+						Text="{Binding ProjectId, StringFormat='ProjectId: {0}'}"/>
                     <Label
 						Grid.Row="4"
 						Grid.ColumnSpan="2"
@@ -95,7 +91,8 @@
 						Grid.ColumnSpan="2"
 						Keyboard="Text"
 						Text="{Binding Name, Mode=TwoWay}"
-						TextChanged="ProjectNameBox_TextChanged">
+						TextChanged="ProjectNameBox_TextChanged" 
+                        Placeholder="Project Name">
                         <Entry.Behaviors>
                             <toolkit:TextValidationBehavior 
                                 BindingContext="{Binding Path=BindingContext, Source={x:Reference ProjectNameBox}, x:DataType=Entry}"
@@ -118,7 +115,8 @@
 						Grid.Row="6"
 						Grid.Column="1"
 						ItemsSource="{Binding AllProjectStatus}"
-						SelectedIndex="{Binding Project_Status, Converter={StaticResource projStatusEnumToIntConverter}, Mode=TwoWay}" />
+						SelectedIndex="{Binding Project_Status, Converter={StaticResource projStatusEnumToIntConverter}, Mode=TwoWay}" 
+                        Title="Project Status" />
                     <Label
 						Grid.Row="7"
 						Style="{StaticResource LabelSmallCenter}"

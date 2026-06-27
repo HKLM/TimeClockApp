@@ -131,19 +131,20 @@ namespace TimeClockApp.ViewModels
         public List<TimeCard> CardList = new();
         public List<Expense> ExpenseList = new();
 
-        public async Task OnAppearing()
+		[RelayCommand]
+		public async Task OnAppearing()
         {
 			Loading = true;
 			HasError = false;
             try
             {
                 PickerMinDate = invoiceData.GetAppFirstRunDate();
-                WCRate = await invoiceData.GetWCRateAsync();
-                ProfitRate = await invoiceData.GetProfitRateAsync();
-                TotalOtherOverhead = await invoiceData.GetOverheadRateAsync();
+                WCRate = invoiceData.GetWCRate();
+                ProfitRate = invoiceData.GetProfitRate();
+                TotalOtherOverhead = invoiceData.GetOverheadRate();
                 List<Project> p = await invoiceData.GetProjectsListAsync();
                 ProjectList = p.ToObservableCollection();
-                SelectedProject = await invoiceData.GetCurrentProjectEntityAsync();
+                SelectedProject = invoiceData.GetCurrentProjectEntity();
             }
             catch (Exception e)
             {
@@ -174,9 +175,12 @@ namespace TimeClockApp.ViewModels
                 ResetItems();
                 if (SelectedPhase == null)
                     UsePhaseFilter = false;
-                List<TimeSheet> timeSheetList = await invoiceData.RunInvoiceReportAsync(UsePhaseFilter, SelectedProject, SelectedPhase, StartDate, EndDate); 
-                TimeSheetList = timeSheetList;
-                foreach (TimeSheet sheet in timeSheetList)
+				await Task.Run(async () =>
+				{
+					TimeSheetList = await invoiceData.RunInvoiceReportAsync(UsePhaseFilter, SelectedProject, SelectedPhase, StartDate, EndDate);
+				});
+
+				foreach (TimeSheet sheet in TimeSheetList)
                 {
                     TotalUnpaidGrossPay += sheet.TotalGrossPay;
                     CardList.AddRange(sheet.TimeCards);

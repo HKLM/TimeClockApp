@@ -24,7 +24,7 @@ dotnet ef
 4. Right click on the `TimeClockApp.Shared` project and select `Open in Terminal`.
 5. In the Console window (PowerShell or Command Prompt), enter the command 
 ```
-dotnet ef migrations add --project "TimeClockApp.Shared.csproj" --startup-project "..\EFMigrator\EFMigrator.csproj" --context TimeClockApp.Shared.Models.DataBackendContext --configuration "SQLite Migration" --no-build  "Initial" --output-dir "Migrations"
+dotnet ef migrations add --project "TimeClockApp.Shared.csproj" --framework net11.0 --startup-project "..\EFMigrator\EFMigrator.csproj" --context TimeClockApp.Shared.Models.DataBackendContext --configuration "SQLite Migration" --no-build  "Initial" --output-dir "Migrations"
 ```
 6. After the command completes. Set the 'Solution Configuration' to `Debug` or `Release`
 7. Set the `TimeClockApp` project as the 'Start up project'
@@ -33,7 +33,7 @@ dotnet ef migrations add --project "TimeClockApp.Shared.csproj" --startup-projec
 
 1. Same as above, but in step 5 use the command
 ```
-dotnet tool run dotnet-ef  migrations add --project "TimeClockApp.Shared.csproj" --startup-project "..\EFMigrator\EFMigrator.csproj" --context TimeClockApp.Shared.Models.DataBackendContext --configuration "SQLite Migration" --no-build  "Initial" --output-dir "Migrations"
+dotnet tool run dotnet-ef  migrations add --framework net11.0 --project "TimeClockApp.Shared.csproj" --startup-project "..\EFMigrator\EFMigrator.csproj" --context TimeClockApp.Shared.Models.DataBackendContext --configuration "SQLite Migration" --no-build  "Initial" --output-dir "Migrations"
 ```
 
 #### Package Manager Console tools instructions
@@ -44,7 +44,7 @@ dotnet tool run dotnet-ef  migrations add --project "TimeClockApp.Shared.csproj"
 4. In the Package Manager Console window, set the 'Default project' to `TimeClockApp.Shared`
 5. In the Package Manager Console, enter the command 
 ```
-add-migration Initial -Context TimeClockApp.Shared.Models.DataBackendContext -Verbose
+add-migration Initial -Context TimeClockApp.Shared.Models.DataBackendContext -Verbose 
 ```
 6. After the command completes. Set the 'Solution Configuration' to `Debug` or `Release`
 7. Set the `TimeClockApp` project as the 'Start up project'
@@ -100,7 +100,7 @@ private const string mSQLconnStr = "(localdb)\\MSSQLLocalDB;Initial Catalog=Time
 12. Right click on the `TimeClockApp.Shared` project and select `Open in Terminal`.
 13. In the Console window (PowerShell or Command Prompt), enter the command
 ```
-dotnet ef migrations add --project "TimeClockApp.Shared.csproj" --startup-project "..\EFMigrator\EFMigrator.csproj" --context TimeClockApp.Shared.Models.DataBackendContext --configuration "MSSQL Migration" --no-build  "Initial" --output-dir "Migrations"
+dotnet ef migrations add --project "TimeClockApp.Shared.csproj" --framework net11.0 --startup-project "..\EFMigrator\EFMigrator.csproj" --context TimeClockApp.Shared.Models.DataBackendContext --configuration "MSSQL Migration" --no-build  "Initial" --output-dir "Migrations"
 ```
 14. After the command completes. Set the 'Solution Configuration' to `Debug` or `Release`
 15. Set the `TimeClockApp` project as the 'Start up project'

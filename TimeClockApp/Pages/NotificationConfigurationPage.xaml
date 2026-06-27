@@ -1,0 +1,30 @@
+<ContentPage x:Class="TimeClockApp.Pages.NotificationConfigurationPage"
+            xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	        xmlns:m="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
+	        xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
+            x:DataType="vm:NotificationConfigurationViewModel"
+            Title="Notification Configuration">
+    <VerticalStackLayout>
+        <Label Text="Notification Configuration" />
+        <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto">
+            <Label
+                    Grid.Row="0" Grid.Column="0"
+					Style="{StaticResource LabelSmallCenter}"
+					Text="Hour:"
+					VerticalTextAlignment="Center" />
+            <Picker Grid.Row="1" Grid.Column="0" Margin="5" Title="Hours"
+                    ItemsSource="{Binding PickerHours,x:DataType=vm:NotificationConfigurationViewModel}"
+                    SelectedItem="{Binding SelectedHours, x:DataType=vm:NotificationConfigurationViewModel}" />
+            <Label
+					Grid.Row="0" Grid.Column="1"
+					Style="{StaticResource LabelSmallCenter}"
+					Text="Minute:"
+					VerticalTextAlignment="Center" />
+            <Picker Grid.Row="1" Grid.Column="1" Margin="5" Title="Minutes"
+                    ItemsSource="{Binding PickerMinutes,x:DataType=vm:NotificationConfigurationViewModel}"
+                    SelectedItem="{Binding SelectedMinutes, x:DataType=vm:NotificationConfigurationViewModel}" />
+        </Grid>
+        <Button Command="{Binding SaveCommand}" Text="Save" Margin="5" />
+    </VerticalStackLayout>
+</ContentPage>

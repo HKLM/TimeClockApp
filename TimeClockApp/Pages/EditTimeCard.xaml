@@ -21,6 +21,11 @@
     </ContentPage.Resources>
     <ScrollView>
         <StackLayout Margin="10">
+            <ActivityIndicator IsRunning="True" IsVisible="{Binding Loading}" />
+            <VerticalStackLayout IsVisible="{Binding HasError}">
+                <Label Text="Loading failed" />
+                <Button Command="{Binding AppearingCommand}" Text="Retry" />
+            </VerticalStackLayout>
             <Border
 				x:Name="helpbox"
 				Padding="8"
@@ -43,7 +48,6 @@
 				FontSize="24"
 				Text="{Binding TimeCard_EmployeeName}"
 				VerticalTextAlignment="Center" />
-
             <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
                 <Label
 					Style="{StaticResource LabelSmallCenter}"
@@ -55,7 +59,8 @@
 					ItemDisplayBinding="{Binding Name, x:DataType=m:Project}"
 					ItemsSource="{Binding ProjectList, Source={RelativeSource AncestorType={x:Type vm:EditTimeCardViewModel}}, x:DataType=vm:EditTimeCardViewModel}"
 					SelectedItem="{Binding SelectedProject, Source={RelativeSource AncestorType={x:Type vm:EditTimeCardViewModel}}, x:DataType=vm:EditTimeCardViewModel, Mode=TwoWay}"
-					VerticalOptions="Center" />
+					VerticalOptions="Center" 
+                    Title="Project" />
                 <Label
 					Grid.Row="1"
 					Style="{StaticResource LabelSmallCenter}"
@@ -68,9 +73,10 @@
 					ItemDisplayBinding="{Binding PhaseTitle, x:DataType=m:Phase}"
 					ItemsSource="{Binding PhaseList, Source={RelativeSource AncestorType={x:Type vm:EditTimeCardViewModel}}, x:DataType=vm:EditTimeCardViewModel}"
 					SelectedItem="{Binding SelectedPhase, Source={RelativeSource AncestorType={x:Type vm:EditTimeCardViewModel}}, x:DataType=vm:EditTimeCardViewModel, Mode=TwoWay}"
-					VerticalOptions="Center" />
-
+					VerticalOptions="Center" 
+                    Title="Phase" />
                 <Label
+
 					Grid.Row="2"
 					Style="{StaticResource LabelSmallCenter}"
 					Text="Date:"
@@ -109,7 +115,8 @@
 					Grid.Column="1"
 					IsEnabled="{Binding IsAdmin}"
 					ItemsSource="{Binding AllShiftStatus}"
-					SelectedIndex="{Binding TimeCard_Status, Converter={StaticResource enumToIntConverter}}" />
+					SelectedIndex="{Binding TimeCard_Status, Converter={StaticResource enumToIntConverter}}" 
+                    Title="Time Card Status" />
                 <Label
 					Grid.Row="6"
 					Style="{StaticResource LabelSmallCenter}"

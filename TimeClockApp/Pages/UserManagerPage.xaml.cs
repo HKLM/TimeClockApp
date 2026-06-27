@@ -1,6 +1,6 @@
 namespace TimeClockApp.Pages;
 
-[XamlCompilation(XamlCompilationOptions.Compile)]
+
 public partial class UserManagerPage : ContentPage
 {
     public UserManagerPage()
@@ -8,10 +8,10 @@ public partial class UserManagerPage : ContentPage
         InitializeComponent();
     }
 
-    protected override void OnAppearing()
+    protected override async void OnAppearing()
     {
         base.OnAppearing();
-        viewModel.OnAppearing();
+        await viewModel.OnAppearing();
     }
 
     private void NameBox_TextChanged(object sender, TextChangedEventArgs e)

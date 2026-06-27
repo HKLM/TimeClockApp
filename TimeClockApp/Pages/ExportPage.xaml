@@ -62,7 +62,7 @@
                         Text="{Binding ExportLog}" />
                 </ScrollView>
                 <Label Text="Type of data import:" />
-                <Grid ColumnDefinitions="Auto,35,auto" RowDefinitions="*">
+                <Grid ColumnDefinitions="Auto,Auto,Auto" RowDefinitions="*">
                     <Label Text="Add to existing" IsEnabled="False" />
                     <Switch Grid.Column="1" IsToggled="{Binding OverwriteData}" IsEnabled="False"  />
                     <Label Grid.Column="2" Text="OverWrite existing" />

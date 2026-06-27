@@ -1,6 +1,6 @@
 namespace TimeClockApp.Pages;
+#nullable enable
 
-[XamlCompilation(XamlCompilationOptions.Compile)]
 public partial class SettingsPage : ContentPage
 {
     public SettingsPage()

@@ -1,0 +1,11 @@
+﻿From the command Prompt, goto the "TimeClockApp\TimeClockApp.Shared" folder
+
+For SQLite (ef tools installed globally)
+dotnet ef migrations add --project "TimeClockApp.Shared.csproj" --framework net11.0 --startup-project "..\EFMigrator\EFMigrator.csproj" --context TimeClockApp.Shared.Models.DataBackendContext --configuration "SQLite Migration" --no-build  "Initial" --output-dir "Migrations"
+
+For SQLite (ef tools installed locally)
+dotnet tool run dotnet-ef  migrations add --framework net11.0 --project "TimeClockApp.Shared.csproj" --startup-project "..\EFMigrator\EFMigrator.csproj" --context TimeClockApp.Shared.Models.DataBackendContext --configuration "SQLite Migration" --no-build  "Initial" --output-dir "Migrations"
+
+For MSSQL migrations
+
+dotnet ef migrations add --framework net11.0 --project "TimeClockApp.Shared.csproj" --startup-project "..\EFMigrator\EFMigrator.csproj" --context TimeClockApp.Shared.Models.DataBackendContext --configuration "MSSQL Migration" --no-build  "Initial" --output-dir "Migrations"

@@ -53,7 +53,7 @@
                     Command="{Binding SaveSettingCommand, Source={RelativeSource AncestorType={x:Type vm:SettingsPageViewModel}}, x:DataType=vm:SettingsPageViewModel}"
 					CommandParameter="{Binding}"
                     Style="{StaticResource BaseImageButton}"
-					Source="save.png" />
+					Source="{AppThemeBinding Light=save_light.png, Dark=save.png}" />
             </Grid>
         </DataTemplate>
 
@@ -91,7 +91,7 @@
                     Command="{Binding SaveSettingCommand, Source={RelativeSource AncestorType={x:Type vm:SettingsPageViewModel}}, x:DataType=vm:SettingsPageViewModel}"
 					CommandParameter="{Binding}"
                     Style="{StaticResource BaseImageButton}"
-					Source="save.png" />
+					Source="{AppThemeBinding Light=save_light.png, Dark=save.png}" />
             </Grid>
         </DataTemplate>
 

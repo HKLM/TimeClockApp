@@ -4,46 +4,112 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
-	<Color x:Key="Primary">#4682b4</Color>
+    <!-- Note: For Android please see also Platforms\Android\Resources\values\colors.xml -->
+
+    <!-- Material 3 semantic palette -->
+    <Color x:Key="Primary">#4682b4</Color>
+    <Color x:Key="OnPrimary">#FFFFFF</Color>
+    <Color x:Key="PrimaryContainer">#36557D</Color>
+    <Color x:Key="OnPrimaryContainer">#08005D</Color>
+
     <Color x:Key="PrimaryDark">#4682b4</Color>
+    <Color x:Key="OnPrimaryDark">#FFFFFF</Color>
+    <Color x:Key="PrimaryContainerDark">#36557D</Color>
+    <Color x:Key="OnPrimaryContainerDark">#3385EF</Color>
+
+    <Color x:Key="Secondary">#4682b4</Color>
+    <Color x:Key="OnSecondary">#FFFFFF</Color>
+    <Color x:Key="SecondaryContainer">#B0CEF7</Color>
+    <Color x:Key="OnSecondaryContainer">#1D192B</Color>
+
+    <Color x:Key="SecondaryDark">#C2C5DC</Color>
+    <Color x:Key="OnSecondaryDark">#343C4F</Color>
+    <Color x:Key="SecondaryContainerDark">#36557D</Color>
+    <Color x:Key="OnSecondaryContainerDark">#DEE4F8</Color>
+
+    <Color x:Key="Tertiary">#2A67A9</Color>
+    <Color x:Key="OnTertiary">#FFFFFF</Color>
+    <Color x:Key="TertiaryContainer">#E7B471</Color>
+    <Color x:Key="OnTertiaryContainer">#A59E00</Color>
+
+    <Color x:Key="TertiaryDark">#2A67A9</Color>
+    <Color x:Key="OnTertiaryDark">#2A4925</Color>
+    <Color x:Key="TertiaryContainerDark">#53633B</Color>
+    <Color x:Key="OnTertiaryContainerDark">#F1E81C</Color>
+
+    <Color x:Key="SurfaceLight">#ECEEF4</Color>
+    <Color x:Key="SurfaceContainerLight">#E1E1E1</Color>
+    <Color x:Key="SurfaceVariantLight">#C4CBEC</Color>
+    <Color x:Key="OnSurfaceLight">#1D1B20</Color>
+    <Color x:Key="OnSurfaceVariantLight">#141414</Color>
+    <Color x:Key="OutlineLight">#79747E</Color>
+    <Color x:Key="OutlineVariantLight">#C8C8C8</Color>
+
+    <Color x:Key="SurfaceDark">#141218</Color>
+    <Color x:Key="SurfaceContainerDark">#211F26</Color>
+    <Color x:Key="SurfaceVariantDark">#3A4A6F</Color>
+    <Color x:Key="OnSurfaceDark">#E1E0E9</Color>
+    <Color x:Key="OnSurfaceVariantDark">#C8C8C8</Color>
+    <Color x:Key="OutlineDark">#938F99</Color>
+    <Color x:Key="OutlineVariantDark">#6E6E6E</Color>
+
+    <!-- Backwards-compatible aliases -->
     <Color x:Key="PrimaryDarkText">#242424</Color>
-    <Color x:Key="Secondary">#DFD8F7</Color>
-    <Color x:Key="SecondaryDarkText">#9880e5</Color>
+    <Color x:Key="SecondaryDarkText">#9EB0EC</Color>
+
     <Color x:Key="PageTitleBackgroundDark">#36557D</Color>
-	<Color x:Key="FlyBackgroundDark">#646770</Color>
-	<Color x:Key="FlyBackgroundLight">#C8C8C8</Color>
-	<Color x:Key="PageBackgroundLight">#BEC8D1</Color>
+    <Color x:Key="FlyBackgroundDark">#646770</Color>
+    <Color x:Key="FlyBackgroundLight">#C8C8C8</Color>
+    <Color x:Key="PageBackgroundLight">#BEC8D1</Color>
     <Color x:Key="PageBackgroundDark">#252526</Color>
-	<Color x:Key="FlyTextDark">#000000</Color>
-	<Color x:Key="FlyTextLight">#000000</Color>
-	<Color x:Key="TabBarBackground">#858E9B</Color>
-	<Color x:Key="BarSelect">#679ED6</Color>
-	<Color x:Key="Tertiary">#2A67A9</Color>
-	<Color x:Key="White">White</Color>
-	<Color x:Key="Black">Black</Color>
-	<Color x:Key="Gray50">#EBEBEB</Color>
-	<Color x:Key="Gray100">#E1E1E1</Color>
-	<Color x:Key="Gray200">#C8C8C8</Color>
-	<Color x:Key="Gray300">#ACACAC</Color>
-	<Color x:Key="Gray400">#919191</Color>
-	<Color x:Key="Gray500">#6E6E6E</Color>
-	<Color x:Key="Gray600">#404040</Color>
-	<Color x:Key="Gray800">#2A2A2A</Color>
-	<Color x:Key="Gray900">#212121</Color>
-	<Color x:Key="Gray950">#141414</Color>
-	<SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource Primary}"/>
-	<SolidColorBrush x:Key="SecondaryBrush" Color="{StaticResource Secondary}"/>
-	<SolidColorBrush x:Key="TertiaryBrush" Color="{StaticResource Tertiary}"/>
-	<SolidColorBrush x:Key="WhiteBrush" Color="{StaticResource White}"/>
-	<SolidColorBrush x:Key="BlackBrush" Color="{StaticResource Black}"/>
-    
+    <Color x:Key="FlyTextDark">#000000</Color>
+    <Color x:Key="FlyTextLight">#000000</Color>
+    <Color x:Key="TabBarBackground">#858E9B</Color>
+    <Color x:Key="BarSelect">#679ED6</Color>
+
+    <Color x:Key="White">White</Color>
+    <Color x:Key="Black">Black</Color>
+    <Color x:Key="Magenta">#5069A4</Color>
+    <Color x:Key="MidnightBlue">#1D1B20</Color>
+    <Color x:Key="OffBlack">#141218</Color>
+
+    <Color x:Key="Gray50">#EBEBEB</Color>
+    <Color x:Key="Gray100">#E1E1E1</Color>
+    <Color x:Key="Gray200">#C8C8C8</Color>
+    <Color x:Key="Gray300">#ACACAC</Color>
+    <Color x:Key="Gray400">#919191</Color>
+    <Color x:Key="Gray500">#6E6E6E</Color>
+    <Color x:Key="Gray600">#404040</Color>
+    <Color x:Key="Gray800">#2A2A2A</Color>
+    <Color x:Key="Gray900">#212121</Color>
+    <Color x:Key="Gray950">#141414</Color>
+
     <Color x:Key="Blue100Accent">#3E8EED</Color>
-	<Color x:Key="Blue300Accent">#A7CBF6</Color>
-	<Color x:Key="GoldAccent">#FFD700</Color>
-	<Color x:Key="DarkMagentaAccent">#512BD4</Color>
-	<Color x:Key="FireBrickAccent">#B22222</Color>
-	<Color x:Key="DarkGreenAccent">#006400</Color>
+    <Color x:Key="Blue300Accent">#A7CBF6</Color>
+    <Color x:Key="GoldAccent">#FFD700</Color>
+    <Color x:Key="DarkMagentaAccent">#512BD4</Color>
+    <Color x:Key="FireBrickAccent">#B22222</Color>
+    <Color x:Key="DarkGreenAccent">#006400</Color>
     <Color x:Key="OrangeRedAccent">#FF4500</Color>
     <Color x:Key="DarkRedAccent">#8B0000</Color>
+    
+    <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource Primary}"/>
+    <SolidColorBrush x:Key="SecondaryBrush" Color="{StaticResource Secondary}"/>
+    <SolidColorBrush x:Key="TertiaryBrush" Color="{StaticResource Tertiary}"/>
+    <SolidColorBrush x:Key="SurfaceLightBrush" Color="{StaticResource SurfaceLight}"/>
+    <SolidColorBrush x:Key="SurfaceDarkBrush" Color="{StaticResource SurfaceDark}"/>
+    <SolidColorBrush x:Key="SurfaceContainerLightBrush" Color="{StaticResource SurfaceContainerLight}"/>
+    <SolidColorBrush x:Key="SurfaceContainerDarkBrush" Color="{StaticResource SurfaceContainerDark}"/>
+    <SolidColorBrush x:Key="WhiteBrush" Color="{StaticResource White}"/>
+    <SolidColorBrush x:Key="BlackBrush" Color="{StaticResource Black}"/>
+
+    <SolidColorBrush x:Key="Gray100Brush" Color="{StaticResource Gray100}"/>
+    <SolidColorBrush x:Key="Gray200Brush" Color="{StaticResource Gray200}"/>
+    <SolidColorBrush x:Key="Gray300Brush" Color="{StaticResource Gray300}"/>
+    <SolidColorBrush x:Key="Gray400Brush" Color="{StaticResource Gray400}"/>
+    <SolidColorBrush x:Key="Gray500Brush" Color="{StaticResource Gray500}"/>
+    <SolidColorBrush x:Key="Gray600Brush" Color="{StaticResource Gray600}"/>
+    <SolidColorBrush x:Key="Gray900Brush" Color="{StaticResource Gray900}"/>
+    <SolidColorBrush x:Key="Gray950Brush" Color="{StaticResource Gray950}"/>
     
 </ResourceDictionary>

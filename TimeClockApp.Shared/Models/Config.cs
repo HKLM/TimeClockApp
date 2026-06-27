@@ -1,7 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using CsvHelper.Configuration;
-#nullable enable 
+#nullable enable
 
 namespace TimeClockApp.Shared.Models
 {
@@ -11,13 +10,11 @@ namespace TimeClockApp.Shared.Models
     /// </summary>
     public class Config
     {
-        [Key]
         public int ConfigId { get; set; }
 
         /// <summary>
         /// String name to help identify what this row is for
         /// </summary>
-        [Required]
         public required string Name { get; set; }
 
         /// <summary>

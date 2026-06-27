@@ -61,7 +61,8 @@
 								ItemDisplayBinding="{Binding Name, x:DataType=m:Project}"
 								ItemsSource="{Binding ProjectList, Source={RelativeSource AncestorType={x:Type vm:ChangeStartTimeViewModel}}, x:DataType=vm:ChangeStartTimeViewModel}"
 								SelectedItem="{Binding SelectedProject, Source={RelativeSource AncestorType={x:Type vm:ChangeStartTimeViewModel}}, x:DataType=vm:ChangeStartTimeViewModel, Mode=TwoWay}"
-								VerticalOptions="Center" />
+								VerticalOptions="Center"
+								Title="Project"/>
                         <Label
 								Grid.Row="2"
 								Text="Phase:"
@@ -74,7 +75,8 @@
 								ItemDisplayBinding="{Binding PhaseTitle, x:DataType=m:Phase}"
 								ItemsSource="{Binding PhaseList, Source={RelativeSource AncestorType={x:Type vm:ChangeStartTimeViewModel}}, x:DataType=vm:ChangeStartTimeViewModel}"
 								SelectedItem="{Binding SelectedPhase, Source={RelativeSource AncestorType={x:Type vm:ChangeStartTimeViewModel}}, x:DataType=vm:ChangeStartTimeViewModel, Mode=TwoWay}"
-								VerticalOptions="Center" />
+								VerticalOptions="Center"
+								Title="Phase" />
                     </Grid>
                 </Border>
                 <Button

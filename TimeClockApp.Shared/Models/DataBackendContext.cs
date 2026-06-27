@@ -19,23 +19,15 @@ namespace TimeClockApp.Shared.Models
 {
     public partial class DataBackendContext : DbContext
     {
-        public static bool Initialized { get; protected set; }
-        public static bool FirstRun { get; private set; } = true;
-        public static void SetFirstRun(bool IsFirstRun) => FirstRun = IsFirstRun;
+        internal static bool Initialized { get; private set; }
+        internal static bool FirstRun { get; private set; } = true;
+		internal static void SetFirstRun(bool IsFirstRun) => FirstRun = IsFirstRun;
 
-        [RequiresUnreferencedCode(
-    "EF Core isn't fully compatible with trimming, and running the application may generate unexpected runtime failures. "
-    + "Some specific coding pattern are usually required to make trimming work properly, see https://aka.ms/efcore-docs-trimming for "
-    + "more details.")]
         public DataBackendContext()
         {
             Initialize();
         }
 
-        [RequiresUnreferencedCode(
-"EF Core isn't fully compatible with trimming, and running the application may generate unexpected runtime failures. "
-+ "Some specific coding pattern are usually required to make trimming work properly, see https://aka.ms/efcore-docs-trimming for "
-+ "more details.")]
         public DataBackendContext(DbContextOptions<DataBackendContext> options) : base(options) 
         {
 #if MSSQL
@@ -130,8 +122,15 @@ namespace TimeClockApp.Shared.Models
                 .HasConversion<decimal>();
 #endif
 #endregion
-
-            modelBuilder.Entity<Employee>()
+			
+			modelBuilder.Entity<Config>(
+                e =>
+                {
+                    e.HasKey(t => t.ConfigId);
+					e.Property(t => t.ConfigId).UseAutoincrement();
+					e.Property(t => t.Name).HasMaxLength(50).IsRequired(true);
+                });
+			modelBuilder.Entity<Employee>()
                 .Property(t => t.Employee_Name)
                 .HasMaxLength(50);
             modelBuilder.Entity<Expense>()
@@ -144,79 +143,62 @@ namespace TimeClockApp.Shared.Models
             modelBuilder.Entity<TimeCard>(
                 e =>
                 {
-                    e.Property(t => t.TimeCard_DateTime).IsRequired(true);
+                    e.HasKey(t => t.TimeCardId);
+					e.Property(t => t.TimeCardId).UseAutoincrement();
+					e.Property(t => t.TimeCard_DateTime).IsRequired(true);
                     e.Property(t => t.TimeCard_Date).HasColumnType("date").IsRequired(true);
                     e.Property(t => t.TimeCard_StartTime).HasColumnType("time").HasPrecision(0);
                     e.Property(t => t.TimeCard_EndTime).HasColumnType("time").HasPrecision(0);
-                    e.Property(t => t.TimeCard_EmployeeName).HasMaxLength(50);
+                    e.Property(t => t.TimeCard_EmployeeName).HasMaxLength(50).IsRequired(true);
                     e.Property(t => t.ProjectName).HasMaxLength(50);
                     e.Property(t => t.PhaseTitle).HasMaxLength(50);
-                });
+                    e.Property(t => t.TimeCard_Status).IsRequired(true);
+					e.Property(t => t.TimeCard_EmployeePayRate).IsRequired(true); 
+                    e.Property(t => t.TimeCard_bReadOnly).IsRequired(true);
+				});
             modelBuilder.Entity<Project>()
                 .Property(t => t.ProjectDate)
                 .HasColumnType("date");
 
 #region ForeignKeys
 
-            modelBuilder.Entity<TimeCard>()
-                .HasOne(t => t.Employee)
-                .WithMany(t => t.TimeCards)
-                .HasForeignKey(t => t.EmployeeId);
-
-            modelBuilder.Entity<TimeCard>()
-                .HasOne(t => t.Project)
-                .WithMany(t => t.TimeCards)
-                .HasForeignKey(t => t.ProjectId);
-
-            modelBuilder.Entity<TimeCard>()
-                .HasOne(t => t.Phase)
-                .WithMany(t => t.TimeCards)
-                .HasForeignKey(t => t.PhaseId);
-
-            modelBuilder.Entity<Expense>()
-                .HasOne(t => t.Project)
-                .WithMany(t => t.Expenses)
-                .HasForeignKey(t => t.ProjectId);
-
-            modelBuilder.Entity<Expense>()
-                .HasOne(t => t.Phase)
-                .WithMany(t => t.Expenses)
-                .HasForeignKey(t => t.PhaseId);
-
-            modelBuilder.Entity<Expense>()
-                .HasOne(t => t.ExpenseType)
-                .WithMany(t => t.Expenses)
-                .HasForeignKey(t => t.ExpenseTypeId);
+			modelBuilder.Entity<TimeCard>(
+			e =>
+			{
+				e.HasOne(t => t.Employee).WithMany(t => t.TimeCards).HasForeignKey(t => t.EmployeeId);
+				e.HasOne(t => t.Project).WithMany(t => t.TimeCards).HasForeignKey(t => t.ProjectId);
+				e.HasOne(t => t.Phase).WithMany(t => t.TimeCards).HasForeignKey(t => t.PhaseId);
+			});
+			modelBuilder.Entity<Expense>(
+			e =>
+			{
+				e.HasOne(t => t.Project).WithMany(t => t.Expenses).HasForeignKey(t => t.ProjectId);
+				e.HasOne(t => t.Phase).WithMany(t => t.Expenses).HasForeignKey(t => t.PhaseId);
+				e.HasOne(t => t.ExpenseType).WithMany(t => t.Expenses).HasForeignKey(t => t.ExpenseTypeId);
+			});
 
 #endregion ForeignKeys
 
 #region DefaultValues
 
-            modelBuilder.Entity<Employee>()
+			modelBuilder.Entity<Employee>()
                 .Property(b => b.Employee_Employed)
                 .HasDefaultValue(EmploymentStatus.Employed);
-            modelBuilder.Entity<TimeCard>()
-                .Property(b => b.PhaseId)
-                .HasDefaultValue(1);
-            modelBuilder.Entity<TimeCard>()
-                .Property(b => b.ProjectId)
-                .HasDefaultValue(1);
+			modelBuilder.Entity<TimeCard>(
+			e =>
+			{
+                e.Property(b => b.PhaseId).HasDefaultValue(1);
+                e.Property(b => b.ProjectId).HasDefaultValue(1);
 #if MSSQL
-            modelBuilder.Entity<TimeCard>()
-                .Property(b => b.TimeCard_DateTime)
-                .HasDefaultValueSql("GETDATE()");
-            modelBuilder.Entity<TimeCard>()
-                .Property(t => t.TimeCard_WorkHours)
-                .HasComputedColumnSql("CONVERT([decimal](4,2),datediff(minute,[TimeCard_StartTime],[TimeCard_EndTime])/(60.0))", stored: true);
+                e.Property(b => b.TimeCard_DateTime).HasDefaultValueSql("GETDATE()");
+                e.Property(t => t.TimeCard_WorkHours).HasComputedColumnSql("CONVERT([decimal](4,2),datediff(minute,[TimeCard_StartTime],[TimeCard_EndTime])/(60.0))", stored: true);
 #else
-            modelBuilder.Entity<TimeCard>()
-                .Property(b => b.TimeCard_DateTime)
-                .HasDefaultValueSql("datetime('now', 'localtime')");
-            modelBuilder.Entity<TimeCard>()
-                .Property(t => t.TimeCard_WorkHours)
-                .HasComputedColumnSql("round((strftime('%s', [TimeCard_EndTime]) - strftime('%s', [TimeCard_StartTime])) / 3600.0, 2)", stored: true);
+				e.Property(b => b.TimeCard_DateTime).HasDefaultValueSql("datetime('now', 'localtime')");
+				e.Property(t => t.TimeCard_WorkHours).HasComputedColumnSql("round((strftime('%s', [TimeCard_EndTime]) - strftime('%s', [TimeCard_StartTime])) / 3600.0, 2)", stored: true);
 #endif
-            modelBuilder.Entity<Project>()
+			});
+
+			modelBuilder.Entity<Project>()
                 .Property(b => b.Status)
                 .HasDefaultValue(ProjectStatus.Ready);
             modelBuilder.Entity<Expense>()
@@ -319,7 +301,7 @@ namespace TimeClockApp.Shared.Models
             {
                 ConfigId = 12,
                 Name = "Version",
-                StringValue = "1.8",
+                StringValue = "2.2",
                 Hint = "Application Database version"
             },
             new Config
@@ -328,6 +310,54 @@ namespace TimeClockApp.Shared.Models
                 Name = "AppTheme",
                 IntValue = 0,
                 Hint = "Override App theme (0=Default-Unspecified, 1=Light, 2=Dark)"
+			},
+			new Config
+			{
+				ConfigId = 14,
+				Name = "UseNotifications",
+				IntValue = 0,
+				Hint = "Enable or disable scheduled notifications for Lunch Breaks, End of Shift. (0=Disabled, 1=Enabled)"
+			},
+			new Config
+			{
+				ConfigId = 15,
+				Name = "NotificationHours",
+				StringValue = "4.0",
+				Hint = "Amount of time in hours for notifications. In increments of a tenth of a hour. (1.5 = 1 hour & 30 min)"
+
+				/* 
+                 * TODO
+                            },
+                            new Config
+                            {
+                                ConfigId = 12,
+                                Name = "RegularTimeHours",
+                                IntValue = 8,
+                                Hint = "Max number of hours before OT (Default 8)"
+                            },
+                            new Config
+                            {
+                                ConfigId = 13,
+                                Name = "OverTimeHours",
+                                IntValue = 4,
+                                Hint = "Max number of OT hours before Double OT (Default 4)"
+                            },
+                            new Config
+                            {
+                                ConfigId = 14,
+                                Name = "OverTimePayMultiply",
+                                StringValue = "1.5",
+                                Hint = "Amount to multiply wages by for OT (Default 1.5)"
+                            },
+                            new Config
+                            {
+                                ConfigId = 15,
+                                Name = "2XOverTimePayMultiply",
+                                StringValue = "2",
+                                Hint = "Amount to multiply wages by for Double OT (Default 2)"
+                */
+			});
+
             });
 
             modelBuilder.Entity<Employee>().HasData(new Employee

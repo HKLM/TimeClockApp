@@ -164,8 +164,8 @@
         <StackLayout>
             <ActivityIndicator IsRunning="True" IsVisible="{Binding Loading}" />
             <VerticalStackLayout IsVisible="{Binding HasError}">
-                <Label Text="Loading failed" />
-                <Button  Command="{Binding AppearingCommand}" Text="Retry" />
+                <Label Text="{Binding ErrorMessage}" />
+                <Button Command="{Binding AppearingCommand}" Text="Retry" />
             </VerticalStackLayout>
             <Border
                 x:Name="helpbox" 
@@ -182,8 +182,8 @@
                         Style="{StaticResource LabelSmall}">
                         <Label.Text>
                             <OnPlatform x:TypeArguments="x:String">
-                                <On Platform="Android" Value="Time Card Page. &#10;&#10;Here clock-in and clock-out employees. &#10;&#10;Additional options for each Time Card by swiping the Time Card from the left edge to the right, will show Edit Time Card or Change Start Time options.  &#10;&#10;The toolbar has Manage Employee Status, Clock All In, and Clock All Out." />
-                                <On Platform="WinUI" Value="Time Card Page.  &#10;&#10;Here clock-in and clock-out employees.  &#10;&#10;Additional options for each Time Card by right clicking on it, will show Edit Time Card or Change Start Time options.   &#10;&#10;The toolbar has Manage Employee Status, Clock All In, and Clock All Out." />
+                                <On Platform="Android" Value="Time Card Page. &#10;&#10;Here clock-in and clock-out employees. &#10;&#10;Additional options for each Time Card by swiping the Time Card from the left edge to the right, will show Edit Time Card or Change Start Time options.  &#10;&#10;The toolbar has Manage Employee Status, Clock All In, and Clock All Out.&#10;&#10;NOTE Each Time Card is limited to a single date. If working past 11:59pm will require clocking out of the current card and starting a 2nd TimeCard for the time at 12am" />
+                                <On Platform="WinUI" Value="Time Card Page.  &#10;&#10;Here clock-in and clock-out employees.  &#10;&#10;Additional options for each Time Card by right clicking on it, will show Edit Time Card or Change Start Time options.   &#10;&#10;The toolbar has Manage Employee Status, Clock All In, and Clock All Out.&#10;&#10;NOTE Each Time Card is limited to a single date. If working past 11:59pm will require clocking out of the current card and starting a 2nd TimeCard for the time at 12am" />
                             </OnPlatform>
                         </Label.Text>
                     </Label>
@@ -215,7 +215,8 @@
                         HorizontalOptions="Fill"
                         ItemDisplayBinding="{Binding Name, x:DataType=m:Project}"
                         ItemsSource="{Binding ProjectList, Source={RelativeSource AncestorType={x:Type vm:TimeCardPageViewModel}}, x:DataType=vm:TimeCardPageViewModel}"
-                        SelectedItem="{Binding SelectedProject, Source={RelativeSource AncestorType={x:Type vm:TimeCardPageViewModel}}, x:DataType=vm:TimeCardPageViewModel, Mode=TwoWay}" />
+                        SelectedItem="{Binding SelectedProject, Source={RelativeSource AncestorType={x:Type vm:TimeCardPageViewModel}}, x:DataType=vm:TimeCardPageViewModel, Mode=TwoWay}" 
+                        Title="Project" />
                     <Label 
                         Grid.Row="1" 
                         HorizontalOptions="Start" 
@@ -227,7 +228,8 @@
                         HorizontalOptions="Fill"
                         ItemDisplayBinding="{Binding PhaseTitle, x:DataType=m:Phase}"
                         ItemsSource="{Binding PhaseList, Source={RelativeSource AncestorType={x:Type vm:TimeCardPageViewModel}}, x:DataType=vm:TimeCardPageViewModel}"
-                        SelectedItem="{Binding SelectedPhase, Source={RelativeSource AncestorType={x:Type vm:TimeCardPageViewModel}}, x:DataType=vm:TimeCardPageViewModel, Mode=TwoWay}" />
+                        SelectedItem="{Binding SelectedPhase, Source={RelativeSource AncestorType={x:Type vm:TimeCardPageViewModel}}, x:DataType=vm:TimeCardPageViewModel, Mode=TwoWay}" 
+                        Title="Phase" />
                 </Grid>
 
                 <CollectionView

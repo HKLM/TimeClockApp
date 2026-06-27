@@ -1,6 +1,6 @@
 namespace TimeClockApp.Pages;
 
-[XamlCompilation(XamlCompilationOptions.Compile)]
+
 public partial class TimeCardPage : ContentPage
 {
     private const string NoTimeCardMessage = "There is no TimeCard to edit.\n\nYou must first create a Time Card before it can be edited.";

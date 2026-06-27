@@ -73,6 +73,11 @@
 
     <ScrollView>
         <StackLayout Spacing="4">
+            <ActivityIndicator IsRunning="True" IsVisible="{Binding Loading}" />
+            <VerticalStackLayout IsVisible="{Binding HasError}">
+                <Label Text="Loading failed" />
+                <Button  Command="{Binding AppearingCommand}" Text="Retry" />
+            </VerticalStackLayout>
             <Border
 				x:Name="helpbox"
 				Padding="8"

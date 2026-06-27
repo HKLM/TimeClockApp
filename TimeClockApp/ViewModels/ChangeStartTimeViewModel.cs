@@ -60,7 +60,7 @@ namespace TimeClockApp.ViewModels
 
                 if (TimeCardID != 0)
                 {
-                    TimeCardEditing = await cardService.GetTimeCardByIDAsync(TimeCardID);
+                    TimeCardEditing = cardService.GetTimeCard(TimeCardID);
                     if (TimeCardEditing != null)
                     {
                         StartTime = TimeCardEditing.TimeCard_StartTime;
@@ -98,7 +98,7 @@ namespace TimeClockApp.ViewModels
                 await App.AlertSvc!.ShowAlertAsync("NOTICE", message).ConfigureAwait(false);
 
                 if (success)
-                    await RefreshCard();
+                    RefreshCard();
             }
             catch (Exception e)
             {
@@ -107,23 +107,23 @@ namespace TimeClockApp.ViewModels
             }
         }
 
-        private async Task RefreshCard()
-        {
-            if (TimeCardID > 0)
-            {
-                TimeCardEditing = await cardService.GetTimeCardByIDAsync(TimeCardID);
-                if (TimeCardEditing != null)
-                {
-                    StartTime = TimeCardEditing.TimeCard_StartTime;
-                    TimeCard_Date = TimeCardEditing.TimeCard_Date;
-                    TimeCard_EmployeeName = TimeCardEditing.TimeCard_EmployeeName;
-                    SelectedProject = TimeCardEditing.Project;
-                    SelectedPhase = TimeCardEditing.Phase;
-                }
-            }
-        }
+		private void RefreshCard()
+		{
+			if (TimeCardID > 0)
+			{
+				TimeCardEditing = cardService.GetTimeCard(TimeCardID);
+				if (TimeCardEditing != null)
+				{
+					StartTime = TimeCardEditing.TimeCard_StartTime;
+					TimeCard_Date = TimeCardEditing.TimeCard_Date;
+					TimeCard_EmployeeName = TimeCardEditing.TimeCard_EmployeeName;
+					SelectedProject = TimeCardEditing.Project;
+					SelectedPhase = TimeCardEditing.Phase;
+				}
+			}
+		}
 
-        [RelayCommand]
+		[RelayCommand]
         private void OnToggleHelpInfoBox()
         {
             HelpInfoBoxVisible = !HelpInfoBoxVisible;
