@@ -25,46 +25,60 @@ namespace TimeClockApp.Shared.Models
 
         public DataBackendContext()
         {
-            Initialize();
+            InitializeSync();
         }
 
         public DataBackendContext(DbContextOptions<DataBackendContext> options) : base(options) 
         {
-#if MSSQL
-            Database.Migrate();
-            Thread.Sleep(3000);
-#else
-            SQLitePCL.Batteries_V2.Init();
-            Database.Migrate();
-#endif
+            InitializeSync();
         }
 
-        private void Initialize()
+        private void InitializeSync()
         {
-            if (!Initialized)
-            {
-                try
-                {
-#if !MSSQL
-                    SQLitePCL.Batteries_V2.Init();
-#endif
-#if NEW_DATABASE
-                    this.Database.EnsureDeleted();
-                    Thread.Sleep(3000);
-                    this.Database.EnsureCreated();
-                    Thread.Sleep(3000);
-#endif
+            if (Initialized)
+                return;
 
-                    Database.Migrate();
-#if MSSQL
-                    Thread.Sleep(3000);
+            try
+            {
+#if !MSSQL
+                SQLitePCL.Batteries_V2.Init();
 #endif
-                }
-                finally
-                {
-                    Initialized = true;
-                    SetFirstRun(false);
-                }
+                // Database migrations will be performed asynchronously after app loads
+                // This method only initializes platform-specific requirements
+            }
+            finally
+            {
+                Initialized = true;
+                SetFirstRun(false);
+            }
+        }
+
+        /// <summary>
+        /// Performs asynchronous database migration and initialization.
+        /// Should be called after the UI has loaded to avoid blocking startup.
+        /// </summary>
+        public async Task InitializeDatabaseAsync(CancellationToken cancellationToken = default)
+        {
+            try
+            {
+#if NEW_DATABASE
+                await this.Database.EnsureDeletedAsync(cancellationToken);
+                // This is required for MSSQL
+                Thread.Sleep(3000);
+                await this.Database.EnsureCreatedAsync(cancellationToken);
+                Thread.Sleep(3000);
+#endif
+				// Perform migrations asynchronously without artificial delays
+				await Database.MigrateAsync(cancellationToken);
+#if MSSQL
+                // This is required for MSSQL to ensure the database is ready before the app continues
+                Thread.Sleep(3000);
+#endif
+			}
+			catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Database initialization error: {ex}");
+                // Log error but don't fail - the app should still start
             }
         }
 

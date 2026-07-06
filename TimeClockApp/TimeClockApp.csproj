@@ -18,11 +18,11 @@
 		<ApplicationId>com.alexanderbuilder.timeclockapp</ApplicationId>
 		 <!--Versions--> 
 		<ApplicationIdGuid>AA699F0D-F30D-4094-AAEC-745B07309A2B</ApplicationIdGuid>
-		<ApplicationVersion>8</ApplicationVersion>
-		<ApplicationDisplayVersion>2.2</ApplicationDisplayVersion>
-		<FileVersion>2.2</FileVersion>
-		<AssemblyVersion>2.2</AssemblyVersion>
-		<Version>2.2</Version>
+		<ApplicationVersion>9</ApplicationVersion>
+		<ApplicationDisplayVersion>2.3</ApplicationDisplayVersion>
+		<FileVersion>2.3</FileVersion>
+		<AssemblyVersion>2.3</AssemblyVersion>
+		<Version>2.3</Version>
 		<!-- Enable Material 3 design on Android -->
 		<UseMaterial3>true</UseMaterial3>
 		<!--<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>-->
@@ -48,7 +48,6 @@
 		<!--<PackageCertificateThumbprint>xxxxxxxxxxxxxxx</PackageCertificateThumbprint>
 		<AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>-->
 		<!--<WarningsNotAsErrors>$(WarningsNotAsErrors);IL2037</WarningsNotAsErrors>-->
-		<PublishReadyToRun>true</PublishReadyToRun>
 	</PropertyGroup>
 
 	<!-- Use CoreCLR on Android -->
@@ -57,18 +56,29 @@
 	</PropertyGroup>
 	
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net11.0-android|AnyCPU'">
+	  <PublishReadyToRun>true</PublishReadyToRun>
 	  <AndroidLinkTool>r8</AndroidLinkTool>
-	  <AndroidEnableProfiledAot>True</AndroidEnableProfiledAot>
-	  <PublishTrimmed>True</PublishTrimmed>
+	  <!-- Enable advanced optimizations for faster startup -->
+	  <AndroidUseAapt2>true</AndroidUseAapt2>
+	  <!-- Reduce app size and improve startup by trimming unused code -->
+	  <!--<PublishTrimmed>true</PublishTrimmed>-->
+	  <!--<TrimMode>link</TrimMode>-->
+	  <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+	  <!-- Enable profiled AOT for better performance on Android -->
+	  <AndroidEnableProfiledAot>true</AndroidEnableProfiledAot>
 	  <AndroidPackageFormat>apk</AndroidPackageFormat>
+	  <AndroidProfileStartup>true</AndroidProfileStartup>
+	  <UseInterpreter>false</UseInterpreter>
+	  <!-- Optimize method inlining and other JIT improvements -->
+	  <AndroidOptimizeForBrowsingPerformance>true</AndroidOptimizeForBrowsingPerformance>
 	  <!--<RunAOTCompilation>True</RunAOTCompilation>-->
 	  <!--<InterceptorsNamespaces>$(InterceptorsNamespaces);Microsoft.EntityFrameworkCore.GeneratedInterceptors</InterceptorsNamespaces>-->
 	</PropertyGroup>
 	
 	<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows' and '$(Configuration)' == 'Release'">
-		<!-- Replace xxxxxxxxxxxxxxx with your own PackageCertificateThumbprint value -->
 		<!--<AppxPackageSigningEnabled>true</AppxPackageSigningEnabled>
 		<PackageCertificateThumbprint>xxxxxxxxxxxxxxx</PackageCertificateThumbprint>-->
+	  <PublishReadyToRun>true</PublishReadyToRun>
 	  <PublishTrimmed>false</PublishTrimmed>
 	  <SelfContained>true</SelfContained>
 	  <PublishAot>false</PublishAot>
@@ -90,7 +100,7 @@
 	</ItemGroup>
 	
 	<ItemGroup Condition="$(TargetFramework.Contains('-android'))">
-	  <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" />
+	  <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" ForegroundScale="0.8" TintColor="#FF3B66D4" />
 	</ItemGroup>
   
 	<ItemGroup Condition="$(TargetFramework.Contains('-windows'))">

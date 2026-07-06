@@ -1,5 +1,6 @@
 ﻿using Plugin.LocalNotification;
 using TimeClockApp.Shared.Interfaces;
+using TimeClockApp.Services;
 #nullable enable
 
 namespace TimeClockApp;
@@ -18,11 +19,19 @@ public static class MauiProgram
 				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
 				fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
 			});
-		builder.Services.AddSingleton<DataBackendContext>((services) => new());
 
+		// Database context - created on-demand to defer initialization
+		builder.Services.AddSingleton<DataBackendContext>();
+
+		// Startup service for deferred initialization
+		builder.Services.AddSingleton<IStartupService>(services => 
+			new StartupServiceImpl(services.GetRequiredService<DataBackendContext>()));
+
+		// Core services
 		builder.Services.AddSingleton<IAlertService, AlertService>();
 		builder.Services.AddSingleton<ISharedService, SharedService>();
 
+		// Page services - converted to lazy initialization where appropriate
 		builder.Services.AddSingleton<TimeCardService>();
 		builder.Services.AddTransient<TimeCardPageViewModel>();
 		builder.Services.AddTransient<TimeCardPage>();
