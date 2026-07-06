@@ -338,40 +338,6 @@ namespace TimeClockApp.Shared.Models
 				Name = "NotificationHours",
 				StringValue = "4.0",
 				Hint = "Amount of time in hours for notifications. In increments of a tenth of a hour. (1.5 = 1 hour & 30 min)"
-
-				/* 
-                 * TODO
-                            },
-                            new Config
-                            {
-                                ConfigId = 12,
-                                Name = "RegularTimeHours",
-                                IntValue = 8,
-                                Hint = "Max number of hours before OT (Default 8)"
-                            },
-                            new Config
-                            {
-                                ConfigId = 13,
-                                Name = "OverTimeHours",
-                                IntValue = 4,
-                                Hint = "Max number of OT hours before Double OT (Default 4)"
-                            },
-                            new Config
-                            {
-                                ConfigId = 14,
-                                Name = "OverTimePayMultiply",
-                                StringValue = "1.5",
-                                Hint = "Amount to multiply wages by for OT (Default 1.5)"
-                            },
-                            new Config
-                            {
-                                ConfigId = 15,
-                                Name = "2XOverTimePayMultiply",
-                                StringValue = "2",
-                                Hint = "Amount to multiply wages by for Double OT (Default 2)"
-                */
-			});
-
             });
 
             modelBuilder.Entity<Employee>().HasData(new Employee
