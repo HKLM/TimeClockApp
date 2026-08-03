@@ -75,9 +75,14 @@ namespace TimeClockApp.Shared.Models
                 Thread.Sleep(3000);
 #endif
 			}
-			catch (Exception ex)
+            catch (System.InvalidOperationException ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Database initialization error: {ex}");
+                System.Diagnostics.Debug.WriteLine($"Database initialization error: {ex.Message}");
+                // Log error but don't fail - the app should still start
+            }   
+            catch (OperationCanceledException exOCE)
+            {
+                System.Diagnostics.Debug.WriteLine($"Database initialization error: {exOCE.Message}");
                 // Log error but don't fail - the app should still start
             }
         }
@@ -95,6 +100,7 @@ namespace TimeClockApp.Shared.Models
 
             optionsBuilder?
                     .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning))
+                    .ConfigureWarnings(w => w.Ignore(RelationalEventId.MigrationsNotFound))
 #if DEBUG
                     .EnableDetailedErrors(true)
                     .EnableSensitiveDataLogging(true)

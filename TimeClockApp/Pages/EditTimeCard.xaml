@@ -16,7 +16,7 @@
         <ResourceDictionary>
             <Converter:TimeOnlyToTimeSpanConverter x:Key="timeOnlyToTimeSpanConverter" />
             <Converter:DateOnlyToDateTimeConverter x:Key="dateOnlyToDateTimeConverter" />
-            <Converter:EnumToIntConverter x:Key="enumToIntConverter" />
+            <Converter:ShiftStatusEnumToIntConverter x:Key="enumToIntConverter" />
         </ResourceDictionary>
     </ContentPage.Resources>
     <ScrollView>

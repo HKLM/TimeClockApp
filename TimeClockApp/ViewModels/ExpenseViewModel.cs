@@ -1,4 +1,7 @@
-﻿#nullable enable
+﻿using CommunityToolkit.Maui.Alerts;
+using CommunityToolkit.Maui.Core;
+
+#nullable enable
 
 namespace TimeClockApp.ViewModels
 {
@@ -181,14 +184,16 @@ namespace TimeClockApp.ViewModels
 				}
 
 				string expenseNewMemo = Memo.Trim();
-				if (await dataService.AddNewExpenseAsync(SelectedProject.ProjectId, SelectedPhase.PhaseId, Amount, expenseNewMemo, SelectedProject.Name, SelectedPhase.PhaseTitle, SelectedExpenseType.ExpenseTypeId, SelectedExpenseType.CategoryName))
+				bool success = await dataService.AddNewExpenseAsync(SelectedProject.ProjectId, SelectedPhase.PhaseId, Amount, expenseNewMemo, SelectedProject.Name, SelectedPhase.PhaseTitle, SelectedExpenseType.ExpenseTypeId, SelectedExpenseType.CategoryName);
+                string message = success ? "Saved" : "Failed to save Expense";
+                //Toast
+                CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+                var toast = Toast.Make(message, ToastDuration.Short, 14);
+                await toast.Show(cancellationTokenSource.Token);
+                if (success)
 				{
-					await App.AlertSvc!.ShowAlertAsync("NOTICE", "Saved").ConfigureAwait(false);
-					Amount = 0;
-					
+					Amount = 0;					
 				}
-				else
-					await App.AlertSvc!.ShowAlertAsync("NOTICE", "Failed to save Expense").ConfigureAwait(false);
 			}
 			catch (Exception ex)
 			{

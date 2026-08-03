@@ -65,13 +65,18 @@
                         <BoxView Grid.Row="1" 
                                  HeightRequest="2" 
                                  HorizontalOptions="Fill" />
+                        <Label
+                            Grid.Row="2" 
+                            HorizontalOptions="End"
+                            Text="{Binding TimeCard_Duration, StringFormat='{}{0:hh\\:mm}'}"
+                            VerticalOptions="Fill" 
+                            VerticalTextAlignment="Start" />
                         <Button
                             Command="{Binding ClockInCommand, Source={RelativeSource AncestorType={x:Type vm:TimeCardPageViewModel}}, x:DataType=vm:TimeCardPageViewModel}" 
                             CommandParameter="{Binding}"
                             HorizontalOptions="End"
                             Style="{StaticResource GreenButton}"
-                            Text="Start" 
-                            ZIndex="1" />
+                            Text="Start" />
                         <Label
                             Grid.Row="4" 
                             HorizontalOptions="Fill"
@@ -128,7 +133,7 @@
                         <Label
                             Grid.Row="2" 
                             HorizontalOptions="End"
-                            Text="{Binding TimeCard_Duration, StringFormat='{}{0:h\\:mm}'}"
+                            Text="{Binding TimeCard_Duration, StringFormat='{}{0:hh\\:mm}'}"
                             VerticalOptions="Fill" 
                             VerticalTextAlignment="Start" />
                         <Label
@@ -142,7 +147,7 @@
                             CommandParameter="{Binding}"
                             HorizontalOptions="End"
                             Style="{StaticResource RedButton}"
-                            Text="End" ZIndex="1" />
+                            Text="End" />
                         <Label
                             Grid.Row="4" 
                             HorizontalOptions="Fill"

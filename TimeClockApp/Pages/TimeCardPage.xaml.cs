@@ -3,7 +3,6 @@ namespace TimeClockApp.Pages;
 
 public partial class TimeCardPage : ContentPage
 {
-    private const string NoTimeCardMessage = "There is no TimeCard to edit.\n\nYou must first create a Time Card before it can be edited.";
     protected readonly TimeCardPageViewModel viewModel;
 
     public TimeCardPage(TimeCardPageViewModel ViewModel)
@@ -30,7 +29,7 @@ public partial class TimeCardPage : ContentPage
     {
         if (id == 0)
         {
-            await App.AlertSvc!.ShowAlertAsync("NOTICE", NoTimeCardMessage).ConfigureAwait(false);
+            await App.AlertSvc!.ShowAlertAsync("NOTICE", "There is no TimeCard to edit.\n\nYou must first create a Time Card before it can be edited.").ConfigureAwait(false);
             return;
         }
 

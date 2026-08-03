@@ -34,7 +34,7 @@
 
     <Color x:Key="TertiaryDark">#2A67A9</Color>
     <Color x:Key="OnTertiaryDark">#2A4925</Color>
-    <Color x:Key="TertiaryContainerDark">#53633B</Color>
+    <Color x:Key="TertiaryContainerDark">#4DAE1C</Color>
     <Color x:Key="OnTertiaryContainerDark">#F1E81C</Color>
 
     <Color x:Key="SurfaceLight">#ECEEF4</Color>

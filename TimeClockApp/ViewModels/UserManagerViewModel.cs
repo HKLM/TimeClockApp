@@ -1,4 +1,7 @@
-﻿namespace TimeClockApp.ViewModels
+﻿using CommunityToolkit.Maui.Alerts;
+using CommunityToolkit.Maui.Core;
+
+namespace TimeClockApp.ViewModels
 {
     public partial class UserManagerViewModel : BaseViewModel
     {
@@ -113,7 +116,10 @@
                     string employeeNewJobTitle = JobTitle.Trim();
                     HRService.AddNewEmployee(employeeNewName, PayRate, employeeNewJobTitle, IsEmployed);
                     await RefreshEmployeesAsync();
-                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "Added new employee " + employeeNewName).ConfigureAwait(false);
+                    //Toast
+                    CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+                    var toast = Toast.Make("Added new employee " + employeeNewName, ToastDuration.Short, 14);
+                    await toast.Show(cancellationTokenSource.Token);
                 }
             }
             catch (AggregateException ax)
@@ -137,7 +143,11 @@
                     string eName = SelectedEmployee.Employee_Name;
                     HRService.FireEmployee(SelectedEmployee.EmployeeId);
                     await RefreshEmployeesAsync();
-                    await App.AlertSvc!.ShowAlertAsync("NOTICE", eName + " is Fired!").ConfigureAwait(false);
+                    //Toast
+                    CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+                    var toast = Toast.Make(eName + " is Fired!", ToastDuration.Long, 16);
+                    await toast.Show(cancellationTokenSource.Token);
+
                     RefreshInfo();
                 }
             }
@@ -165,7 +175,10 @@
                 if (EmployeeId > 0 && HRService.UpdateEmployee(EmployeeId, employeeNewName, PayRate, IsEmployed, employeeNewJobTitle))
                 {
                     await RefreshEmployeesAsync();
-                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "Saved " + employeeNewName).ConfigureAwait(false);
+                    //Toast
+                    CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+                    var toast = Toast.Make("Saved " + employeeNewName, ToastDuration.Short, 14);
+                    await toast.Show(cancellationTokenSource.Token);
                 }
             }
             catch (Exception ex)

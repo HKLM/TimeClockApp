@@ -1,4 +1,6 @@
-﻿#nullable enable
+﻿using CommunityToolkit.Maui.Alerts;
+using CommunityToolkit.Maui.Core;
+#nullable enable
 
 namespace TimeClockApp.ViewModels
 {
@@ -67,20 +69,23 @@ namespace TimeClockApp.ViewModels
 
             string newName = NewCategoryName.Trim();
             int i = await dataService.AddExpenseTypeAsync(newName);
+            string message = i switch
+            {
+                1 => "Saved",
+                2 => newName + " already exists in database. Failed to add new ExpenseType.",
+                _ => "Failed to add new ExpenseType"
+            };
             if (i == 1)
             {
                 SelectedExpenseType = null;
                 List<ExpenseType> x = await dataService.GetExpenseTypeListAsync();
                 ExpenseTypeList = x.ToObservableCollection();
                 NewCategoryName = string.Empty;
-                await App.AlertSvc!.ShowAlertAsync("NOTICE", "Saved").ConfigureAwait(false);
             }
-            else if (i == 2)
-            {
-                await App.AlertSvc!.ShowAlertAsync("DUPLICATE", newName + " already exists in database. Failed to add new ExpenseType.").ConfigureAwait(false);
-            }
-            else
-                await App.AlertSvc!.ShowAlertAsync("NOTICE", "Failed to add new ExpenseType").ConfigureAwait(false);
+            //Toast
+            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+            var toast = Toast.Make(message, ToastDuration.Short, 14);
+            await toast.Show(cancellationTokenSource.Token);
         }
 
         [RelayCommand]
@@ -97,16 +102,18 @@ namespace TimeClockApp.ViewModels
             try
             {
                 string newName = NewCategoryName.Trim();
-                if (await dataService.UpdateExpenseTypeAsync(SelectedExpenseType.ExpenseTypeId, newName))
+                bool success = await dataService.UpdateExpenseTypeAsync(SelectedExpenseType.ExpenseTypeId, newName);
+                string message = success ? "Saved" : "Failed to save ExpenseType";
+                //Toast
+                CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+                var toast = Toast.Make(message, ToastDuration.Short, 14);
+                await toast.Show(cancellationTokenSource.Token);
+                if (success)
                 {
                     SelectedExpenseType = null;
                     List<ExpenseType> x = await dataService.GetExpenseTypeListAsync();
                     ExpenseTypeList = x.ToObservableCollection();
-
-                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "Saved").ConfigureAwait(false);
                 }
-                else
-                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "Failed to save ExpenseType").ConfigureAwait(false);
             }
             catch (AggregateException ax)
             {
@@ -135,17 +142,18 @@ namespace TimeClockApp.ViewModels
                 Log.WriteLine("User is attempting to delete a ExpenseType record");
                 if (await App.AlertSvc!.ShowConfirmationAsync("CONFIRMATION", "Are you sure you want to Delete this ExpenseType?"))
                 {
-                    if (await dataService.DeleteExpenseTypeAsync(SelectedExpenseType.ExpenseTypeId))
+                    bool success = await dataService.DeleteExpenseTypeAsync(SelectedExpenseType.ExpenseTypeId);
+                    string message = success ? "Deleted" : "Failed to delete ExpenseType";
+                    //Toast
+                    CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+                    var toast = Toast.Make(message, ToastDuration.Short, 14);
+                    await toast.Show(cancellationTokenSource.Token);
+                    if (success)
                     {
                         SelectedExpenseType = null;
                         List<ExpenseType> x = await dataService.GetExpenseTypeListAsync();
                         ExpenseTypeList = x.ToObservableCollection();
-
-                        await App.AlertSvc!.ShowAlertAsync("NOTICE", "Deleted").ConfigureAwait(false);
-                        //await Shell.Current.GoToAsync("..");
                     }
-                    else
-                        await App.AlertSvc!.ShowAlertAsync("NOTICE", "Failed to delete ExpenseType").ConfigureAwait(false);
                 }
             }
             catch (AggregateException ax)

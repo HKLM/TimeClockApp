@@ -3,7 +3,7 @@ using CsvHelper.Configuration;
 #nullable enable
 
 namespace TimeClockApp.Shared.Models
-{
+{   
     /// <summary>
     /// Settings data storage. Each Setting has a Id and Name to Identify each setting.
     /// Values are either the StringValue or IntValue.

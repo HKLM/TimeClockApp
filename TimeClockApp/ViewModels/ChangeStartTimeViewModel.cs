@@ -1,4 +1,6 @@
-﻿using TimeClockApp.Shared.Helpers;
+﻿using CommunityToolkit.Maui.Alerts;
+using CommunityToolkit.Maui.Core;
+using TimeClockApp.Shared.Helpers;
 #nullable enable
 
 namespace TimeClockApp.ViewModels
@@ -95,8 +97,10 @@ namespace TimeClockApp.ViewModels
 
                 bool success = await cardService.UpdateTimeCardAsync(TimeCardEditing);
                 string message = success ? "TimeCard saved" : "Failed to save TimeCard";
-                await App.AlertSvc!.ShowAlertAsync("NOTICE", message).ConfigureAwait(false);
-
+                //Toast
+                CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+                var toast = Toast.Make(message, ToastDuration.Short, 14);
+                await toast.Show(cancellationTokenSource.Token);
                 if (success)
                     RefreshCard();
             }

@@ -9,7 +9,7 @@
 	    xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
 	    x:Name="AppSettingsPage"
         x:DataType="vm:SettingsPageViewModel"
-	    Title="Settings">
+	    Title="Advanced Settings">
     <ContentPage.BindingContext>
         <vm:SettingsPageViewModel x:Name="viewModel" />
     </ContentPage.BindingContext>

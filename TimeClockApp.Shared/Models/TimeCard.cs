@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using CsvHelper.Configuration;
+using TimeClockApp.Shared.Helpers;
 
 namespace TimeClockApp.Shared.Models
 {
@@ -192,10 +192,9 @@ namespace TimeClockApp.Shared.Models
                 if (TimeCard_Status == ShiftStatus.NA || TimeCard_Status == ShiftStatus.Deleted)
                     return TimeSpan.Zero;
 
-                if (TimeCard_EndTime == TimeOnly.MinValue)
-                    return TimeOnly.FromDateTime(DateTime.Now) - TimeCard_StartTime;
-
-                return TimeCard_EndTime - TimeCard_StartTime;
+                return TimeCard_EndTime == TimeOnly.MinValue
+                    ? TimeHelper.RoundTimeOnly(TimeOnly.FromDateTime(DateTime.Now)) - TimeCard_StartTime
+                    : TimeCard_EndTime - TimeCard_StartTime;
             }
         }
 

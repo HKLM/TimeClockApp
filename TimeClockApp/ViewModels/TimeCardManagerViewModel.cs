@@ -26,8 +26,19 @@ namespace TimeClockApp.ViewModels
 				}));
 		}
 
+        [ObservableProperty]
+        public partial bool UseDateFilter { get; set; }
+        [ObservableProperty]
+        public partial DateOnly StartDate { get; set; } = DateOnly.FromDateTime(DateTime.Now.AddDays(-7));
+        [ObservableProperty]
+        public partial DateOnly EndDate { get; set; } = DateOnly.FromDateTime(DateTime.Now);
+        #region "DatePicker Min/Max Bindings"
+        public DateTime PickerMinDate { get; set; }
+        private readonly DateTime pickerMaxDate = DateTime.Now;
+        public DateTime PickerMaxDate { get => pickerMaxDate; }
+        #endregion
 
-		[RelayCommand]
+        [RelayCommand]
 		public async Task OnAppearing()
 		{
 			if (Loading)
@@ -38,7 +49,9 @@ namespace TimeClockApp.ViewModels
 
 			try
 			{
-				await Task.Run(async () =>
+                PickerMinDate = cardService.GetAppFirstRunDate();
+
+                await Task.Run(async () =>
 				{
 					List<TimeCard> t = await cardService.GetTimeCards(SelectedNumberOfResults);
 					TimeCards = t.ToObservableCollection();
@@ -67,11 +80,28 @@ namespace TimeClockApp.ViewModels
 			{
 				if (TimeCards.Count > 0)
 					TimeCards.Clear();
-				await Task.Run(async () =>
+
+				if (UseDateFilter)
 				{
-					List<TimeCard> t = await cardService.GetTimeCards(SelectedNumberOfResults);
-					TimeCards = t.ToObservableCollection();
-				});
+                    if (StartDate > EndDate)
+                    {
+                        await App.AlertSvc!.ShowAlertAsync("VALIDATION ERROR", "StartDate must be before EndDate").ConfigureAwait(false);
+                        return;
+                    }
+					await Task.Run(async () =>
+					{
+						List<TimeCard> t = await cardService.GetTimeCards(SelectedNumberOfResults, StartDate, EndDate);
+						TimeCards = t.ToObservableCollection();
+					});
+				}
+				else
+				{
+					await Task.Run(async () =>
+					{
+						List<TimeCard> t = await cardService.GetTimeCards(SelectedNumberOfResults);
+						TimeCards = t.ToObservableCollection();
+					});
+				}
 			}
 			catch (Exception e)
 			{
@@ -84,7 +114,13 @@ namespace TimeClockApp.ViewModels
 			}
 		}
 
-		[RelayCommand]
+        [RelayCommand]
+        private void OnToggleDateFilterOptions()
+        {
+            UseDateFilter = !UseDateFilter;
+        }
+		
+        [RelayCommand]
 		private void OnToggleHelpInfoBox()
 		{
 			HelpInfoBoxVisible = !HelpInfoBoxVisible;

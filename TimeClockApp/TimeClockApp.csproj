@@ -13,29 +13,29 @@
 		<!--<Nullable>enable</Nullable>-->
 
 		<!-- Display name -->
-		<ApplicationTitle>Time Clock</ApplicationTitle>
+		<ApplicationTitle>Time Cards</ApplicationTitle>
 		 <!--App Identifier--> 
 		<ApplicationId>com.alexanderbuilder.timeclockapp</ApplicationId>
 		 <!--Versions--> 
 		<ApplicationIdGuid>AA699F0D-F30D-4094-AAEC-745B07309A2B</ApplicationIdGuid>
-		<ApplicationVersion>9</ApplicationVersion>
-		<ApplicationDisplayVersion>2.3</ApplicationDisplayVersion>
-		<FileVersion>2.3</FileVersion>
-		<AssemblyVersion>2.3</AssemblyVersion>
-		<Version>2.3</Version>
+		<ApplicationVersion>10</ApplicationVersion>
+		<ApplicationDisplayVersion>3.0</ApplicationDisplayVersion>
+		<FileVersion>3.0</FileVersion>
+		<AssemblyVersion>3.0</AssemblyVersion>
+		<Version>3.0</Version>
 		<!-- Enable Material 3 design on Android -->
 		<UseMaterial3>true</UseMaterial3>
 		<!--<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>-->
-		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">30.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">36.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
 		<Configurations>Debug;Release;MSSQL Migration;SQLite Migration</Configurations>
 		<Copyright>2026 (c) Brian Alexander</Copyright>
 		<Authors>Brian Alexander</Authors>
 		<Company>Alexander Builder</Company>
-		<Description>Employee TimeCard app to track amount of time employees has worked and for reporting weekly hours for payroll.</Description>
+		<Description>Employer TimeCard app to track amount of time employees has worked and for reporting weekly hours for payroll.</Description>
 		<SourceRevisionId>build$([System.DateTime]::Now.ToString("yy.M.d:HH.mm"))</SourceRevisionId>
-		<Title>TimeClock App</Title>
+		<Title>TimeCards App</Title>
 		<DefaultLanguage>en-us</DefaultLanguage>
 		<SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
 		<EnableSplashScreenProcessing>false</EnableSplashScreenProcessing>
@@ -49,7 +49,7 @@
 		<AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>-->
 		<!--<WarningsNotAsErrors>$(WarningsNotAsErrors);IL2037</WarningsNotAsErrors>-->
 	</PropertyGroup>
-
+  
 	<!-- Use CoreCLR on Android -->
 	<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
 		<UseMonoRuntime>false</UseMonoRuntime>
@@ -60,18 +60,13 @@
 	  <AndroidLinkTool>r8</AndroidLinkTool>
 	  <!-- Enable advanced optimizations for faster startup -->
 	  <AndroidUseAapt2>true</AndroidUseAapt2>
-	  <!-- Reduce app size and improve startup by trimming unused code -->
-	  <!--<PublishTrimmed>true</PublishTrimmed>-->
-	  <!--<TrimMode>link</TrimMode>-->
-	  <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
 	  <!-- Enable profiled AOT for better performance on Android -->
 	  <AndroidEnableProfiledAot>true</AndroidEnableProfiledAot>
-	  <AndroidPackageFormat>apk</AndroidPackageFormat>
+	  <!--<AndroidPackageFormat>apk</AndroidPackageFormat>-->
 	  <AndroidProfileStartup>true</AndroidProfileStartup>
 	  <UseInterpreter>false</UseInterpreter>
 	  <!-- Optimize method inlining and other JIT improvements -->
 	  <AndroidOptimizeForBrowsingPerformance>true</AndroidOptimizeForBrowsingPerformance>
-	  <!--<RunAOTCompilation>True</RunAOTCompilation>-->
 	  <!--<InterceptorsNamespaces>$(InterceptorsNamespaces);Microsoft.EntityFrameworkCore.GeneratedInterceptors</InterceptorsNamespaces>-->
 	</PropertyGroup>
 	
@@ -88,7 +83,7 @@
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<RuntimeIdentifier>$(RuntimeIdentifierOverride)</RuntimeIdentifier>
 	</PropertyGroup>
- 
+  
 	<ItemGroup>
 	  <MauiImage Include="Resources\Images\*.svg" />
 	  <MauiImage Include="Resources\Images\*.png" />
@@ -100,7 +95,7 @@
 	</ItemGroup>
 	
 	<ItemGroup Condition="$(TargetFramework.Contains('-android'))">
-	  <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" ForegroundScale="0.8" TintColor="#FF3B66D4" />
+	  <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" BaseSize="24,24" ForegroundScale="0.6" Color="White" TintColor="#0F4690" />
 	</ItemGroup>
   
 	<ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
@@ -126,11 +121,20 @@
 	  <Content Include="Platforms\Windows\Images\winui\splashscreen.scale-200.png" />
 	  <Content Include="Platforms\Windows\Images\winui\splashscreen.scale-400.png" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Remove="Pages\NotificationConfigurationPage.xaml.cs" />
+	  <Compile Remove="ViewModels\NotificationConfigurationViewModel.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <MauiXaml Remove="Pages\NotificationConfigurationPage.xaml" />
+	</ItemGroup>
 		
 	<ItemGroup>
-		<PackageReference Include="CommunityToolkit.Maui" Version="14.2.0" />
+		<PackageReference Include="CommunityToolkit.Maui" Version="15.0.0" />
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
-		<PackageReference Include="Microsoft.Maui.Controls" Version="11.0.0-preview.5.26304.4" />
+		<PackageReference Include="Microsoft.Maui.Controls" Version="11.0.0-preview.6.26360.8" />
 		<PackageReference Include="Plugin.LocalNotification" Version="14.1.1" />
 	</ItemGroup>
 	
@@ -174,9 +178,6 @@
 	  <MauiXaml Update="Pages\InvoicePage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="Pages\NotificationConfigurationPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
 	  <MauiXaml Update="Pages\PayrollDetailPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
@@ -184,6 +185,9 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Pages\ReportPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Pages\SettingsBasicPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Pages\SettingsPage.xaml">

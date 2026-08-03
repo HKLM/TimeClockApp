@@ -1,5 +1,3 @@
-using TimeClockApp.Shared.Models;
-
 namespace TimeClockApp.Services;
 
 #nullable enable

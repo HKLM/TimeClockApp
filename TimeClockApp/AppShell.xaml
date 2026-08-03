@@ -77,12 +77,15 @@
         <Tab Title="BackUp" Icon="backup.png">
             <ShellContent ContentTemplate="{DataTemplate local:ExportPage}" Route="ExportPage" />
         </Tab>
-        <Tab Title="Alarm" Icon="calendar_clock_24px.png">
+        <!--<Tab Title="Alarm" Icon="calendar_clock_24px.png">
             <ShellContent ContentTemplate="{DataTemplate local:NotificationConfigurationPage}" Route="NotificationConfigurationPage" />
-        </Tab>
+        </Tab>-->
         <Tab Title="Settings" Icon="settings.png">
-            <ShellContent ContentTemplate="{DataTemplate local:SettingsPage}" Route="SettingsPage" />
+            <ShellContent ContentTemplate="{DataTemplate local:SettingsBasicPage}" Route="SettingsBasicPage" />
         </Tab>
+        <!--<Tab Title="Advanced Settings" Icon="settings.png">
+            <ShellContent ContentTemplate="{DataTemplate local:SettingsPage}" Route="SettingsPage" />
+        </Tab>-->
     </FlyoutItem>
     <FlyoutItem Title="Advanced" FlyoutDisplayOptions="AsSingleItem" Icon="edit_note.png">
         <Tab Title="HR" Icon="manage_accounts.png">

@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using Microsoft.EntityFrameworkCore;
+using TimeClockApp.Shared;
 using TimeClockApp.Shared.Helpers;
 
 namespace TimeClockApp.Services
@@ -26,20 +27,23 @@ namespace TimeClockApp.Services
 
         private DayOfWeek GetPayDayOfWeek()
         {
-            int i = 11;
-            Config c = Context.Config.Find(i);
-            int x = c.IntValue.Value + 1 == 7 ? 0 : c.IntValue.Value;
-            DayOfWeek p = (DayOfWeek)x;
-            return p;
-        }
-
-        public DateTime GetAppFirstRunDate()
-        {
-            int i = 2;
-            Config c = Context.Config.Find(i);
-            DateOnly d = DateOnly.Parse(c.StringValue);
-            d = d.AddDays(-6);
-            return d.ToDateTime(new TimeOnly(0, 0));
+            int x;
+            int p = -1;
+            if (Preferences.ContainsKey("PayDayOfWeek", PrefSetting.PrefKey))
+            {
+                p = Preferences.Get("PayDayOfWeek", 1, PrefSetting.PrefKey);
+            }
+            if (p == -1)
+            {
+                int i = 11;
+                Config c = Context.Config.Find(i);
+                x = c.IntValue.Value + 1 == 7 ? 0 : c.IntValue.Value;
+            }
+            else
+            {
+                x = p + 1 == 7 ? 0 : p;
+            }
+            return (DayOfWeek)x;
         }
 
 #region PROJECTS_PHASES
@@ -52,12 +56,6 @@ namespace TimeClockApp.Services
                 .Where(item => item.Status < ProjectStatus.Completed)
                 .OrderBy(e => e.Name)
                 .ToObservableCollection();
-
-        public async Task<List<Project>> GetProjectsListAsync() =>
-            await Context.Project
-                .Where(item => item.Status < ProjectStatus.Completed)
-                .OrderBy(e => e.Name)
-                .ToListAsync();
 
         public ObservableCollection<Project> GetAllProjectsList(bool bShowAll) =>
             (bShowAll) ? Get_AllProjectsList() : Get_NotAllProjectsList();
@@ -75,28 +73,35 @@ namespace TimeClockApp.Services
 
         public ObservableCollection<Phase> GetPhaseList() => Context.Phase.OrderBy(e => e.PhaseTitle).ToObservableCollection();
 
-        public async Task<List<Phase>> GetPhaseListAsync() => await Context.Phase.OrderBy(e => e.PhaseTitle).ToListAsync();
-
         public Project GetCurrentProjectEntity()
         {
-            int? c = GetConfigInt(3, 1);
-            if (!c.HasValue || c.Value == 0)
-                c = 1;
-
+            int? c;
+            c = Preferences.Get("CurrentProject", -1, PrefSetting.PrefKey);
+            if (c == -1)
+            {
+                c = GetConfigInt(3, 1);
+                if (!c.HasValue || c.Value == 0)
+                    c = 1;
+            }
             return Context.Project.Find(c.Value);
         }
 
         public Phase GetCurrentPhaseEntity()
         {
-                int? c = GetConfigInt(4, 1);
+            int? c;
+            c = Preferences.Get("CurrentPhase", -1, PrefSetting.PrefKey);
+            if (c == -1)
+            {
+                c = GetConfigInt(4, 1);
                 if (!c.HasValue || c.Value == 0)
                     c = 1;
-
+            }
             return Context.Phase.Find(c.Value);
         }
 
         public async Task SaveCurrentProjectAsync(int projectId)
         {
+            Preferences.Set("CurrentProject", projectId, PrefSetting.PrefKey);
             int i = 3;
             var C = Context.Config.Find(i);
             if (C.IntValue.HasValue && C.IntValue.Value != projectId)
@@ -116,6 +121,7 @@ namespace TimeClockApp.Services
 
         public async Task SaveCurrentPhaseAsync(int phaseId)
         {
+            Preferences.Set("CurrentPhase", phaseId, PrefSetting.PrefKey);
             int i = 4;
             Config C = Context.Config.Find(i);
             if (C.IntValue.HasValue && C.IntValue.Value != phaseId)

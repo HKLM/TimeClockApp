@@ -9,7 +9,7 @@ namespace TimeClockApp.ViewModels
 
 		public static double NotificationHours { get; set; } = 0;
 
-		public AppTheme GetThemeType()
+		private AppTheme GetThemeType()
 		{
 			if (OverrideAppTheme == AppTheme.Unspecified)
 				OverrideAppTheme = pageService.GetAppThemeSetting();

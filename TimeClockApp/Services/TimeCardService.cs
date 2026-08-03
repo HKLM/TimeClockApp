@@ -8,40 +8,25 @@ namespace TimeClockApp.Services
 {
 	public class TimeCardService : TimeCardDataStore
 	{
-#if WINDOWS
-		[System.Diagnostics.CodeAnalysis.RequiresDynamicCode("Warning from using 'System.Linq.Queryable.AsQueryable<TElement>(IEnumerable<TElement>)' which has 'RequiresDynamicCodeAttribute'")]
-		[System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("Warning from using 'System.Linq.Queryable.AsQueryable<TElement>(IEnumerable<TElement>)' which has 'RequiresUnreferencedCodeAttribute'")]
-#endif
 		public Task<List<TimeCard>> GetLastTimeCardForAllEmployeesAsync()
 		{
-#if WINDOWS
-#pragma warning disable IL3050
-#pragma warning disable IL2026
-#endif
 			// Get all employed employees with their most recent unpaid timecards in a single query
-			var employeesWithCards = Context.Employee
+			// Using GroupJoin to avoid N+1 query problem
+			return Context.Employee
 				.Where(e => e.Employee_Employed == EmploymentStatus.Employed)
 				.OrderBy(e => e.Employee_Name)
-				.Select(e => new
-				{
-					Employee = e,
-					LastTimeCard = Context.TimeCard
-						.Where(tc => tc.EmployeeId == e.EmployeeId
-							&& tc.TimeCard_Status < ShiftStatus.Paid
-							&& !tc.TimeCard_bReadOnly)
-						.OrderByDescending(tc => tc.TimeCard_DateTime)
-						.FirstOrDefault()
-				})
-				.AsQueryable();
-
-			return employeesWithCards
+				.GroupJoin(
+					Context.TimeCard
+						.Where(tc => tc.TimeCard_Status < ShiftStatus.Paid && !tc.TimeCard_bReadOnly),
+					e => e.EmployeeId,
+					tc => tc.EmployeeId,
+					(employee, timeCards) => new
+					{
+						Employee = employee,
+						LastTimeCard = timeCards.OrderByDescending(tc => tc.TimeCard_DateTime).FirstOrDefault()
+					})
 				.Select(item => item.LastTimeCard ?? new TimeCard(item.Employee))
 				.ToListAsync();
-#if WINDOWS
-#pragma warning restore IL3050
-#pragma warning restore IL2026
-#endif
-
 		}
 
 		public async Task<bool> EmployeeClockInAsync(TimeCard card, int projectID, int phaseID, string projectName, string phaseTitle)
@@ -51,11 +36,11 @@ namespace TimeClockApp.Services
 
 			if (IsEmployeeNotOnTheClock(card.EmployeeId))
 			{
-				DateTime entry = DateTime.Now;
-				TimeOnly sTime = TimeHelper.RoundTimeOnly(new TimeOnly(entry.Hour, entry.Minute));
+				DateTime now = DateTime.Now;
+				TimeOnly sTime = TimeHelper.RoundTimeOnly(new TimeOnly(now.Hour, now.Minute));
 				TimeCard c = new(card.Employee, projectID, phaseID, projectName, phaseTitle, sTime);
 
-				Context.Add<TimeCard>(c);
+				Context.Add(c);
 				await Context.SaveChangesAsync().ConfigureAwait(false);
 				return true;
 			}
@@ -69,9 +54,10 @@ namespace TimeClockApp.Services
 				TimeCard t = GetTimeCard(timeCardId);
 				if (await ValidateClockOutAsync(t))
 				{
-					t.TimeCard_EndTime = TimeHelper.RoundTimeOnly(new TimeOnly(DateTime.Now.Hour, DateTime.Now.Minute));
+					DateTime now = DateTime.Now;
+					t.TimeCard_EndTime = TimeHelper.RoundTimeOnly(new TimeOnly(now.Hour, now.Minute));
 					t.TimeCard_Status = ShiftStatus.ClockedOut;
-					Context.Update<TimeCard>(t);
+					Context.Update(t);
 					await Context.SaveChangesAsync().ConfigureAwait(false);
 					return true;
 				}
@@ -81,10 +67,9 @@ namespace TimeClockApp.Services
 
 		private bool IsEmployeeNotOnTheClock(int employeeID) => !Context.TimeCard
 			.AsNoTracking()
-			.Where(tc => tc.EmployeeId == employeeID
+			.Any(tc => tc.EmployeeId == employeeID
 				&& tc.TimeCard_Status == ShiftStatus.ClockedIn
-				&& !tc.TimeCard_bReadOnly)
-			.Any();
+				&& !tc.TimeCard_bReadOnly);
 
 		public async Task<bool> MarkTimeCardAsPaidAsync(TimeCard timeCard)
 		{
@@ -97,7 +82,7 @@ namespace TimeClockApp.Services
 				{
 					t.TimeCard_Status = ShiftStatus.Paid;
 					t.TimeCard_bReadOnly = true;
-					Context.Update<TimeCard>(t);
+					Context.Update(t);
 					await Context.SaveChangesAsync().ConfigureAwait(false);
 					return true;
 				}

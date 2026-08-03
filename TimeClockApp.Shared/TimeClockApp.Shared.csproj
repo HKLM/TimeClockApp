@@ -16,21 +16,26 @@
 		<Configurations>Debug;Release;MSSQL Migration;SQLite Migration</Configurations>
 		<Authors>Brian Alexander</Authors>
 		<Company>Alexander Builder</Company>
-		<Title>TimeClockApp.Shared</Title>
+		<Title>TimeCards App.Shared</Title>
 		<Copyright>2026 (c) Brian Alexander</Copyright>
-		<ApplicationVersion>8</ApplicationVersion>
-		<ApplicationDisplayVersion>2.2</ApplicationDisplayVersion>
-		<FileVersion>2.2</FileVersion>
-		<AssemblyVersion>2.2</AssemblyVersion>
-		<Version>2.2</Version>
+		<ApplicationVersion>10</ApplicationVersion>
+		<ApplicationDisplayVersion>3.0</ApplicationDisplayVersion>
+		<FileVersion>3.0</FileVersion>
+		<AssemblyVersion>3.0</AssemblyVersion>
+		<Version>3.0</Version>
 		<SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows' and '$(RuntimeIdentifierOverride)' != ''">
 		<RuntimeIdentifier>$(RuntimeIdentifierOverride)</RuntimeIdentifier>
 	</PropertyGroup>
-	
-	<!--SET THE DATABASE TYPE HERE SQLITE OR MSSQL-->
+
+  <!-- Use CoreCLR on Android -->
+  <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+	<UseMonoRuntime>false</UseMonoRuntime>
+  </PropertyGroup>
+
+  <!--SET THE DATABASE TYPE HERE SQLITE OR MSSQL-->
 	<Choose>
 	  <When Condition="'$(Configuration)'=='MSSQL Migration'">
 		<PropertyGroup>
@@ -55,9 +60,9 @@
 
 	<ItemGroup>
 		<PackageReference Include="CsvHelper" Version="33.1.0" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="11.0.0-preview.5.26302.115" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="11.0.0-preview.6.26359.118" />
 		<!--<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.0" />-->
-		<PackageReference Include="Microsoft.Maui.Controls" Version="11.0.0-preview.5.26304.4" />
+		<PackageReference Include="Microsoft.Maui.Controls" Version="11.0.0-preview.6.26360.8" />
 	</ItemGroup>
 
 </Project>

@@ -45,7 +45,7 @@
                                     Clicked="FlyItemEditCard_Clicked" />
                         </MenuFlyout>
                     </FlyoutBase.ContextFlyout>
-                    <Grid ColumnDefinitions="65,73,73,40,Auto" ColumnSpacing="3" RowDefinitions="Auto">
+                    <Grid ColumnDefinitions="65,75,75,40,Auto" ColumnSpacing="3" RowDefinitions="Auto">
                         <Label
                             LineBreakMode="NoWrap"
                             Style="{StaticResource LabelMicro}"
@@ -100,7 +100,7 @@
                                     Clicked="FlyItemEditCard_Clicked"/>
                         </MenuFlyout>
                     </FlyoutBase.ContextFlyout>
-                    <Grid ColumnDefinitions="65,73,73,40,Auto" ColumnSpacing="3" RowDefinitions="Auto">
+                    <Grid ColumnDefinitions="65,75,75,40,Auto" ColumnSpacing="3" RowDefinitions="Auto">
                         <Label 
                             Style="{StaticResource LabelMicro}" 
                             Text="{Binding TimeCard_Date, Converter={StaticResource dateOnlyConverter}, StringFormat='{0:ddd MMM d}'}"
@@ -138,7 +138,7 @@
 
         <DataTemplate x:Key="paidTemplate" x:DataType="m:TimeCard">
             <VerticalStackLayout>
-                <Grid ColumnDefinitions="65,73,73,40,Auto" ColumnSpacing="3" RowDefinitions="Auto">
+                <Grid ColumnDefinitions="65,75,75,40,Auto" ColumnSpacing="3" RowDefinitions="Auto">
                     <Label LineBreakMode="NoWrap"
                            Style="{StaticResource LabelMicro}"
                            Text="{Binding TimeCard_Date, Converter={StaticResource dateOnlyConverter}, StringFormat='{0:ddd MMM d}'}"
@@ -238,7 +238,7 @@
                             CommandParameter="{Binding}"
                             IsEnabled="{Binding TimeCard_bReadOnly, Converter={StaticResource reverseBoolConverter}}"
                             Style="{StaticResource ReportButton}"
-                            HorizontalOptions="End"
+                            HorizontalOptions="Center"
                             Text="MarkPaid" />
                     </Grid>
                 </VerticalStackLayout>
@@ -308,7 +308,7 @@
                             Command="{Binding ReportClockOutCommand, Source={RelativeSource AncestorType={x:Type vm:PayrollDetailViewModel}}, x:DataType=vm:PayrollDetailViewModel}"
                             CommandParameter="{Binding}"
                             Style="{StaticResource ReportButton}"
-                            HorizontalOptions="End"
+                            HorizontalOptions="Center"
                             Text="{Binding TimeCard_Status, StringFormat='{0}'}" />
                     </Grid>
                 </VerticalStackLayout>
@@ -358,7 +358,7 @@
                         Grid.Column="6"
                         IsEnabled="False"
                         Style="{StaticResource ReportButton}"
-                        HorizontalOptions="End"
+                        HorizontalOptions="Center"
                         Text="{Binding TimeCard_Status, StringFormat='{0}'}"
                         Padding="25,14" />
                 </Grid>

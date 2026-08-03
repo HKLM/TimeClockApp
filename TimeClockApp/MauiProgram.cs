@@ -76,11 +76,15 @@ public static class MauiProgram
 		builder.Services.AddTransient<InvoiceDetailExpensesViewModel>();
 		builder.Services.AddTransient<InvoiceDetailTimecardsViewModel>();
 
-		builder.Services.AddSingleton<AppPageService>();
+        builder.Services.AddSingleton<SettingsService>();
+        builder.Services.AddTransient<SettingsBasicPageViewModel>();
+        builder.Services.AddTransient<SettingsBasicPage>();
+
+        builder.Services.AddSingleton<AppPageService>();
 		builder.Services.AddTransient<AppViewModel>();
 
-		builder.Services.AddTransient<NotificationConfigurationViewModel>();
-		builder.Services.AddTransient<NotificationConfigurationPage>();
+		//builder.Services.AddTransient<NotificationConfigurationViewModel>();
+		//builder.Services.AddTransient<NotificationConfigurationPage>();
 
 		builder.Services.AddSingleton<AppShell>();
 

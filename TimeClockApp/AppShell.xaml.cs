@@ -35,7 +35,7 @@ public partial class AppShell : Shell
 		Routing.RegisterRoute("PayrollDetailPage", typeof(PayrollDetailPage));
 		Routing.RegisterRoute("InvoiceDetailTimecards", typeof(InvoiceDetailTimecards));
 		Routing.RegisterRoute("InvoiceDetailExpenses", typeof(InvoiceDetailExpenses));
-		Routing.RegisterRoute("PageNotificationConfiguration", typeof(NotificationConfigurationPage));
+		//Routing.RegisterRoute("PageNotificationConfiguration", typeof(NotificationConfigurationPage));
 	}
 
 	protected override void OnAppearing()

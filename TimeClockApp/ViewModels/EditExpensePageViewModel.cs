@@ -1,4 +1,8 @@
-﻿namespace TimeClockApp.ViewModels
+﻿using CommunityToolkit.Maui.Alerts;
+using CommunityToolkit.Maui.Core;
+using TimeClockApp.Shared;
+
+namespace TimeClockApp.ViewModels
 {
     public partial class EditExpensePageViewModel : BaseViewModel, IQueryAttributable
     {
@@ -61,7 +65,15 @@
         {
             PickerMinDate = dataService.GetAppFirstRunDate();
             ExpenseDate = DateOnly.FromDateTime(DateTime.Now);
-            IsAdmin = IntToBool(dataService.GetConfigInt(9, 0));
+            if (Preferences.ContainsKey("IsAdmin", PrefSetting.PrefKey))
+            {
+                IsAdmin = Preferences.Get("IsAdmin", IsAdmin, PrefSetting.PrefKey);
+            }
+            else
+            {
+                IsAdmin = IntToBool(dataService.GetConfigInt(9, 0));
+                Preferences.Set("IsAdmin", IsAdmin, PrefSetting.PrefKey);
+            }
 
             Refresh();
         }
@@ -120,13 +132,14 @@
                 ExpenseItem.ExpenseTypeId = SelectedExpenseType.ExpenseTypeId;
                 ExpenseItem.ExpenseTypeCategoryName = SelectedExpenseType.CategoryName;
 
-                if (dataService.UpdateExpense(ExpenseItem))
-                {
-                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "Saved").ConfigureAwait(false);
+                bool success = dataService.UpdateExpense(ExpenseItem);
+                string message = success ? "Saved" : "Failed to save Expense";
+                //Toast
+                CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+                var toast = Toast.Make(message, ToastDuration.Short, 14);
+                await toast.Show(cancellationTokenSource.Token);
+                if (success) 
                     Refresh();
-                }
-                else
-                    await App.AlertSvc!.ShowAlertAsync("NOTICE", "Failed to save Expense").ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -145,13 +158,16 @@
                 Log.WriteLine("User is attempting to delete a Expense record");
                 if (await App.AlertSvc!.ShowConfirmationAsync("CONFIRMATION", "Are you sure you want to Delete this expense?"))
                 {
-                    if (await dataService.DeleteExpense(ExpenseItem))
+                    bool success = await dataService.DeleteExpense(ExpenseItem);
+                    string message = success ? "Deleted" : "Failed to delete Expense";
+                    //Toast
+                    CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+                    var toast = Toast.Make(message, ToastDuration.Short, 14);
+                    await toast.Show(cancellationTokenSource.Token);
+                    if (success)
                     {
-                        await App.AlertSvc!.ShowAlertAsync("NOTICE", "Deleted");
                         await Shell.Current.GoToAsync("..");
                     }
-                    else
-                        await App.AlertSvc!.ShowAlertAsync("NOTICE", "Failed to delete Expense").ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
