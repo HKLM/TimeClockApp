@@ -1,4 +1,6 @@
 ﻿using System.Reflection;
+using CommunityToolkit.Maui.Alerts;
+using CommunityToolkit.Maui.Core;
 using Plugin.LocalNotification;
 using Plugin.LocalNotification.EventArgs;
 #nullable enable
@@ -35,7 +37,6 @@ public partial class AppShell : Shell
 		Routing.RegisterRoute("PayrollDetailPage", typeof(PayrollDetailPage));
 		Routing.RegisterRoute("InvoiceDetailTimecards", typeof(InvoiceDetailTimecards));
 		Routing.RegisterRoute("InvoiceDetailExpenses", typeof(InvoiceDetailExpenses));
-		//Routing.RegisterRoute("PageNotificationConfiguration", typeof(NotificationConfigurationPage));
 	}
 
 	protected override void OnAppearing()
@@ -61,6 +62,40 @@ public partial class AppShell : Shell
 		AssemblyInformationalVersionAttribute? attribute = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
 		return attribute?.InformationalVersion ?? string.Empty;
 	}
+
+	/// <summary>
+	/// Displays a toast notification
+	/// </summary>
+	/// <param name="message">The message to display</param>
+	/// <returns></returns>
+	public static async Task DisplayToastAsync(string message, bool UseLongToastDuration = false)
+	{
+		// Toast is currently not working in MCT on Windows
+		if (OperatingSystem.IsWindows())
+			return;
+		ToastDuration duration = UseLongToastDuration ? ToastDuration.Long : ToastDuration.Short;
+		CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+		IToast toast = Toast.Make(message, duration, 14);
+		await toast.Show(cancellationTokenSource.Token);
+	}
+
+	//public static async Task DisplaySnackbarAsync(string message)
+	//{
+	//	CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+
+	//	var snackbarOptions = new SnackbarOptions
+	//	{
+	//		BackgroundColor = Color.FromArgb("#FF3300"),
+	//		TextColor = Colors.White,
+	//		ActionButtonTextColor = Colors.Yellow,
+	//		CornerRadius = new CornerRadius(0),
+	//		Font = Font.SystemFontOfSize(18),
+	//		ActionButtonFont = Font.SystemFontOfSize(14)
+	//	};
+
+	//	var snackbar = Snackbar.Make(message, visualOptions: snackbarOptions);
+	//	await snackbar.Show(cancellationTokenSource.Token);
+	//}
 
 	private void ShowCustomAlertFromNotification(NotificationEventArgs e)
 	{

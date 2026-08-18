@@ -29,9 +29,10 @@ namespace TimeClockApp.ViewModels
 		public virtual void OnAppearing()
 		{
 			Application.Current!.UserAppTheme = GetThemeType();
+			IsAdmin = pageService.GetIsAdminSetting();
 			UseNotifications = GetIsNotificationsEnabled();
 			if (UseNotifications)
 				NotificationHours = pageService.GetNotificationHoursSetting();
-		}	
+		}
 	}
 }

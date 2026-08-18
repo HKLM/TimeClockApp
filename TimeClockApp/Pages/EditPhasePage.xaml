@@ -72,14 +72,14 @@
                     x:Name="PhaseNameBox"
                     Grid.Row="4"
                     Keyboard="Text"
-                    Text="{Binding PhaseTitle, Mode=TwoWay}" 
+                    Text="{Binding PhaseTitle,TargetNullValue='',FallbackValue='', Mode=TwoWay}" 
                     Placeholder="Phase Title">
                     <Entry.Behaviors>
                         <toolkit:TextValidationBehavior 
                             BindingContext="{Binding Path=BindingContext, Source={x:Reference PhaseNameBox}, x:DataType=Entry}"
 							InvalidStyle="{StaticResource InvalidEntryStyle}"
                             ValidStyle="{StaticResource ValidEntryStyle}"
-							Flags="ValidateOnValueChanged"
+							Flags="ValidateOnUnfocused"
                             DecorationFlags="NormalizeWhiteSpace"
 							MinimumLength="1"
 							MaximumLength="50"

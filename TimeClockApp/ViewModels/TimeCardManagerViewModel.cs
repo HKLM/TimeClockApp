@@ -32,11 +32,11 @@ namespace TimeClockApp.ViewModels
         public partial DateOnly StartDate { get; set; } = DateOnly.FromDateTime(DateTime.Now.AddDays(-7));
         [ObservableProperty]
         public partial DateOnly EndDate { get; set; } = DateOnly.FromDateTime(DateTime.Now);
-        #region "DatePicker Min/Max Bindings"
+#region "DatePicker Min/Max Bindings"
         public DateTime PickerMinDate { get; set; }
         private readonly DateTime pickerMaxDate = DateTime.Now;
         public DateTime PickerMaxDate { get => pickerMaxDate; }
-        #endregion
+#endregion
 
         [RelayCommand]
 		public async Task OnAppearing()

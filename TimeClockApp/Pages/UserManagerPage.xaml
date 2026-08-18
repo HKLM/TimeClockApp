@@ -10,11 +10,9 @@
         xmlns:m="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
 		x:DataType="vm:UserManagerViewModel"
 		Title="HR Dept">
-    <ContentPage.BindingContext>
-        <vm:UserManagerViewModel x:Name="viewModel" />
-    </ContentPage.BindingContext>
     <ContentPage.ToolbarItems>
         <ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
+        <ToolbarItem Command="{Binding ClearTheFormCommand}" IconImageSource="redo.png" />
     </ContentPage.ToolbarItems>
     <ContentPage.Resources>
         <ResourceDictionary>
@@ -73,7 +71,7 @@
                                 BindingContext="{Binding Path=BindingContext, Source={x:Reference NameBox}, x:DataType=Entry}"
 								InvalidStyle="{StaticResource InvalidEntryStyle}"
                                 ValidStyle="{StaticResource ValidEntryStyle}"
-								Flags="ValidateOnValueChanged"
+								Flags="ValidateOnUnfocused"
                                 DecorationFlags="NormalizeWhiteSpace"
 								MinimumLength="1"
 								MaximumLength="40"
@@ -94,7 +92,7 @@
                                 BindingContext="{Binding Path=BindingContext, Source={x:Reference JobTitleBox}, x:DataType=Entry}"
 								InvalidStyle="{StaticResource InvalidEntryStyle}"
                                 ValidStyle="{StaticResource ValidEntryStyle}"
-								Flags="ValidateOnValueChanged"
+								Flags="ValidateOnUnfocused"
                                 DecorationFlags="NormalizeWhiteSpace"
 								MinimumLength="1"
 								MaximumLength="40"
@@ -112,7 +110,7 @@
                         <Entry.Behaviors>
                             <toolkit:NumericValidationBehavior
                                 BindingContext="{Binding Path=BindingContext, Source={x:Reference PayRateBox}, x:DataType=Entry}"
-								Flags="ValidateOnValueChanged"
+								Flags="ValidateOnUnfocused"
 								InvalidStyle="{StaticResource InvalidEntryStyle}"
                                 ValidStyle="{StaticResource ValidEntryStyle}"
 								MaximumDecimalPlaces="2"

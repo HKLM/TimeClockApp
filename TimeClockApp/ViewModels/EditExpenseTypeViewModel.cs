@@ -1,6 +1,4 @@
-﻿using CommunityToolkit.Maui.Alerts;
-using CommunityToolkit.Maui.Core;
-#nullable enable
+﻿#nullable enable
 
 namespace TimeClockApp.ViewModels
 {
@@ -82,11 +80,8 @@ namespace TimeClockApp.ViewModels
                 ExpenseTypeList = x.ToObservableCollection();
                 NewCategoryName = string.Empty;
             }
-            //Toast
-            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-            var toast = Toast.Make(message, ToastDuration.Short, 14);
-            await toast.Show(cancellationTokenSource.Token);
-        }
+			await AppShell.DisplayToastAsync(message);
+		}
 
         [RelayCommand]
         private async Task EditExpenseTypeAsync()
@@ -104,11 +99,8 @@ namespace TimeClockApp.ViewModels
                 string newName = NewCategoryName.Trim();
                 bool success = await dataService.UpdateExpenseTypeAsync(SelectedExpenseType.ExpenseTypeId, newName);
                 string message = success ? "Saved" : "Failed to save ExpenseType";
-                //Toast
-                CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-                var toast = Toast.Make(message, ToastDuration.Short, 14);
-                await toast.Show(cancellationTokenSource.Token);
-                if (success)
+				await AppShell.DisplayToastAsync(message);
+				if (success)
                 {
                     SelectedExpenseType = null;
                     List<ExpenseType> x = await dataService.GetExpenseTypeListAsync();
@@ -144,11 +136,8 @@ namespace TimeClockApp.ViewModels
                 {
                     bool success = await dataService.DeleteExpenseTypeAsync(SelectedExpenseType.ExpenseTypeId);
                     string message = success ? "Deleted" : "Failed to delete ExpenseType";
-                    //Toast
-                    CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-                    var toast = Toast.Make(message, ToastDuration.Short, 14);
-                    await toast.Show(cancellationTokenSource.Token);
-                    if (success)
+					await AppShell.DisplayToastAsync(message);
+					if (success)
                     {
                         SelectedExpenseType = null;
                         List<ExpenseType> x = await dataService.GetExpenseTypeListAsync();

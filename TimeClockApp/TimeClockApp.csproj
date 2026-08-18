@@ -18,15 +18,15 @@
 		<ApplicationId>com.alexanderbuilder.timeclockapp</ApplicationId>
 		 <!--Versions--> 
 		<ApplicationIdGuid>AA699F0D-F30D-4094-AAEC-745B07309A2B</ApplicationIdGuid>
-		<ApplicationVersion>10</ApplicationVersion>
-		<ApplicationDisplayVersion>3.0</ApplicationDisplayVersion>
-		<FileVersion>3.0</FileVersion>
-		<AssemblyVersion>3.0</AssemblyVersion>
-		<Version>3.0</Version>
+		<ApplicationVersion>11</ApplicationVersion>
+		<ApplicationDisplayVersion>3.1</ApplicationDisplayVersion>
+		<FileVersion>3.1</FileVersion>
+		<AssemblyVersion>3.1</AssemblyVersion>
+		<Version>3.1</Version>
 		<!-- Enable Material 3 design on Android -->
 		<UseMaterial3>true</UseMaterial3>
 		<!--<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>-->
-		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">36.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">32.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
 		<Configurations>Debug;Release;MSSQL Migration;SQLite Migration</Configurations>
@@ -95,6 +95,7 @@
 	</ItemGroup>
 	
 	<ItemGroup Condition="$(TargetFramework.Contains('-android'))">
+	  <!--<MauiIcon Include="Resources\AppIcon\appiconfg.svg" ForegroundScale="0.65" Color="White" />-->
 	  <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" BaseSize="24,24" ForegroundScale="0.6" Color="White" TintColor="#0F4690" />
 	</ItemGroup>
   
@@ -121,20 +122,11 @@
 	  <Content Include="Platforms\Windows\Images\winui\splashscreen.scale-200.png" />
 	  <Content Include="Platforms\Windows\Images\winui\splashscreen.scale-400.png" />
 	</ItemGroup>
-
-	<ItemGroup>
-	  <Compile Remove="Pages\NotificationConfigurationPage.xaml.cs" />
-	  <Compile Remove="ViewModels\NotificationConfigurationViewModel.cs" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <MauiXaml Remove="Pages\NotificationConfigurationPage.xaml" />
-	</ItemGroup>
 		
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Maui" Version="15.0.0" />
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
-		<PackageReference Include="Microsoft.Maui.Controls" Version="11.0.0-preview.6.26360.8" />
+		<PackageReference Include="Microsoft.Maui.Controls" Version="11.0.0-preview.7.26406.9" />
 		<PackageReference Include="Plugin.LocalNotification" Version="14.1.1" />
 	</ItemGroup>
 	
@@ -188,9 +180,6 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Pages\SettingsBasicPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Pages\SettingsPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Pages\TimeCardManagerPage.xaml">

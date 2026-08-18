@@ -26,6 +26,13 @@ namespace TimeClockApp.Services
 			private set => zip_filename = value;
 		}
 
+		private readonly IFileService _fileService;
+
+		public ExportDataService(IFileService fileService)
+		{
+			_fileService = fileService;
+		}
+
 		public Task<List<TimeCard>> BackupGetTimeCard() => Context.TimeCard.IgnoreAutoIncludes().ToListAsync();
 		public Task<List<Employee>> BackupGetEmployee() => Context.Employee.IgnoreAutoIncludes().ToListAsync();
 		public Task<List<Project>> BackupGetProject() => Context.Project.IgnoreAutoIncludes().ToListAsync();
@@ -34,7 +41,7 @@ namespace TimeClockApp.Services
 		public Task<List<Expense>> BackupGetExpense() => Context.Expense.IgnoreAutoIncludes().ToListAsync();
 		public Task<List<ExpenseType>> BackupGetExpenseType() => Context.ExpenseType.IgnoreAutoIncludes().ToListAsync();
 
-		#region READCSV
+#region READCSV
 
 		private async Task<string?> ReadFileVersionAsync(string csvFile)
 		{
@@ -139,7 +146,7 @@ namespace TimeClockApp.Services
 #endregion READCSV
 
 		public async Task BackupDatabase(string? savePath = null)
-        {
+		{
 #if SQLITE
 
 			try
@@ -167,18 +174,14 @@ namespace TimeClockApp.Services
 			}
 			catch (IOException io)
 			{
-				Log.WriteLine($"{io.Message}\n{io.InnerException}\n", "Backup");
 				await ShowPopupErrorAsync($"{io.Message}\n{io.InnerException}", "ABORTING BACKUP DUE TO ERROR").ConfigureAwait(false);
 			}
 			catch (AggregateException ax)
 			{
-				Log.WriteLine("BACKUP NOT COMPLETED!!\n", "Backup");
 				TimeClockApp.Shared.Exceptions.FlattenAggregateException.ShowAggregateException(ax);
 			}
 			catch (Exception ex)
 			{
-				Log.WriteLine("BACKUP NOT COMPLETED!!\n", "Backup");
-				Log.WriteLine($"{ex.Message}\n{ex.InnerException}\n", "Backup");
 				await ShowPopupErrorAsync($"{ex.Message}\n{ex.InnerException}", "ABORTING BACKUP DUE TO ERROR").ConfigureAwait(false);
 			}
 			finally
@@ -191,7 +194,7 @@ namespace TimeClockApp.Services
 #endif
 		}
 
-		#region IMPORT DATA
+#region IMPORT DATA
 
 		public async Task<string> ImportData(ImportDataModel dataModel, string ExportLog, bool overWriteData)
 		{
@@ -308,8 +311,6 @@ namespace TimeClockApp.Services
 					{
 						//To prevent saving in the finally block of this try-catch
 						dataModel.ReadyToSave = 0;
-						Log.WriteLine($"ImportData: {ex.Message}\n{ex.InnerException}\nUNDOING CHANGES\n", "Import");
-
 						await transaction.RollbackToSavepointAsync("optimistic-update");
 
 						await ShowPopupErrorAsync($"{ex.Message}\n{ex.InnerException}", "ImportData ABORTING DUE TO ERROR").ConfigureAwait(false);
@@ -367,7 +368,6 @@ namespace TimeClockApp.Services
 			}
 			catch (Exception ex)
 			{
-				Log.WriteLine($"{ex.Message}\n{ex.InnerException}\n", "Import");
 				await ShowPopupErrorAsync($"{ex.Message}\n{ex.InnerException}", "ImportTimeCard ABORTING DUE TO ERROR").ConfigureAwait(false);
 			}
 			return false;
@@ -398,12 +398,10 @@ namespace TimeClockApp.Services
 			}
 			catch (InvalidDataException x)
 			{
-				Log.WriteLine($"{x.Message}\n{x.InnerException}\n", "Import");
 				await ShowPopupErrorAsync($"{x.Message}\n{x.InnerException}", "ABORTING DUE TO InvalidDataException").ConfigureAwait(false);
 			}
 			catch (Exception ex)
 			{
-				Log.WriteLine($"{ex.Message}\n{ex.InnerException}\n", "Import");
 				await ShowPopupErrorAsync($"{ex.Message}\n{ex.InnerException}", "ABORTING DUE TO ERROR").ConfigureAwait(false);
 			}
 			return false;
@@ -433,7 +431,6 @@ namespace TimeClockApp.Services
 			}
 			catch (Exception ex)
 			{
-				Log.WriteLine($"{ex.Message}\n{ex.InnerException}\n", "Import");
 				await ShowPopupErrorAsync($"{ex.Message}\n{ex.InnerException}", "ABORTING DUE TO ERROR").ConfigureAwait(false);
 			}
 			return false;
@@ -461,7 +458,6 @@ namespace TimeClockApp.Services
 			}
 			catch (Exception ex)
 			{
-				Log.WriteLine($"{ex.Message}\n{ex.InnerException}\n", "Import");
 				await ShowPopupErrorAsync($"{ex.Message}\n{ex.InnerException}", "ABORTING DUE TO ERROR").ConfigureAwait(false);
 			}
 			return false;
@@ -482,17 +478,18 @@ namespace TimeClockApp.Services
 					updateCard.Name = card.Name;
 					updateCard.Hint = card.Hint ?? null;
 					Context.Update<Config>(updateCard);
+					UpdatePreferences(ref card);
 					return true;
 				}
 				else
 				{
 					Context.Add<Config>(card);
+					UpdatePreferences(ref card);
 					return true;
 				}
 			}
 			catch (Exception ex)
 			{
-				Log.WriteLine($"{ex.Message}\n{ex.InnerException}\n", "Import");
 				await ShowPopupErrorAsync($"{ex.Message}\n{ex.InnerException}", "ABORTING DUE TO ERROR").ConfigureAwait(false);
 			}
 			return false;
@@ -529,7 +526,6 @@ namespace TimeClockApp.Services
 			}
 			catch (Exception ex)
 			{
-				Log.WriteLine($"{ex.Message}\n{ex.InnerException}\n", "Import");
 				await ShowPopupErrorAsync($"{ex.Message}\n{ex.InnerException}", "ABORTING DUE TO ERROR").ConfigureAwait(false);
 			}
 			return false;
@@ -557,7 +553,6 @@ namespace TimeClockApp.Services
 			}
 			catch (Exception ex)
 			{
-				Log.WriteLine($"{ex.Message}\n{ex.InnerException}\n", "Import");
 				await ShowPopupErrorAsync($"{ex.Message}\n{ex.InnerException}", "ABORTING DUE TO ERROR").ConfigureAwait(false);
 			}
 			return false;
@@ -600,12 +595,73 @@ namespace TimeClockApp.Services
 			}
 			catch (Exception ex)
 			{
-				string ExportLog = $"\nUnzipArchive EXCEPTION ERROR\n{ex.Message}\n{ex.InnerException}";
-				Log.WriteLine(ExportLog);
-				await ShowPopupErrorAsync(ExportLog, "UnzipArchive ABORTING DUE TO ERROR").ConfigureAwait(false);
+				await ShowPopupErrorAsync($"\nUnzipArchive EXCEPTION ERROR\n{ex.Message}\n{ex.InnerException}", "UnzipArchive ABORTING DUE TO ERROR").ConfigureAwait(false);
 			}
 			return dataModel;
 		}
+
+		/// <summary>
+		/// Updates the application preferences based on the imported configuration.
+		/// </summary>
+		/// <param name="card">The config being imported, containing preference values.</param>
+		private void UpdatePreferences(ref Config card)
+		{
+			if (card == null)
+				return;
+			try
+			{
+				switch (card.ConfigId)
+				{
+					case 2:
+						Preferences.Set("FirstRun", card.StringValue, PrefSetting.PrefKey);
+						break;
+					case 3:
+						Preferences.Set("CurrentProject", (int)card.IntValue!, PrefSetting.PrefKey);
+						break;
+					case 4:
+						Preferences.Set("CurrentPhase", (int)card.IntValue!, PrefSetting.PrefKey);
+						break;
+					case 5:
+						Preferences.Set("WorkCompRate", card.StringValue, PrefSetting.PrefKey);
+						break;
+					case 6:
+						Preferences.Set("EstimateEmployerTaxes", card.StringValue, PrefSetting.PrefKey);
+						break;
+					case 7:
+						Preferences.Set("ProfitRate", card.StringValue, PrefSetting.PrefKey);
+						break;
+					case 8:
+						Preferences.Set("OverHeadRate", card.StringValue, PrefSetting.PrefKey);
+						break;
+					case 9:
+						Preferences.Set("IsAdmin", (int)card.IntValue!, PrefSetting.PrefKey);
+						break;
+					case 10:
+						Preferences.Set("DaysInPayPeriod", (int)card.IntValue!, PrefSetting.PrefKey);
+						break;
+					case 11:
+						Preferences.Set("PayDayOfWeek", (int)card.IntValue!, PrefSetting.PrefKey);
+						break;
+					case 13:
+						Preferences.Set("AppTheme", (int)card.IntValue!, PrefSetting.PrefKey);
+						Application.Current!.UserAppTheme = (AppTheme)(int)card.IntValue!;
+						break;
+					case 14:
+						Preferences.Set("UseNotifications", (int)card.IntValue!, PrefSetting.PrefKey);
+						break;
+					case 15:
+						Preferences.Set("NotificationHours", card.StringValue, PrefSetting.PrefKey);
+						break;
+					default:
+						break;
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.WriteLine($"{ex.Message}\n{ex.InnerException}\n", "UpdatePreferences");
+			}
+		}
+
 
 #endregion
 
@@ -646,9 +702,8 @@ namespace TimeClockApp.Services
 			// Zip everything up
 			await ZipFile.CreateFromDirectoryAsync(folderToZipPath, exportZipFilePath, CompressionLevel.Fastest, false);
 
-			FileService fhs = new();
 			// Copy zip file to public accessible download folder, outside of app sandbox
-			string publicDownloadPath = fhs.GetDownloadPath();
+			string publicDownloadPath = _fileService.GetDownloadPath();
 			string filePublic = Path.Combine(publicDownloadPath, exportZipFilename);
 			if (File.Exists(filePublic))
 			{
@@ -662,7 +717,7 @@ namespace TimeClockApp.Services
 			// Give the user the option to share this using whatever medium they like
 			await Share.Default.RequestAsync(new ShareFileRequest
 			{
-				Title = "TimeClock App Export Data",
+				Title = "TimeCard App Export Data",
 				File = new ShareFile(filePublic),
 			});
 

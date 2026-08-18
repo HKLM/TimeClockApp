@@ -7,8 +7,8 @@ using System.IO;
 #nullable enable
 namespace TimeClockApp.Shared
 {
-    public class FileService
-    {
+	public class FileService : IFileService
+	{
 #if (ANDROID)
         /// <summary>
         /// Returns the path to the downloads folder
@@ -20,20 +20,20 @@ namespace TimeClockApp.Shared
         /// </summary>
         /// <returns>string folder path</returns>
 #endif
-        public string GetDownloadPath() =>
+		public string GetDownloadPath() =>
 #if (ANDROID)
             AndroidOS.Environment.GetExternalStoragePublicDirectory(AndroidOS.Environment.DirectoryDownloads)!.Path;
 #elif (WINDOWS)
             Environment.GetFolderPath(Environment.SpecialFolder.Personal);
 #else
-            System.IO.Path.Combine(Microsoft.Maui.Storage.FileSystem.Current.AppDataDirectory, "download");
+			System.IO.Path.Combine(Microsoft.Maui.Storage.FileSystem.Current.AppDataDirectory, "download");
 #endif
 
-        /// <summary>
-        /// Returns the filePath to the applications private cached folder + filename
-        /// </summary>
-        /// <param name="filename">file name</param>
-        /// <returns>string full path with filename</returns>
-        public string GetLocalFilePath(string filename) => Path.Combine(FileSystem.Current.CacheDirectory, filename);
-    }
+		/// <summary>
+		/// Returns the filePath to the applications private cached folder + filename
+		/// </summary>
+		/// <param name="filename">file name</param>
+		/// <returns>string full path with filename</returns>
+		public string GetLocalFilePath(string filename) => Path.Combine(FileSystem.Current.CacheDirectory, filename);
+	}
 }

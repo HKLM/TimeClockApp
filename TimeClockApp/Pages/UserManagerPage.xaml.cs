@@ -1,38 +1,56 @@
 namespace TimeClockApp.Pages;
-
+#nullable enable
 
 public partial class UserManagerPage : ContentPage
 {
-    public UserManagerPage()
-    {
-        InitializeComponent();
-    }
+	protected readonly UserManagerViewModel viewModel;
+	public UserManagerPage(UserManagerViewModel ViewModel)
+	{
+		InitializeComponent();
+		BindingContext = viewModel = ViewModel;
+	}
 
-    protected override async void OnAppearing()
-    {
-        base.OnAppearing();
-        await viewModel.OnAppearing();
-    }
+	protected override async void OnAppearing()
+	{
+		base.OnAppearing();
+		await viewModel.OnAppearing();
+	}
 
-    private void NameBox_TextChanged(object sender, TextChangedEventArgs e)
-    {
-        Entry box = (Entry)sender;
-        if (box != null && NewEmpButton != null)
-        {
-            if (string.IsNullOrEmpty(box.Text))
-                NewEmpButton.IsEnabled = false;
-            else
-                NewEmpButton.IsEnabled = box.Text.Length != 0;
-        }
-    }
+	private void NameBox_TextChanged(object? sender, TextChangedEventArgs e)
+	{
+		if (sender != null)
+		{
+			Entry box = (Entry)sender;
+			if (box != null && NewEmpButton != null)
+			{
+				if (string.IsNullOrEmpty(box.Text))
+					NewEmpButton.IsEnabled = false;
+				else
+					NewEmpButton.IsEnabled = box.Text.Length != 0;
+			}
+		}
+	}
 
-    private void EmployeePicker_SelectedIndexChanged(object sender, EventArgs e)
-    {
-        Picker P = (Picker)sender;
-        if (P != null)
-        {
-            EditButton.IsEnabled = P.SelectedIndex > -1;
-            DelButton.IsEnabled = P.SelectedIndex > -1;
-        }
-    }
+	private void EmployeePicker_SelectedIndexChanged(object? sender, EventArgs e)
+	{
+		if (sender != null)
+		{
+			Picker P = (Picker)sender;
+			if (P != null)
+			{
+				EditButton.IsEnabled = P.SelectedIndex > -1;
+				DelButton.IsEnabled = P.SelectedIndex > -1;
+			}
+		}
+	}
 }
+//	private void EmployeePicker_SelectedIndexChanged(object sender, EventArgs e)
+//	{
+//		Picker P = (Picker)sender;
+//		if (P != null)
+//		{
+//			EditButton.IsEnabled = P.SelectedIndex > -1;
+//			DelButton.IsEnabled = P.SelectedIndex > -1;
+//		}
+//	}
+//}

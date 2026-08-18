@@ -10,239 +10,214 @@
     x:Name="PageTimeCard" 
     x:DataType="vm:TimeCardPageViewModel"
     Title="TimeCards">
-    <ContentPage.ToolbarItems>
-        <ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
-        <ToolbarItem x:Name="TeamPageToolbarButton" Clicked="TeamPageToolbarButton_Clicked" IconImageSource="manage_accounts.png" />
-        <ToolbarItem Command="{Binding ClockAll_InCommand}" IconImageSource="play_circle.png" />
-        <ToolbarItem Command="{Binding ClockAll_OutCommand}" IconImageSource="pause_circle_outline.png" />
-    </ContentPage.ToolbarItems>
-    <ContentPage.Resources>
-        <ResourceDictionary>
-            <converter:TimeOnlyConverter x:Key="timeOnlyConverter" />
-            <converter:DateOnlyConverter x:Key="dateOnlyConverter" />
-        </ResourceDictionary>
+	<ContentPage.ToolbarItems>
+		<ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
+		<ToolbarItem x:Name="TeamPageToolbarButton" Clicked="TeamPageToolbarButton_Clicked" IconImageSource="manage_accounts.png" />
+		<ToolbarItem Command="{Binding ClockAll_InCommand}" IconImageSource="play_circle.png" />
+		<ToolbarItem Command="{Binding ClockAll_OutCommand}" IconImageSource="pause_circle_outline.png" />
+	</ContentPage.ToolbarItems>
+	<ContentPage.Resources>
+		<ResourceDictionary>
+			<converter:TimeOnlyConverter x:Key="timeOnlyConverter" />
+			<converter:DateOnlyConverter x:Key="dateOnlyConverter" />
+		</ResourceDictionary>
 
-        <DataTemplate x:Key="startTemplate" x:DataType="m:TimeCard">
-            <SwipeView>
-                <SwipeView.LeftItems>
-                    <SwipeItems>
-                        <SwipeItem
+		<DataTemplate x:Key="startTemplate" x:DataType="m:TimeCard">
+			<SwipeView>
+				<SwipeView.LeftItems>
+					<SwipeItems>
+						<SwipeItem
                             x:Name="SwipeitemStart"
                             Clicked="SwipeitemStart_Clicked"
                             CommandParameter="{Binding TimeCardId}"
                             StyleClass="SwpieOrange" 
                             Text="Edit Card" />
-                    </SwipeItems>
-                </SwipeView.LeftItems>
+					</SwipeItems>
+				</SwipeView.LeftItems>
 
-                <Border Padding="8" VerticalOptions="Center">
-                    <Border.StrokeShape>
-                        <RoundRectangle CornerRadius="10"/>
-                    </Border.StrokeShape>
-                    <FlyoutBase.ContextFlyout>
-                        <MenuFlyout>
-                            <MenuFlyoutItem 
+				<Border Padding="8" VerticalOptions="Center">
+					<Border.StrokeShape>
+						<RoundRectangle CornerRadius="10"/>
+					</Border.StrokeShape>
+					<FlyoutBase.ContextFlyout>
+						<MenuFlyout>
+							<MenuFlyoutItem 
                                 x:Name="FlyItemStart"
                                 Text="Edit Card"
                                 CommandParameter="{Binding TimeCardId}"
                                 Clicked="FlyItemStart_Clicked"/>
-                        </MenuFlyout>
-                    </FlyoutBase.ContextFlyout>
-                    <Grid RowDefinitions="75,4,Auto,Auto,Auto">
-                        <VerticalStackLayout VerticalOptions="Center">
-                            <Label
-                                HorizontalTextAlignment="Start"
-                                Style="{StaticResource LabelTitleName}"
-                                Text="{Binding TimeCard_EmployeeName}"
-                                VerticalTextAlignment="Center" />
-                            <Label 
-                                Style="{StaticResource LabelMicro_Hstart}" 
-                                Text="{Binding ProjectName, TargetNullValue='None'}" />
-                            <Label 
-                                Style="{StaticResource LabelMicro_Hstart}" 
-                                Text="{Binding PhaseTitle, TargetNullValue='None'}" />
-                        </VerticalStackLayout>
-                        <BoxView Grid.Row="1" 
-                                 HeightRequest="2" 
-                                 HorizontalOptions="Fill" />
-                        <Label
-                            Grid.Row="2" 
-                            HorizontalOptions="End"
-                            Text="{Binding TimeCard_Duration, StringFormat='{}{0:hh\\:mm}'}"
-                            VerticalOptions="Fill" 
-                            VerticalTextAlignment="Start" />
-                        <Button
+						</MenuFlyout>
+					</FlyoutBase.ContextFlyout>
+					<Grid RowDefinitions="26,20,20,4,20" ColumnDefinitions="260,*">
+						<Label
+                            Style="{StaticResource LabelTitleName}"
+                            Text="{Binding TimeCard_EmployeeName}" />
+						<Label 
+							Grid.Row="1"
+                            Style="{StaticResource LabelMicro_Hstart}" 
+                            Text="{Binding ProjectName, TargetNullValue='None'}" />
+						<Label 
+							Grid.Row="2"
+                            Style="{StaticResource LabelMicro_Hstart}" 
+                            Text="{Binding PhaseTitle, TargetNullValue='None'}" />
+						<BoxView Grid.Row="3" 
+							Grid.ColumnSpan="2"
+                            HeightRequest="2" 
+                            HorizontalOptions="Fill" />
+						<Label
+                            Grid.Row="4" 
+                            Text="{Binding TimeCard_Duration, StringFormat='{}{0:hh\\:mm}'}" />
+						<Label
+                            Grid.Row="4" 
+							Grid.Column="1"
+                            Text="{Binding TimeCard_Status, StringFormat='{0}'}" />
+						<Button
+							Grid.RowSpan="3"
+							Grid.Column="1"
                             Command="{Binding ClockInCommand, Source={RelativeSource AncestorType={x:Type vm:TimeCardPageViewModel}}, x:DataType=vm:TimeCardPageViewModel}" 
                             CommandParameter="{Binding}"
-                            HorizontalOptions="End"
                             Style="{StaticResource GreenButton}"
                             Text="Start" />
-                        <Label
-                            Grid.Row="4" 
-                            HorizontalOptions="Fill"
-                            Text="{Binding TimeCard_Status, StringFormat='{0}'}"
-                            VerticalOptions="Fill" 
-                            VerticalTextAlignment="Start" />
-                    </Grid>
-                </Border>
-            </SwipeView>
-        </DataTemplate>
+					</Grid>
+				</Border>
+			</SwipeView>
+		</DataTemplate>
 
-        <DataTemplate x:Key="endTemplate" x:DataType="m:TimeCard">
-            <SwipeView>
-                <SwipeView.LeftItems>
-                    <SwipeItems>
-                        <SwipeItem
+		<DataTemplate x:Key="endTemplate" x:DataType="m:TimeCard">
+			<SwipeView>
+				<SwipeView.LeftItems>
+					<SwipeItems>
+						<SwipeItem
                             x:Name="Swipeitemaction"
                             Clicked="Swipeitemaction_Clicked"
                             CommandParameter="{Binding TimeCardId}"
                             StyleClass="SwpieGold" Text="Edit Start Time" />
-                    </SwipeItems>
-                </SwipeView.LeftItems>
+					</SwipeItems>
+				</SwipeView.LeftItems>
 
-                <Border Padding="8" VerticalOptions="Center">
-                    <Border.StrokeShape>
-                        <RoundRectangle CornerRadius="10"/>
-                    </Border.StrokeShape>
-                    <FlyoutBase.ContextFlyout>
-                        <MenuFlyout>
-                            <MenuFlyoutItem 
+				<Border Padding="8" VerticalOptions="Center">
+					<Border.StrokeShape>
+						<RoundRectangle CornerRadius="10"/>
+					</Border.StrokeShape>
+					<FlyoutBase.ContextFlyout>
+						<MenuFlyout>
+							<MenuFlyoutItem 
                                 x:Name="FlyItemEditStart"
                                 Text="Edit Start Time"
                                 CommandParameter="{Binding TimeCardId}"
                                 Clicked="FlyItemEditStart_Clicked"/>
-                        </MenuFlyout>
-                    </FlyoutBase.ContextFlyout>
-                    <Grid RowDefinitions="75,4,Auto,Auto,Auto">
-                        <VerticalStackLayout VerticalOptions="Center">
-                            <Label
-                                HorizontalTextAlignment="Start"
-                                Style="{StaticResource LabelTitleName}"
-                                Text="{Binding TimeCard_EmployeeName}"
-                                VerticalTextAlignment="Center" />
-                            <Label 
-                                Style="{StaticResource LabelMicro_Hstart}" 
-                                Text="{Binding ProjectName, TargetNullValue='None'}" />
-                            <Label 
-                                Style="{StaticResource LabelMicro_Hstart}" 
-                                Text="{Binding PhaseTitle, TargetNullValue='None'}" />
-                        </VerticalStackLayout>
-                        <BoxView Grid.Row="1" 
-                                 HeightRequest="2" 
-                                 HorizontalOptions="Fill" />
-                        <Label
-                            Grid.Row="2" 
-                            HorizontalOptions="End"
-                            Text="{Binding TimeCard_Duration, StringFormat='{}{0:hh\\:mm}'}"
-                            VerticalOptions="Fill" 
-                            VerticalTextAlignment="Start" />
-                        <Label
-                            Grid.Row="2" 
-                            HorizontalOptions="Start"
-                            Text="{Binding TimeCard_StartTime, Converter={StaticResource timeOnlyConverter}}"
-                            VerticalOptions="Fill" 
-                            VerticalTextAlignment="Start" />
-                        <Button
+						</MenuFlyout>
+					</FlyoutBase.ContextFlyout>
+					<Grid RowDefinitions="26,20,20,4,20" ColumnDefinitions="260,*">
+						<Label
+                            Style="{StaticResource LabelTitleName}"
+                            Text="{Binding TimeCard_EmployeeName}" />
+						<Label 
+							Grid.Row="1"
+                            Style="{StaticResource LabelMicro_Hstart}" 
+                            Text="{Binding ProjectName, TargetNullValue='None'}" />
+						<Label 
+							Grid.Row="2"
+                            Style="{StaticResource LabelMicro_Hstart}" 
+                            Text="{Binding PhaseTitle, TargetNullValue='None'}" />
+						<BoxView Grid.Row="3" 
+							Grid.ColumnSpan="2"
+                            HeightRequest="2" 
+                            HorizontalOptions="Fill" />
+						<Label
+                            Grid.Row="4" 
+                            Text="{Binding TimeCard_Duration, StringFormat='{}{0:hh\\:mm}'}" />
+						<Label
+                            Grid.Row="4" 
+							HorizontalTextAlignment="Center"
+                            Text="{Binding TimeCard_StartTime, Converter={StaticResource timeOnlyConverter}}" />
+						<Label
+                            Grid.Row="4" 
+							Grid.Column="1"
+                            Text="{Binding TimeCard_Status, StringFormat='{0}'}" />
+						<Button
+							Grid.RowSpan="3"
+							Grid.Column="1"
                             Command="{Binding ClockOutCommand, Source={RelativeSource AncestorType={x:Type vm:TimeCardPageViewModel}}, x:DataType=vm:TimeCardPageViewModel}"
                             CommandParameter="{Binding}"
-                            HorizontalOptions="End"
                             Style="{StaticResource RedButton}"
                             Text="End" />
-                        <Label
-                            Grid.Row="4" 
-                            HorizontalOptions="Fill"
-                            Text="{Binding TimeCard_Status, StringFormat='{0}'}"
-                            VerticalOptions="Fill" 
-                            VerticalTextAlignment="Start" />
-                    </Grid>
-                </Border>
-            </SwipeView>
-        </DataTemplate>
+					</Grid>
+				</Border>
+			</SwipeView>
+		</DataTemplate>
 
-        <controls:TimeCardDataTemplateSelector 
+		<controls:TimeCardDataTemplateSelector 
             x:Key="timecardtemplatesel" 
             EndTemplate="{StaticResource endTemplate}" 
             StartTemplate="{StaticResource startTemplate}" />
-    </ContentPage.Resources>
+	</ContentPage.Resources>
 
-    <ScrollView x:DataType="vm:TimeCardPageViewModel">
-        <StackLayout>
-            <ActivityIndicator IsRunning="True" IsVisible="{Binding Loading}" />
-            <VerticalStackLayout IsVisible="{Binding HasError}">
-                <Label Text="{Binding ErrorMessage}" />
-                <Button Command="{Binding AppearingCommand}" Text="Retry" />
-            </VerticalStackLayout>
-            <Border
+	<ScrollView x:DataType="vm:TimeCardPageViewModel">
+		<StackLayout>
+			<Label Text="An error occurred while loading time cards. Please try again." IsVisible="{Binding HasError}" />
+			<Button Command="{Binding AppearingCommand}" Text="Retry" IsVisible="{Binding HasError}" />
+			<Border
                 x:Name="helpbox" 
                 Padding="8" 
                 IsVisible="{Binding HelpInfoBoxVisible}"
                 VerticalOptions="Center">
-                <Border.StrokeShape>
-                    <RoundRectangle CornerRadius="10"/>
-                </Border.StrokeShape>
-                <Grid RowDefinitions="*,*,*,*" ColumnDefinitions="100,*">
-                    <Label
+				<Border.StrokeShape>
+					<RoundRectangle CornerRadius="10"/>
+				</Border.StrokeShape>
+				<Grid RowDefinitions="*,*,*,*" ColumnDefinitions="100,*">
+					<Label
                         Grid.ColumnSpan="2"
                         LineBreakMode="WordWrap" 
                         Style="{StaticResource LabelSmall}">
-                        <Label.Text>
-                            <OnPlatform x:TypeArguments="x:String">
-                                <On Platform="Android" Value="Time Card Page. &#10;&#10;Here clock-in and clock-out employees. &#10;&#10;Additional options for each Time Card by swiping the Time Card from the left edge to the right, will show Edit Time Card or Change Start Time options.  &#10;&#10;The toolbar has Manage Employee Status, Clock All In, and Clock All Out.&#10;&#10;NOTE Each Time Card is limited to a single date. If working past 11:59pm will require clocking out of the current card and starting a 2nd TimeCard for the time at 12am" />
-                                <On Platform="WinUI" Value="Time Card Page.  &#10;&#10;Here clock-in and clock-out employees.  &#10;&#10;Additional options for each Time Card by right clicking on it, will show Edit Time Card or Change Start Time options.   &#10;&#10;The toolbar has Manage Employee Status, Clock All In, and Clock All Out.&#10;&#10;NOTE Each Time Card is limited to a single date. If working past 11:59pm will require clocking out of the current card and starting a 2nd TimeCard for the time at 12am" />
-                            </OnPlatform>
-                        </Label.Text>
-                    </Label>
+						<Label.Text>
+							<OnPlatform x:TypeArguments="x:String">
+								<On Platform="Android" Value="Time Card Page. &#10;&#10;Here clock-in and clock-out employees. &#10;&#10;Additional options for each Time Card by swiping the Time Card from the left edge to the right, will show Edit Time Card or Change Start Time options.  &#10;&#10;The toolbar has Manage Employee Status, Clock All In, and Clock All Out.&#10;&#10;NOTE Each Time Card is limited to a single date. If working past 11:59pm will require clocking out of the current card and starting a 2nd TimeCard for the time at 12am" />
+								<On Platform="WinUI" Value="Time Card Page.  &#10;&#10;Here clock-in and clock-out employees.  &#10;&#10;Additional options for each Time Card by right clicking on it, will show Edit Time Card or Change Start Time options.   &#10;&#10;The toolbar has Manage Employee Status, Clock All In, and Clock All Out.&#10;&#10;NOTE Each Time Card is limited to a single date. If working past 11:59pm will require clocking out of the current card and starting a 2nd TimeCard for the time at 12am" />
+							</OnPlatform>
+						</Label.Text>
+					</Label>
 
-                    <Image Grid.Row="1" Source="manage_accounts.png" HeightRequest="24" WidthRequest="24" />
-                    <Label Grid.Row="1" Grid.Column="1"
-                               Style="{StaticResource LabelSmall}" 
-                               Text="Manage Employee Status" />
-                    <Image Grid.Row="2" Source="play_circle.png" HeightRequest="24" WidthRequest="24" />
-                    <Label Grid.Row="2" Grid.Column="1"
-                               Style="{StaticResource LabelSmall}" 
-                               Text="Clock All In" />
-                    <Image Grid.Row="3" Source="pause_circle_outline.png" HeightRequest="24" WidthRequest="24" />
-                    <Label Grid.Row="3" Grid.Column="1"
-                               Style="{StaticResource LabelSmall}" 
-                               Text="Clock All Out" />
-                </Grid>
-            </Border>
+					<Image Grid.Row="1" Source="manage_accounts.png" HeightRequest="24" WidthRequest="24" />
+					<Label Grid.Row="1" Grid.Column="1" Style="{StaticResource LabelSmall}" Text="Manage Employee Status" />
+					<Image Grid.Row="2" Source="play_circle.png" HeightRequest="24" WidthRequest="24" />
+					<Label Grid.Row="2" Grid.Column="1" Style="{StaticResource LabelSmall}" Text="Clock All In" />
+					<Image Grid.Row="3" Source="pause_circle_outline.png" HeightRequest="24" WidthRequest="24" />
+					<Label Grid.Row="3" Grid.Column="1" Style="{StaticResource LabelSmall}" Text="Clock All Out" />
+				</Grid>
+			</Border>
 
-            <StackLayout Margin="10" Spacing="8">
-                <Grid RowDefinitions="*,*" ColumnDefinitions="100,*">
-                    <Label
-                        HorizontalOptions="Start" 
-                        Text="Project: " 
-                        VerticalTextAlignment="Center" />
-                    <Picker
-                        Grid.Column="1"
-                        x:DataType="m:Project"
-                        HorizontalOptions="Fill"
-                        ItemDisplayBinding="{Binding Name, x:DataType=m:Project}"
-                        ItemsSource="{Binding ProjectList, Source={RelativeSource AncestorType={x:Type vm:TimeCardPageViewModel}}, x:DataType=vm:TimeCardPageViewModel}"
-                        SelectedItem="{Binding SelectedProject, Source={RelativeSource AncestorType={x:Type vm:TimeCardPageViewModel}}, x:DataType=vm:TimeCardPageViewModel, Mode=TwoWay}" 
-                        Title="Project" />
-                    <Label 
-                        Grid.Row="1" 
-                        HorizontalOptions="Start" 
-                        Text="Phase: " 
-                        VerticalTextAlignment="Center" />
-                    <Picker
-                        Grid.Row="1" Grid.Column="1"
-                        x:DataType="m:Phase"
-                        HorizontalOptions="Fill"
-                        ItemDisplayBinding="{Binding PhaseTitle, x:DataType=m:Phase}"
-                        ItemsSource="{Binding PhaseList, Source={RelativeSource AncestorType={x:Type vm:TimeCardPageViewModel}}, x:DataType=vm:TimeCardPageViewModel}"
-                        SelectedItem="{Binding SelectedPhase, Source={RelativeSource AncestorType={x:Type vm:TimeCardPageViewModel}}, x:DataType=vm:TimeCardPageViewModel, Mode=TwoWay}" 
-                        Title="Phase" />
-                </Grid>
+			<Grid RowDefinitions="40,40" ColumnDefinitions="100,*">
+				<Label
+                    HorizontalOptions="Start" 
+                    Text="Project: " 
+                    VerticalTextAlignment="Center" />
+				<Picker
+                    Grid.Column="1"
+                    x:DataType="m:Project"
+                    ItemDisplayBinding="{Binding Name, x:DataType=m:Project}"
+                    ItemsSource="{Binding ProjectList, Source={RelativeSource AncestorType={x:Type vm:TimeCardPageViewModel}}, x:DataType=vm:TimeCardPageViewModel}"
+                    SelectedItem="{Binding SelectedProject, Source={RelativeSource AncestorType={x:Type vm:TimeCardPageViewModel}}, x:DataType=vm:TimeCardPageViewModel, Mode=TwoWay}" 
+                    Title="Project" />
+				<Label 
+                    Grid.Row="1" 
+                    HorizontalOptions="Start" 
+                    Text="Phase: " 
+                    VerticalTextAlignment="Center" />
+				<Picker
+                    Grid.Row="1" Grid.Column="1"
+                    x:DataType="m:Phase"
+                    ItemDisplayBinding="{Binding PhaseTitle, x:DataType=m:Phase}"
+                    ItemsSource="{Binding PhaseList, Source={RelativeSource AncestorType={x:Type vm:TimeCardPageViewModel}}, x:DataType=vm:TimeCardPageViewModel}"
+                    SelectedItem="{Binding SelectedPhase, Source={RelativeSource AncestorType={x:Type vm:TimeCardPageViewModel}}, x:DataType=vm:TimeCardPageViewModel, Mode=TwoWay}" 
+                    Title="Phase" />
+			</Grid>
 
-                <CollectionView
-                    x:Name="collectionView1"
-                    EmptyView="No items to display"
-                    ItemTemplate="{StaticResource timecardtemplatesel}"
-                    ItemsSource="{Binding TimeCards}" />
-            </StackLayout>
-        </StackLayout>
-    </ScrollView>
+			<CollectionView
+                x:Name="collectionView1"
+                EmptyView="No items to display"
+                ItemTemplate="{StaticResource timecardtemplatesel}"
+                ItemsSource="{Binding TimeCards}" />
+		</StackLayout>
+	</ScrollView>
 </ContentPage>

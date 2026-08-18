@@ -14,9 +14,6 @@ namespace TimeClockApp.ViewModels
         public partial ObservableCollection<TimeCard> TimeCards { get; set; } = new();
 
         [ObservableProperty]
-        public partial string ErrorMessage { get; set; } = string.Empty;
-
-        [ObservableProperty]
         public partial ObservableCollection<Project> ProjectList { get; set; } = new();
 
         [ObservableProperty]
@@ -53,9 +50,6 @@ namespace TimeClockApp.ViewModels
         [RelayCommand]
         public async Task OnAppearing()
         {
-            if (Loading)
-                return;
-
             Loading = true;
             HasError = false;
 
@@ -73,19 +67,18 @@ namespace TimeClockApp.ViewModels
 
                     List<TimeCard> t = await cardService.GetLastTimeCardForAllEmployeesAsync();
                     TimeCards = t.ToObservableCollection();
-                });
+				});
             }
             catch (Exception e)
             {
                 HasError = true;
                 Log.WriteLine($"{e.Message}\n  -- {e.Source}\n  -- {e.InnerException}", "TimeCardPageViewModel.OnAppearing");
-                ErrorMessage = "An error occurred while loading time cards. Please try again.";
             }
             finally
             {
                 Loading = false;
             }
-        }
+		}
 
         [RelayCommand]
         private async Task ClockIn(TimeCard? card)

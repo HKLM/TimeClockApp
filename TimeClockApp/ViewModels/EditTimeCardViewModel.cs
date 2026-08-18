@@ -1,6 +1,4 @@
-﻿using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Alerts;
-using TimeClockApp.Shared.Helpers;
+﻿using TimeClockApp.Shared.Helpers;
 #nullable enable
 
 namespace TimeClockApp.ViewModels
@@ -110,7 +108,7 @@ namespace TimeClockApp.ViewModels
             {
                 SetPageTitle(ErrorCode);
                 PickerMinDate = cardService.GetAppFirstRunDate();
-                IsAdmin = ErrorCode > 0 || IntToBool(cardService.GetConfigInt(9, 0));
+                IsAdmin = ErrorCode > 0 || GetIsAdmin();
 
                 List<Project> pro = await cardService.GetProjectsListAsync();
                 ProjectList = pro.ToObservableCollection();
@@ -153,19 +151,33 @@ namespace TimeClockApp.ViewModels
             ErrorCode = 0;
         }
 
-        [RelayCommand]
+        /// <summary>
+        /// Validates the time range and if the end time is before the start time, it will auto-fix it.
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <returns></returns>
+        private async Task<bool> ValidateTimeFixer(TimeOnly start, TimeOnly end)
+		{
+			// If the end time is after the start time and the end time is after 12:00 PM, auto-fix it by adding 12 hours to the start time.
+			if (end < start && end >= new TimeOnly(12, 00, 00))
+			{
+				TimeCard_StartTime = start.AddHours(12);
+				await App.AlertSvc!.ShowAlertAsync("NOTICE", "Auto corrected StartTime.").ConfigureAwait(false);
+			}
+			return (TimeCard_EndTime < TimeCard_StartTime);
+		}
+
+		[RelayCommand]
         private async Task SaveTimeCardAsync()
         {
-            if (Loading)
-                return;
-
             Loading = true;
             HasError = false;
             bool success = false;
             try
             {
                 // Validate time range
-                if (TimeCard_EndTime < TimeCard_StartTime)
+                if (await ValidateTimeFixer(TimeCard_StartTime, TimeCard_EndTime)) //(TimeCard_EndTime < TimeCard_StartTime)
                 {
                     await App.AlertSvc!.ShowAlertAsync("ERROR", "StartTime must be before EndTime.").ConfigureAwait(false);
                     return;
@@ -178,26 +190,20 @@ namespace TimeClockApp.ViewModels
 
 
                 // Check read-only status
-                bool isReadOnly = cardService.IsTimeCardReadOnly(TimeCardID, IsAdmin);
-                if (isReadOnly)
+                if (cardService.IsTimeCardReadOnly(TimeCardID, GetIsAdmin()))
                 {
-                    if (!IsAdmin)
+                    if (!GetIsAdmin())
                     {
                         await App.AlertSvc!.ShowAlertAsync("NOTICE", "This TimeCard is read-only and cannot be edited.").ConfigureAwait(false);
                         return;
                     }
-                    else
-                    {
-                        bool confirm = await App.AlertSvc!.ShowConfirmationAsync("CONFIRM", "This TimeCard is currently read-only. Do you want to edit this TimeCard?");
-                        if (!confirm)
+                    else if (!await App.AlertSvc!.ShowConfirmationAsync("CONFIRM", "This TimeCard is currently read-only. Do you want to edit this TimeCard?"))
                             return;
-                    }
                 }
                 // make the card read-only if the user is deleting it
                 if (TimeCard_Status == ShiftStatus.Deleted && !TimeCard_bReadOnly)
                 {
-                    bool confirmDelete = await App.AlertSvc!.ShowConfirmationAsync("CONFIRM", "Are you sure you want to Delete this TimeCard?");
-                    if (!confirmDelete)
+                    if (!await App.AlertSvc!.ShowConfirmationAsync("CONFIRM", "Are you sure you want to Delete this TimeCard?"))
                         return;
                     else
                         TimeCard_bReadOnly = true;
@@ -225,11 +231,8 @@ namespace TimeClockApp.ViewModels
                 Loading = false;
             }
             string message = success ? "TimeCard saved" : "Failed to save TimeCard";
-            //Toast
-            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-            var toast = Toast.Make(message, ToastDuration.Short, 14);
-            await toast.Show(cancellationTokenSource.Token);
-        }
+            await AppShell.DisplayToastAsync(message);
+		}
 
         private void UpdateTimeCardEntity()
         {

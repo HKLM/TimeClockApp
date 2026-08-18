@@ -108,14 +108,7 @@ namespace TimeClockApp.Services
             {
                 C.IntValue = projectId;
                 Context.Update<Config>(C);
-                try
-                {
-                    await Context.SaveChangesAsync().ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    Log.WriteLine(ex.ToString(), "SaveCurrentProjectAsync");
-                }
+                await Context.SaveChangesAsync().ConfigureAwait(false);
             }
         }
 
@@ -128,14 +121,7 @@ namespace TimeClockApp.Services
             {
                 C.IntValue = phaseId;
                 Context.Update<Config>(C);
-                try
-                {
-                    await Context.SaveChangesAsync().ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    Log.WriteLine(ex.ToString(), "SaveCurrentPhaseAsync");
-                }
+                await Context.SaveChangesAsync().ConfigureAwait(false);
             }
         }
 

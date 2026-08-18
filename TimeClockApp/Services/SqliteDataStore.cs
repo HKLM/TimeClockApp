@@ -11,7 +11,6 @@ namespace TimeClockApp.Services
 
         public SQLiteDataStore() { }
 
-#nullable disable
         public DateTime GetAppFirstRunDate()
         {
             bool bFound = false;
@@ -23,14 +22,16 @@ namespace TimeClockApp.Services
             if (!bFound)
             {
                 int i = 2;
-                Config c = Context.Config.Find(i);
-                d = DateOnly.Parse(c.StringValue);
-                Preferences.Set("FirstRun", c.StringValue, PrefSetting.PrefKey);
+                Config? c = Context.Config.Find(i);
+                if (c != null)
+                {
+                    d = DateOnly.Parse(c.StringValue!);
+                    Preferences.Set("FirstRun", c.StringValue, PrefSetting.PrefKey);
+                }
             }
             d = d.AddDays(-6);
             return d.ToDateTime(new TimeOnly(0, 0));
         }
-#nullable enable
 
         public async Task<List<Phase>> GetPhaseListAsync() => await Context.Phase.OrderBy(e => e.PhaseTitle).ToListAsync();
 

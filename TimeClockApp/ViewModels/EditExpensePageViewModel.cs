@@ -1,6 +1,4 @@
-﻿using CommunityToolkit.Maui.Alerts;
-using CommunityToolkit.Maui.Core;
-using TimeClockApp.Shared;
+﻿using TimeClockApp.Shared;
 
 namespace TimeClockApp.ViewModels
 {
@@ -134,11 +132,8 @@ namespace TimeClockApp.ViewModels
 
                 bool success = dataService.UpdateExpense(ExpenseItem);
                 string message = success ? "Saved" : "Failed to save Expense";
-                //Toast
-                CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-                var toast = Toast.Make(message, ToastDuration.Short, 14);
-                await toast.Show(cancellationTokenSource.Token);
-                if (success) 
+				await AppShell.DisplayToastAsync(message);
+				if (success) 
                     Refresh();
             }
             catch (Exception ex)
@@ -160,11 +155,8 @@ namespace TimeClockApp.ViewModels
                 {
                     bool success = await dataService.DeleteExpense(ExpenseItem);
                     string message = success ? "Deleted" : "Failed to delete Expense";
-                    //Toast
-                    CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-                    var toast = Toast.Make(message, ToastDuration.Short, 14);
-                    await toast.Show(cancellationTokenSource.Token);
-                    if (success)
+					await AppShell.DisplayToastAsync(message);
+					if (success)
                     {
                         await Shell.Current.GoToAsync("..");
                     }

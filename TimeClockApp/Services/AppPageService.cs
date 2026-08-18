@@ -1,6 +1,5 @@
-﻿#nullable enable
-
-using TimeClockApp.Shared;
+﻿using TimeClockApp.Shared;
+#nullable enable
 
 namespace TimeClockApp.Services
 {
@@ -45,7 +44,8 @@ namespace TimeClockApp.Services
 #else
             if (Preferences.ContainsKey("UseNotifications", PrefSetting.PrefKey))
             {
-                return Preferences.Get("UseNotifications", false, PrefSetting.PrefKey);
+                int i = Preferences.Get("UseNotifications", 0, PrefSetting.PrefKey);
+                return i == 1;
             }
             else
             {
@@ -62,7 +62,8 @@ namespace TimeClockApp.Services
                     Context.Add(config);
                     _ = Context.SaveChanges();
                 }
-                Preferences.Set("UseNotifications", config.IntValue == 1, PrefSetting.PrefKey);
+                int x = config.IntValue ?? 0;
+				Preferences.Set("UseNotifications", x, PrefSetting.PrefKey);
                 return config.IntValue == 1;
             }
 #endif
@@ -100,51 +101,30 @@ namespace TimeClockApp.Services
 #endif
         }
 
-//        public async Task<double> GetNotificationHoursSettingAsync()
-//        {
-//#if WINDOWS
-//			return 0;
-//#else
-//            if (Preferences.ContainsKey("NotificationHours", PrefSetting.PrefKey))
-//            {
-//                return Preferences.Get("NotificationHours", 4.0, PrefSetting.PrefKey);
-//            }
-//            else
-//            {
-//                Config? config = await Context.Config.FindAsync(15);
-//                if (config == null)
-//                {
-//                    config = new Config
-//                    {
-//                        ConfigId = 15,
-//                        Name = "NotificationHours",
-//                        StringValue = "4.0",
-//                        Hint = "Amount of time in hours for notifications. In increments of a tenth of a hour. (1.5 = 1 hour & 30 min)"
-//                    };
-//                    Context.Add(config);
-//                    _ = await Context.SaveChangesAsync().ConfigureAwait(false);
-//                }
-//                double d = double.TryParse(config.StringValue ?? "0", out double result) ? result : 0;
-//                Preferences.Set("NotificationHours", d, PrefSetting.PrefKey);
-//                return d;
-//            }
-//#endif
-//        }
-
-//        public async Task SaveNotificationHoursSettingAsync(double hours)
-//        {
-//#if WINDOWS
-//			return;
-//#else
-//            Preferences.Set("NotificationHours", hours, PrefSetting.PrefKey);
-//            Config? config = await Context.Config.FindAsync(15);
-//            if (config != null)
-//            {
-//                config.StringValue = hours.ToString("0.00");
-//                Context.Update(config);
-//                _ = await Context.SaveChangesAsync().ConfigureAwait(false);
-//            }
-//#endif
-//        }
+        /// <summary>Gets the IsAdmin setting.</summary>
+        /// <exception cref="InvalidOperationException"></exception>
+        public bool GetIsAdminSetting()
+        {
+            if (Common.Permissions.IsAdmin.HasValue)
+            {
+                return Common.Permissions.GetIsAdmin();
+            }
+            else
+            {
+                if (Preferences.ContainsKey("IsAdmin", PrefSetting.PrefKey))
+                {
+                    int i = Preferences.Get("IsAdmin", 0, PrefSetting.PrefKey);
+					Common.Permissions.IsAdmin = i == 1;
+					return i == 1;
+				}
+                else
+                {
+                    Config? config = Context.Config.Find(9) ?? throw new InvalidOperationException("Admin setting not found in database.");
+                    Common.Permissions.IsAdmin = config.IntValue == 1;
+                    Preferences.Set("IsAdmin", Common.Permissions.IsAdmin.Value ? 1 : 0, PrefSetting.PrefKey);
+                    return config.IntValue == 1;
+				}
+            }
+        }
     }
 }

@@ -1,4 +1,6 @@
 ﻿using System.Data;
+using TimeClockApp.Shared;
+
 
 #nullable enable
 
@@ -14,8 +16,23 @@ namespace TimeClockApp.Services
 
 		public double GetRate(int i)
 		{
-			Config? c = Context.Config.Find(i);
-			return double.TryParse(c?.StringValue, out double wc) ? (double)wc : 0;
+			if (i == 5 && Preferences.ContainsKey("WorkCompRate", PrefSetting.PrefKey))
+			{
+				return Preferences.Get("WorkCompRate", 0.171118, PrefSetting.PrefKey);
+			}
+			else if (i == 7 && Preferences.ContainsKey("ProfitRate", PrefSetting.PrefKey))
+			{
+				return Preferences.Get("ProfitRate", 0.1, PrefSetting.PrefKey);
+			}
+			else if (i == 8 && Preferences.ContainsKey("OverHeadRate", PrefSetting.PrefKey))
+			{
+				return Preferences.Get("OverHeadRate", 0.08, PrefSetting.PrefKey);
+			}
+			else
+			{
+				Config? c = Context.Config.Find(i);
+				return double.TryParse(c?.StringValue, out double wc) ? (double)wc : 0;
+			}
 		}
 
 		private void CalculateWages(TimeSheet sheet, double payRate)

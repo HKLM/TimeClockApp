@@ -14,13 +14,19 @@ namespace TimeClockApp.ViewModels
 		/// If true allows editing locked TimeCards. By default after a TimeCard has been marked paid, it is locked by being set to ReadOnly.
 		/// </summary>
 		[ObservableProperty]
-		public partial bool IsAdmin { get; set; } = false;
+		public partial bool IsAdmin { get; set; }
+		partial void OnIsAdminChanged(bool value)
+		{
+			if (value != Common.Permissions.IsAdmin)
+				Common.Permissions.IsAdmin = value;
+		}
+		public bool GetIsAdmin() => Common.Permissions.GetIsAdmin();
 
 		[ObservableProperty]
-		public partial bool Loading { get; set; } = false;
+		public partial bool Loading { get; set; }
 
 		[ObservableProperty]
-		public partial bool HasError { get; set; } = false;
+		public partial bool HasError { get; set; }
 
 		/// <summary>
 		/// Gets or sets a value indicating whether scheduled notifications are enabled. Lunch Break, End of Shift, etc.
