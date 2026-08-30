@@ -35,20 +35,12 @@ public partial class TimeCardPage : ContentPage
 		}
 	}
 
-	private async void Swipeitemaction_Clicked(object sender, EventArgs e)
+	private async void CardTime_Clicked(object sender, EventArgs e)
 	{
-		if (sender is not SwipeItem swipeItem || !int.TryParse(swipeItem.CommandParameter?.ToString(), out int id))
-			return;
-
-		await HandleTimeCardNavigationAsync(id, "ChangeStartTime");
-	}
-
-	private async void SwipeitemStart_Clicked(object sender, EventArgs e)
-	{
-		if (sender is not SwipeItem swipeItem || !int.TryParse(swipeItem.CommandParameter?.ToString(), out int id))
-			return;
-
-		await HandleTimeCardNavigationAsync(id, "EditTimeCard");
+		if (sender is SwipeItem swipeItem && int.TryParse(swipeItem.CommandParameter?.ToString(), out int id))
+			await HandleTimeCardNavigationAsync(id, "ChangeStartTime");
+		else if (sender is MenuFlyoutItem itemClicked && int.TryParse(itemClicked.CommandParameter?.ToString(), out int id2))
+			await HandleTimeCardNavigationAsync(id2, "ChangeStartTime");
 	}
 
 	private async void TeamPageToolbarButton_Clicked(object sender, EventArgs e)
@@ -56,19 +48,19 @@ public partial class TimeCardPage : ContentPage
 		await Shell.Current.GoToAsync("TeamEmployeesPage");
 	}
 
-	private async void FlyItemStart_Clicked(object sender, EventArgs e)
+	private async void CardEdit_Clicked(object sender, EventArgs e)
 	{
-		if (sender is not MenuFlyoutItem itemClicked || !int.TryParse(itemClicked.CommandParameter?.ToString(), out int id))
-			return;
-
-		await HandleTimeCardNavigationAsync(id, "EditTimeCard");
+		if (sender is SwipeItem swipeItem && int.TryParse(swipeItem.CommandParameter?.ToString(), out int id2))
+			await HandleTimeCardNavigationAsync(id2, "EditTimeCard");
+		else if (sender is MenuFlyoutItem itemClicked && int.TryParse(itemClicked.CommandParameter?.ToString(), out int id))
+			await HandleTimeCardNavigationAsync(id, "EditTimeCard");
 	}
 
-	private async void FlyItemEditStart_Clicked(object sender, EventArgs e)
+	private async void SwipeRightMulti_Clicked(object sender, EventArgs e)
 	{
-		if (sender is not MenuFlyoutItem itemClicked || !int.TryParse(itemClicked.CommandParameter?.ToString(), out int id))
-			return;
-
-		await HandleTimeCardNavigationAsync(id, "ChangeStartTime");
+		if (sender is SwipeItem swipeItem && int.TryParse(swipeItem.CommandParameter?.ToString(), out int id))
+			await Shell.Current.GoToAsync($"EditMultiTimeCards?id={id}");
+		else if (sender is MenuFlyoutItem itemClicked && int.TryParse(itemClicked.CommandParameter?.ToString(), out int id2))
+			await Shell.Current.GoToAsync($"EditMultiTimeCards?id={id2}");
 	}
 }

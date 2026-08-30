@@ -19,7 +19,7 @@
 	<ContentPage.Resources>
 		<ResourceDictionary>
 			<converter:TimeOnlyConverter x:Key="timeOnlyConverter" />
-			<converter:DateOnlyConverter x:Key="dateOnlyConverter" />
+			<converter:DateOnlyWithYearConverter x:Key="dateOnlyWithYearConverter" />
 		</ResourceDictionary>
 
 		<DataTemplate x:Key="startTemplate" x:DataType="m:TimeCard">
@@ -27,13 +27,22 @@
 				<SwipeView.LeftItems>
 					<SwipeItems>
 						<SwipeItem
-                            x:Name="SwipeitemStart"
-                            Clicked="SwipeitemStart_Clicked"
+                            Clicked="CardEdit_Clicked"
                             CommandParameter="{Binding TimeCardId}"
                             StyleClass="SwpieOrange" 
                             Text="Edit Card" />
 					</SwipeItems>
 				</SwipeView.LeftItems>
+				<SwipeView.RightItems>
+					<SwipeItems>
+						<SwipeItem
+                            Clicked="SwipeRightMulti_Clicked"
+							CommandParameter="{Binding TimeCardId}"
+                            StyleClass="SwpieGold" 
+							IconImageSource="edit_note.png"
+                            Text="MultiEdit" />
+					</SwipeItems>
+				</SwipeView.RightItems>
 
 				<Border Padding="8" VerticalOptions="Center">
 					<Border.StrokeShape>
@@ -42,13 +51,17 @@
 					<FlyoutBase.ContextFlyout>
 						<MenuFlyout>
 							<MenuFlyoutItem 
-                                x:Name="FlyItemStart"
                                 Text="Edit Card"
                                 CommandParameter="{Binding TimeCardId}"
-                                Clicked="FlyItemStart_Clicked"/>
+                                Clicked="CardEdit_Clicked"/>
+							<MenuFlyoutItem 
+                                Text="Edit Multi-Cards" 
+								IconImageSource="edit_note.png"
+                                CommandParameter="{Binding TimeCardId}"
+                                Clicked="SwipeRightMulti_Clicked"/>
 						</MenuFlyout>
 					</FlyoutBase.ContextFlyout>
-					<Grid RowDefinitions="26,20,20,4,20" ColumnDefinitions="260,*">
+					<Grid RowDefinitions="26,20,20,4,20,20" ColumnDefinitions="260,*">
 						<Label
                             Style="{StaticResource LabelTitleName}"
                             Text="{Binding TimeCard_EmployeeName}" />
@@ -64,13 +77,20 @@
 							Grid.ColumnSpan="2"
                             HeightRequest="2" 
                             HorizontalOptions="Fill" />
+						<Label 
+							Grid.Row="4"
+							Style="{StaticResource LabelMicro_Hstart}"
+							Text="{Binding TimeCard_Date, Converter={StaticResource dateOnlyWithYearConverter}, ConverterParameter='ddd M/d/yyyy', StringFormat='{0:ddd M/d/yyyy}'}" />
 						<Label
-                            Grid.Row="4" 
-                            Text="{Binding TimeCard_Duration, StringFormat='{}{0:hh\\:mm}'}" />
-						<Label
-                            Grid.Row="4" 
+							Grid.Row="4" 
 							Grid.Column="1"
-                            Text="{Binding TimeCard_Status, StringFormat='{0}'}" />
+							Style="{StaticResource LabelMicro_Hstart}"
+							Text="{Binding TimeCard_Status, StringFormat='{0}'}" />
+						<Label
+							Grid.Row="5" 
+							Grid.Column="1"
+							Style="{StaticResource LabelMicro_Hstart}"
+							Text="{Binding TimeCard_Duration, StringFormat='{}{0:hh\\:mm}'}" />
 						<Button
 							Grid.RowSpan="3"
 							Grid.Column="1"
@@ -88,12 +108,21 @@
 				<SwipeView.LeftItems>
 					<SwipeItems>
 						<SwipeItem
-                            x:Name="Swipeitemaction"
-                            Clicked="Swipeitemaction_Clicked"
+                            Clicked="CardTime_Clicked"
                             CommandParameter="{Binding TimeCardId}"
                             StyleClass="SwpieGold" Text="Edit Start Time" />
 					</SwipeItems>
 				</SwipeView.LeftItems>
+				<SwipeView.RightItems>
+					<SwipeItems>
+						<SwipeItem
+                            Clicked="SwipeRightMulti_Clicked"
+							CommandParameter="{Binding TimeCardId}"
+                            StyleClass="SwpieGold" 
+							IconImageSource="edit_note.png"
+                            Text="MultiEdit" />
+					</SwipeItems>
+				</SwipeView.RightItems>
 
 				<Border Padding="8" VerticalOptions="Center">
 					<Border.StrokeShape>
@@ -102,13 +131,17 @@
 					<FlyoutBase.ContextFlyout>
 						<MenuFlyout>
 							<MenuFlyoutItem 
-                                x:Name="FlyItemEditStart"
                                 Text="Edit Start Time"
                                 CommandParameter="{Binding TimeCardId}"
-                                Clicked="FlyItemEditStart_Clicked"/>
+                                Clicked="CardTime_Clicked"/>
+							<MenuFlyoutItem 
+                                Text="Edit Multi-Cards"
+								IconImageSource="edit_note.png"
+								CommandParameter="{Binding TimeCardId}"
+                                Clicked="SwipeRightMulti_Clicked"/>
 						</MenuFlyout>
 					</FlyoutBase.ContextFlyout>
-					<Grid RowDefinitions="26,20,20,4,20" ColumnDefinitions="260,*">
+					<Grid RowDefinitions="26,20,20,4,20,20" ColumnDefinitions="260,*">
 						<Label
                             Style="{StaticResource LabelTitleName}"
                             Text="{Binding TimeCard_EmployeeName}" />
@@ -124,17 +157,24 @@
 							Grid.ColumnSpan="2"
                             HeightRequest="2" 
                             HorizontalOptions="Fill" />
+						<Label 
+							Grid.Row="4"
+							Style="{StaticResource LabelMicro_Hstart}"
+							Text="{Binding TimeCard_Date, Converter={StaticResource dateOnlyWithYearConverter}, ConverterParameter='ddd M/d/yyyy', StringFormat='{0:ddd M/d/yyyy}'}" />
 						<Label
-                            Grid.Row="4" 
-                            Text="{Binding TimeCard_Duration, StringFormat='{}{0:hh\\:mm}'}" />
-						<Label
-                            Grid.Row="4" 
-							HorizontalTextAlignment="Center"
-                            Text="{Binding TimeCard_StartTime, Converter={StaticResource timeOnlyConverter}}" />
-						<Label
-                            Grid.Row="4" 
+							Grid.Row="4" 
 							Grid.Column="1"
-                            Text="{Binding TimeCard_Status, StringFormat='{0}'}" />
+							Style="{StaticResource LabelMicro_Hstart}"
+							Text="{Binding TimeCard_Status, StringFormat='{0}'}" />
+						<Label
+							Grid.Row="5"
+							Style="{StaticResource LabelMicro_Hstart}"
+							Text="{Binding TimeCard_StartTime, Converter={StaticResource timeOnlyConverter}}" />
+						<Label
+							Grid.Row="5" 
+							Grid.Column="1"
+							Style="{StaticResource LabelMicro_Hstart}"
+							Text="{Binding TimeCard_Duration, StringFormat='{}{0:hh\\:mm}'}" />
 						<Button
 							Grid.RowSpan="3"
 							Grid.Column="1"

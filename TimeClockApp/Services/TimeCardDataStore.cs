@@ -155,14 +155,15 @@ namespace TimeClockApp.Services
 
 #region TIMECARDS
         public TimeCard GetTimeCard(int timeCardID) => Context.TimeCard.Find(timeCardID);
+		public async Task<TimeCard> GetTimeCardAsync(int timeCardID) => await Context.TimeCard.FindAsync(timeCardID);
 
-        /// <summary>
-        /// Checks if the time card has the read only flag set
-        /// </summary>
-        /// <param name="timeCardId">Id of time card to check</param>
-        /// <param name="isAdmin">if IsAdmin is set true, override the ReadOnly flag and allow edits. Defaults to false</param>
-        /// <returns></returns>
-        public bool IsTimeCardReadOnly(int timeCardId, bool isAdmin = false) =>
+		/// <summary>
+		/// Checks if the time card has the read only flag set
+		/// </summary>
+		/// <param name="timeCardId">Id of time card to check</param>
+		/// <param name="isAdmin">if IsAdmin is set true, override the ReadOnly flag and allow edits. Defaults to false</param>
+		/// <returns></returns>
+		public bool IsTimeCardReadOnly(int timeCardId, bool isAdmin = false) =>
             !isAdmin && Context.TimeCard
                 .AsNoTracking()
                 .Where(tc => tc.TimeCardId == timeCardId)

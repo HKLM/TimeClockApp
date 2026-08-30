@@ -41,39 +41,13 @@ namespace TimeClockApp.ViewModels
         [RelayCommand]
 		public async Task OnAppearing()
 		{
-			if (Loading)
-				return;
-
-			Loading = true;
-			HasError = false;
-
-			try
-			{
-                PickerMinDate = cardService.GetAppFirstRunDate();
-
-                await Task.Run(async () =>
-				{
-					List<TimeCard> t = await cardService.GetTimeCards(SelectedNumberOfResults);
-					TimeCards = t.ToObservableCollection();
-				});
-			}
-			catch (Exception e)
-			{
-				HasError = true;
-				Log.WriteLine($"\nEXCEPTION ERROR\n{e.Message}\n  -- {e.Source}\n  -- {e.InnerException}", "TimeCardManagerViewModel");
-			}
-			finally
-			{
-				Loading = false;
-			}
+            PickerMinDate = cardService.GetAppFirstRunDate();
+			await RefreshAllCards();
 		}
 
 		[RelayCommand]
-		private async Task RefreshAllCards()
+		public async Task RefreshAllCards()
 		{
-			if (Loading)
-				return;
-
 			Loading = true;
 			HasError = false;
 			try

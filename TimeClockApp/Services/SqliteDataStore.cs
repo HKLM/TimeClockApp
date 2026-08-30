@@ -44,16 +44,6 @@ namespace TimeClockApp.Services
 #region POPUP
 
         /// <summary>
-        /// Writes error message to debug log and then shows alert popup to the user, displaying the error message.
-        /// </summary>
-        /// <param name="errorTxt">Error message to display</param>
-        /// <param name="alertTitle">Pop up window title</param>
-        public void ShowPopupError(string errorTxt, string alertTitle = "ERROR")
-        {
-            Log.WriteLine(errorTxt, alertTitle);
-            App.AlertSvc!.ShowAlertAsync(alertTitle, errorTxt);
-        }
-        /// <summary>
         /// Writes error message to debug log and then shows async alert popup to the user, displaying the error message.
         /// </summary>
         /// <param name="errorTxt">Error message to display</param>

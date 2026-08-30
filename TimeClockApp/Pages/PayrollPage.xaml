@@ -9,152 +9,153 @@
     x:DataType="vm:PayrollPageViewModel"
 	x:Name="PagePayroll"
 	Title="Payroll Totals">
-    <ContentPage.ToolbarItems>
-        <ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
-        <ToolbarItem x:Name="TeamPageToolbarButton" IconImageSource="manage_accounts.png" Clicked="TeamPageToolbarButton_Clicked" />
-        <ToolbarItem Command="{Binding RefreshEverythingCommand}" IconImageSource="refresh.png" />
-    </ContentPage.ToolbarItems>
-    <ContentPage.Resources>
+	<ContentPage.ToolbarItems>
+		<ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
+		<ToolbarItem x:Name="TeamPageToolbarButton" IconImageSource="manage_accounts.png" Clicked="TeamPageToolbarButton_Clicked" />
+		<ToolbarItem Command="{Binding RefreshEverythingCommand}" IconImageSource="refresh.png" />
+	</ContentPage.ToolbarItems>
+	<ContentPage.Resources>
+		<Style Class="SwpieRed" TargetType="SwipeItem">
+			<Setter Property="BackgroundColor" Value="{StaticResource FireBrickAccent}" />
+			<Setter Property="IconImageSource" Value="edit_calendar.png" />
+		</Style>
 
-        <DataTemplate x:Key="payrollListTemplate" x:DataType="m:TimeSheet">
-            <SwipeView>
-                <SwipeView.LeftItems>
-                    <SwipeItems>
-                        <SwipeItem
+		<DataTemplate x:Key="payrollListTemplate" x:DataType="m:TimeSheet">
+			<SwipeView>
+				<SwipeView.LeftItems>
+					<SwipeItems>
+						<SwipeItem
 							Clicked="SwipeItem_Clicked"
 							CommandParameter="{Binding EmployeeId}"
 							StyleClass="SwpieOrange"
 							Text="View Details" />
-                    </SwipeItems>
-                </SwipeView.LeftItems>
+					</SwipeItems>
+				</SwipeView.LeftItems>
 
-                <SwipeView.RightItems>
-                    <SwipeItems>
-                        <SwipeItem
+				<SwipeView.RightItems>
+					<SwipeItems>
+						<SwipeItem
                             Command="{Binding MarkPaidCommand, Source={RelativeSource AncestorType={x:Type vm:PayrollPageViewModel}}, x:DataType=vm:PayrollPageViewModel}"
 							CommandParameter="{Binding}"
 							StyleClass="SwpieRed"
 							Text="Mark Paid" />
-                    </SwipeItems>
-                </SwipeView.RightItems>
+					</SwipeItems>
+				</SwipeView.RightItems>
 
-                <Border
+				<Border
                     Padding="8" 
                     VerticalOptions="Center">
-                    <Border.StrokeShape>
-                        <RoundRectangle CornerRadius="10"/>
-                    </Border.StrokeShape>
-                    <StackLayout>
-                        <Label HorizontalTextAlignment="Start" Style="{StaticResource LabelTitleName}" Text="{Binding TimeCard_EmployeeName}" />
-                        <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,*,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="15" RowSpacing="10">
-                            <Label Text="Reg" FontSize="14" Grid.Column="1" />
-                            <Label Text="OT" FontSize="14" Grid.Column="2" />
-                            <Label Text="OT2" FontSize="14" Grid.Column="3" />
-                            <Label Text="Total" FontSize="14" Grid.Column="4" />
-                            <Label Text="Owed" FontSize="14" Grid.Column="5" />
-                            <Label Text="HR" FontSize="14" Grid.Row="1" />
-                            <Label Text="Pay" FontSize="14" Grid.Row="2" />
+					<Border.StrokeShape>
+						<RoundRectangle CornerRadius="10"/>
+					</Border.StrokeShape>
+					<StackLayout>
+						<Label HorizontalTextAlignment="Start" Style="{StaticResource LabelTitleName}" Text="{Binding TimeCard_EmployeeName}" />
+						<Grid ColumnDefinitions="Auto,Auto,Auto,Auto,*,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="15" RowSpacing="10">
+							<Label Text="Reg" FontSize="14" Grid.Column="1" />
+							<Label Text="OT" FontSize="14" Grid.Column="2" />
+							<Label Text="OT2" FontSize="14" Grid.Column="3" />
+							<Label Text="Total" FontSize="14" Grid.Column="4" />
+							<Label Text="Owed" FontSize="14" Grid.Column="5" />
+							<Label Text="HR" FontSize="14" Grid.Row="1" />
+							<Label Text="Pay" FontSize="14" Grid.Row="2" />
 
-                            <Label Text="{Binding RegTotalHours, StringFormat='{0:F1}'}" FontSize="14" Grid.Column="1" Grid.Row="1" />
-                            <Label Text="{Binding TotalOTHours, StringFormat='{0:F1}'}" FontSize="14" Grid.Column="2" Grid.Row="1" />
-                            <Label Text="{Binding TotalOT2Hours, StringFormat='{0:F1}'}" FontSize="14" Grid.Column="3" Grid.Row="1" />
-                            <Label Text="{Binding TotalWorkHours, StringFormat='{0:F1}'}" FontSize="14" Grid.Column="4" Grid.Row="1" />
-                            <Label Text="{Binding UnPaidTotalWorkHours, StringFormat='{0:F1}'}" FontSize="14" Grid.Column="5" Grid.Row="1" />
-                            <Label Text="{Binding TotalGrossPay, StringFormat='{0:C}'}" FontSize="14" Grid.Column="4" Grid.Row="2" />
-                            <Label Text="{Binding TotalOwedGrossPay, StringFormat='{0:C}'}" FontSize="14" Grid.Column="5" Grid.Row="2" FontAttributes="Bold" />
-                        </Grid>
-                    </StackLayout>
-                </Border>
-            </SwipeView>
-        </DataTemplate>
+							<Label Text="{Binding RegTotalHours, StringFormat='{0:F1}'}" FontSize="14" Grid.Column="1" Grid.Row="1" />
+							<Label Text="{Binding TotalOTHours, StringFormat='{0:F1}'}" FontSize="14" Grid.Column="2" Grid.Row="1" />
+							<Label Text="{Binding TotalOT2Hours, StringFormat='{0:F1}'}" FontSize="14" Grid.Column="3" Grid.Row="1" />
+							<Label Text="{Binding TotalWorkHours, StringFormat='{0:F1}'}" FontSize="14" Grid.Column="4" Grid.Row="1" />
+							<Label Text="{Binding UnPaidTotalWorkHours, StringFormat='{0:F1}'}" FontSize="14" Grid.Column="5" Grid.Row="1" />
+							<Label Text="{Binding TotalGrossPay, StringFormat='{0:C}'}" FontSize="14" Grid.Column="4" Grid.Row="2" />
+							<Label Text="{Binding TotalOwedGrossPay, StringFormat='{0:C}'}" FontSize="14" Grid.Column="5" Grid.Row="2" FontAttributes="Bold" />
+						</Grid>
+					</StackLayout>
+				</Border>
+			</SwipeView>
+		</DataTemplate>
 
-        <controls:SingleDataTemplateSelector x:Key="singletemplatesel" TheTemplate="{StaticResource payrollListTemplate}" />
-    </ContentPage.Resources>
+		<controls:SingleDataTemplateSelector x:Key="singletemplatesel" TheTemplate="{StaticResource payrollListTemplate}" />
+	</ContentPage.Resources>
 
-    <ScrollView>
-        <VerticalStackLayout>
-            <ActivityIndicator IsRunning="True" IsVisible="{Binding Loading}"  />
-            <VerticalStackLayout IsVisible="{Binding HasError}">
-                <Label Text="Loading failed" />
-                <Button Text="Retry" Command="{Binding AppearingCommand}" />
-            </VerticalStackLayout>
-            <Border
+	<ScrollView>
+		<VerticalStackLayout>
+			<ActivityIndicator IsRunning="True" IsVisible="{Binding Loading}"  />
+			<Label Text="Loading failed" IsVisible="{Binding HasError}" />
+			<Button Text="Retry" IsVisible="{Binding HasError}" Command="{Binding AppearingCommand}" />
+			<Border
 				x:Name="helpbox"
 				Padding="8"
 				IsVisible="{Binding HelpInfoBoxVisible}"
 				VerticalOptions="Center">
-                <Border.StrokeShape>
-                    <RoundRectangle CornerRadius="10"/>
-                </Border.StrokeShape>
-                <Grid RowDefinitions="*,*,*" ColumnDefinitions="100,*">
-                    <Label
+				<Border.StrokeShape>
+					<RoundRectangle CornerRadius="10"/>
+				</Border.StrokeShape>
+				<Grid RowDefinitions="*,*,*" ColumnDefinitions="100,*">
+					<Label
                         Grid.ColumnSpan="2"
                         LineBreakMode="WordWrap" Style="{StaticResource LabelSmall}"
 					    Text="TODO. &#10;&#10;TODO. &#10;&#10;Additional details..." />
 
-                    <Image Grid.Row="1" Source="manage_accounts.png" HeightRequest="24" WidthRequest="24"  />
-                    <Label Grid.Row="1" Grid.Column="1"
+					<Image Grid.Row="1" Source="manage_accounts.png" HeightRequest="24" WidthRequest="24"  />
+					<Label Grid.Row="1" Grid.Column="1"
                            Style="{StaticResource LabelSmall}" 
                            Text="Manage Employee" />
-                    <Image Grid.Row="2" Source="refresh.png" HeightRequest="24" WidthRequest="24"  />
-                    <Label Grid.Row="2" Grid.Column="1"
+					<Image Grid.Row="2" Source="refresh.png" HeightRequest="24" WidthRequest="24"  />
+					<Label Grid.Row="2" Grid.Column="1"
                            Style="{StaticResource LabelSmall}" 
                            Text="Refresh the page" />
-                </Grid>
-            </Border>
-            <Button 
+				</Grid>
+			</Border>
+			<Button 
 				Command="{Binding ToggleFilterOptionsCommand}" 
 				Text="Filter" 
 				ImageSource="filter.png"
 				ContentLayout="Right, 20" />
 
-            <Grid
+			<Grid
 				ColumnDefinitions="150,*"
 				ColumnSpacing="5"
 				IsVisible="{Binding ShowFilterOptions}"
 				RowDefinitions="Auto,Auto,Auto"
 				RowSpacing="10">
-                <Label
+				<Label
 					Style="{StaticResource LabelSmall}"
 					Text="Pay Period Start Date:"
 					VerticalTextAlignment="Center" />
-                <DatePicker
+				<DatePicker
 					x:Name="DatePickerStart"
 					Grid.Column="1"
 					Date="{Binding StartDate, Mode=TwoWay}"
 					MaximumDate="{Binding PickerMaxDate}"
 					MinimumDate="{Binding PickerMinDate}" />
-                <Label
+				<Label
 					Grid.Row="1"
 					Style="{StaticResource LabelSmall}"
 					Text="End Date:"
 					VerticalTextAlignment="Center" />
-                <DatePicker
+				<DatePicker
 					x:Name="DatePickerEnd"
 					Grid.Row="1"
 					Grid.Column="1"
 					Date="{Binding EndDate, Mode=TwoWay}"
 					MaximumDate="{Binding PickerMaxDate}"
 					MinimumDate="{Binding PickerMinDate}" />
-                <Button 
+				<Button 
 					Command="{Binding RefreshCardsCommand}" 
 					Text="Apply" 
 					Grid.Row="2"
 					ImageSource="date_range.png"
 					ContentLayout="Right, 20" />
-            </Grid>
-            <Label FontSize="14" Text="{Binding PayPeriod}" />
-            <Border 
-                Padding="8">
-                <Border.StrokeShape>
-                    <RoundRectangle CornerRadius="10"/>
-                </Border.StrokeShape>
-                <CollectionView
+			</Grid>
+			<Label FontSize="14" Text="{Binding PayPeriod}" />
+			<Border Padding="8">
+				<Border.StrokeShape>
+					<RoundRectangle CornerRadius="10"/>
+				</Border.StrokeShape>
+				<CollectionView
 					x:Name="sheetListView"
 					EmptyView="No items to display"
 					ItemTemplate="{StaticResource singletemplatesel}"
 					ItemsSource="{Binding SheetList}" />
-            </Border>
-        </VerticalStackLayout>
-    </ScrollView>
+			</Border>
+		</VerticalStackLayout>
+	</ScrollView>
 </ContentPage>

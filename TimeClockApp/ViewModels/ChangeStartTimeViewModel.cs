@@ -60,7 +60,7 @@ namespace TimeClockApp.ViewModels
 
                 if (TimeCardID != 0)
                 {
-                    TimeCardEditing = cardService.GetTimeCard(TimeCardID);
+                    TimeCardEditing = await cardService.GetTimeCardAsync(TimeCardID);
                     if (TimeCardEditing != null)
                     {
                         StartTime = TimeCardEditing.TimeCard_StartTime;
@@ -97,7 +97,7 @@ namespace TimeClockApp.ViewModels
                 string message = success ? "TimeCard saved" : "Failed to save TimeCard";
 				await AppShell.DisplayToastAsync(message);
 				if (success)
-                    RefreshCard();
+                    await RefreshCard();
             }
             catch (Exception e)
             {
@@ -106,11 +106,11 @@ namespace TimeClockApp.ViewModels
             }
         }
 
-		private void RefreshCard()
+		private async Task RefreshCard()
 		{
 			if (TimeCardID > 0)
 			{
-				TimeCardEditing = cardService.GetTimeCard(TimeCardID);
+				TimeCardEditing = await cardService.GetTimeCardAsync(TimeCardID);
 				if (TimeCardEditing != null)
 				{
 					StartTime = TimeCardEditing.TimeCard_StartTime;

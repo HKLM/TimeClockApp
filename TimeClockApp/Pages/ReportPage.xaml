@@ -8,75 +8,73 @@
         xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
         x:DataType="vm:ReportPageViewModel"
         Title="Report Page">
-    <ContentPage.ToolbarItems>
-        <ToolbarItem  Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
-    </ContentPage.ToolbarItems>
-    <ContentPage.Resources>
-        <ResourceDictionary>
-            <converter:DateOnlyToDateTimeConverter x:Key="dateOnlyToDateTimeConverter" />
-        </ResourceDictionary>
-    </ContentPage.Resources>
-    <ScrollView>
-        <VerticalStackLayout>
-            <ActivityIndicator IsRunning="True" IsVisible="{Binding Loading}" />
-            <VerticalStackLayout IsVisible="{Binding HasError}">
-                <Label Text="Loading failed" />
-                <Button  Command="{Binding AppearingCommand}" Text="Retry" />
-            </VerticalStackLayout>
-            <Border
+	<ContentPage.ToolbarItems>
+		<ToolbarItem  Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
+	</ContentPage.ToolbarItems>
+	<ContentPage.Resources>
+		<ResourceDictionary>
+			<converter:DateOnlyToDateTimeConverter x:Key="dateOnlyToDateTimeConverter" />
+		</ResourceDictionary>
+	</ContentPage.Resources>
+	<ScrollView>
+		<VerticalStackLayout>
+			<ActivityIndicator IsRunning="True" IsVisible="{Binding Loading}" />
+			<Label Text="Loading failed" IsVisible="{Binding HasError}" />
+			<Button IsVisible="{Binding HasError}" Command="{Binding AppearingCommand}" Text="Retry" />
+			<Border
                 x:Name="helpbox" 
                 Padding="8"
                 IsVisible="{Binding HelpInfoBoxVisible}"
                 VerticalOptions="Center">
-                <Border.StrokeShape>
-                    <RoundRectangle CornerRadius="10"/>
-                </Border.StrokeShape>
-                <Label
+				<Border.StrokeShape>
+					<RoundRectangle CornerRadius="10"/>
+				</Border.StrokeShape>
+				<Label
                     LineBreakMode="WordWrap"
                     Style="{StaticResource LabelSmall}"
                     Text="Report of the overall cost of projects. &#10;&#10;Report of total labor (hours worked, wages paid etc) per Project. &#10;&#10;Can filter by Project, Phase, per Employee and or by Date range" />
-            </Border>
-            <Border
+			</Border>
+			<Border
                 x:Name="employeebox" 
                 Padding="10"
                 IsVisible="{Binding UseEmployeeFilter}"
                 VerticalOptions="Center">
-                <Border.StrokeShape>
-                    <RoundRectangle CornerRadius="10"/>
-                </Border.StrokeShape>
-                <CollectionView 
+				<Border.StrokeShape>
+					<RoundRectangle CornerRadius="10"/>
+				</Border.StrokeShape>
+				<CollectionView 
                     SelectionMode="Multiple"
                     x:Name="colUsers"   
                     x:DataType="m:Employee"
                     SelectionChangedCommand="{Binding ClickedEmployeeListCommand, Source={RelativeSource AncestorType={x:Type vm:ReportPageViewModel}}, x:DataType=vm:ReportPageViewModel}"
                     SelectionChangedCommandParameter="{Binding EmployeeId}"
                     ItemsSource="{Binding EmployeeList, Source={RelativeSource AncestorType={x:Type vm:ReportPageViewModel}}, x:DataType=vm:ReportPageViewModel}">
-                    <CollectionView.ItemsLayout>
-                        <LinearItemsLayout   Orientation="Vertical" />
-                    </CollectionView.ItemsLayout>
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate x:DataType="m:Employee">
-                            <StackLayout Orientation="Vertical" Padding="30">
-                                <Label Text="{Binding Employee_Name}" />
-                            </StackLayout>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
-            </Border>
-            <Border>
-                <Grid
+					<CollectionView.ItemsLayout>
+						<LinearItemsLayout   Orientation="Vertical" />
+					</CollectionView.ItemsLayout>
+					<CollectionView.ItemTemplate>
+						<DataTemplate x:DataType="m:Employee">
+							<StackLayout Orientation="Vertical" Padding="30">
+								<Label Text="{Binding Employee_Name}" />
+							</StackLayout>
+						</DataTemplate>
+					</CollectionView.ItemTemplate>
+				</CollectionView>
+			</Border>
+			<Border>
+				<Grid
                     ColumnDefinitions="Auto,*" 
                     ColumnSpacing="3"
                     RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" 
                     RowSpacing="3">
-                    <Label
+					<Label
                         HorizontalOptions="Start" 
                         Text="Project: "
                         VerticalTextAlignment="Center" />
-                    <CheckBox 
+					<CheckBox 
                         Grid.Column="1" 
                         IsChecked="{Binding UseProjectFilter, Mode=TwoWay}" />
-                    <Picker
+					<Picker
                         x:DataType="m:Project"
                         Grid.Row="1" Grid.ColumnSpan="2"
                         HorizontalOptions="Fill"
@@ -84,16 +82,16 @@
                         ItemDisplayBinding="{Binding Name, x:DataType=m:Project}"
                         ItemsSource="{Binding ProjectList, Source={RelativeSource AncestorType={x:Type vm:ReportPageViewModel}}, x:DataType=vm:ReportPageViewModel}"
                         SelectedItem="{Binding SelectedProject, Source={RelativeSource AncestorType={x:Type vm:ReportPageViewModel}}, x:DataType=vm:ReportPageViewModel, Mode=TwoWay}" />
-                    <Label
+					<Label
                         Grid.Row="2" 
                         HorizontalOptions="Start"
                         Text="Phase: " 
                         VerticalTextAlignment="Center" />
-                    <CheckBox
+					<CheckBox
                         Grid.Row="2" 
                         Grid.Column="1"
                         IsChecked="{Binding UsePhaseFilter, Mode=TwoWay}" />
-                    <Picker
+					<Picker
                         x:DataType="m:Phase"
                         Grid.Row="3" 
                         Grid.ColumnSpan="2"
@@ -102,128 +100,128 @@
                         ItemDisplayBinding="{Binding PhaseTitle, x:DataType=m:Phase}"
                         ItemsSource="{Binding PhaseList, Source={RelativeSource AncestorType={x:Type vm:ReportPageViewModel}}, x:DataType=vm:ReportPageViewModel}"
                         SelectedItem="{Binding SelectedPhase, Source={RelativeSource AncestorType={x:Type vm:ReportPageViewModel}}, x:DataType=vm:ReportPageViewModel, Mode=TwoWay}" />
-                    <Label
+					<Label
                         Grid.Row="4" 
                         HorizontalOptions="Start"
                         Text="Employee: " 
                         VerticalTextAlignment="Center" />
-                    <CheckBox
+					<CheckBox
                         Grid.Row="4" 
                         Grid.Column="1"
                         IsChecked="{Binding UseEmployeeFilter, Mode=TwoWay}" />
-                    <Label
+					<Label
                         Grid.Row="6"
                         Style="{StaticResource LabelSmallCenter}"
                         Text="Fiilter by Dates: " 
                         VerticalTextAlignment="Center" />
-                    <CheckBox
+					<CheckBox
                         Grid.Row="6" 
                         Grid.Column="1"
                         IsChecked="{Binding UseDateFilter, Mode=TwoWay}" />
-                    <Label
+					<Label
                         Grid.Row="7"
                         IsEnabled="{Binding UseDateFilter}"
                         Style="{StaticResource LabelSmallCenter}"
                         Text="Begin Date: " 
                         VerticalTextAlignment="Center" />
-                    <DatePicker
+					<DatePicker
                         Grid.Row="7" 
                         Grid.Column="1"
                         Date="{Binding StartDate, Converter={StaticResource dateOnlyToDateTimeConverter}, Mode=TwoWay}"
                         IsEnabled="{Binding UseDateFilter}"
                         MaximumDate="{Binding PickerMaxDate}"
                         MinimumDate="{Binding PickerMinDate}" />
-                    <Label
+					<Label
                         Grid.Row="8"
                         IsEnabled="{Binding UseDateFilter}"
                         Style="{StaticResource LabelSmallCenter}"
                         Text="End Date: " 
                         VerticalTextAlignment="Center" />
-                    <DatePicker
+					<DatePicker
                         Grid.Row="8" 
                         Grid.Column="1"
                         Date="{Binding EndDate, Converter={StaticResource dateOnlyToDateTimeConverter}, Mode=TwoWay}"
                         IsEnabled="{Binding UseDateFilter}"
                         MaximumDate="{Binding PickerMaxDate}"
                         MinimumDate="{Binding PickerMinDate}" />
-                    <Button
+					<Button
                         Grid.Row="9" 
                         Grid.Column="1"
                         Command="{Binding MakeReportCommand}"
                         Text="Run Report" />
-                </Grid>
-            </Border>
-            <Border Margin="0,20,0,0">
-                <Grid
+				</Grid>
+			</Border>
+			<Border Margin="0,20,0,0">
+				<Grid
                     ColumnDefinitions="Auto, *" 
                     ColumnSpacing="35"
                     RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
-                    <Label
+					<Label
                         Grid.ColumnSpan="2" 
                         FontAttributes="Bold"
                         FontSize="17" 
                         HorizontalTextAlignment="Center"
                         Text="Project Totals" />
-                    <Label 
+					<Label 
                         Grid.Row="1"
                         FontAttributes="Bold"                        
                         Style="{StaticResource LabelSmallCenter}"
                         Text="Total Wages" />
-                    <Label
+					<Label
                         Grid.Row="1" 
                         Grid.Column="1"
                         Style="{StaticResource LabelSmallCenter}"
                         FontAttributes="Bold"
                         Text="{Binding TotalGrossPay, StringFormat='{0:C}'}" />
-                    <Label 
+					<Label 
                         Grid.Row="2"
                         Style="{StaticResource LabelSmallCenter}"
                         Text="Estimated WC" />
-                    <Label
+					<Label
                         Grid.Row="2" 
                         Grid.Column="1"
                         Style="{StaticResource LabelSmallCenter}"
                         Text="{Binding TotalEstimatedWC, StringFormat='{0:C}'}" />
-                    <Label 
+					<Label 
                         Grid.Row="3"
                         FontAttributes="Bold"                        
                         Style="{StaticResource LabelSmallCenter}"
                         Text="Total Labor Burden" />
-                    <Label
+					<Label
                         Grid.Row="3" 
                         Grid.Column="1"
                         Style="{StaticResource LabelSmallCenter}"
                         FontAttributes="Bold"
                         Text="{Binding TotalLaborBurden, StringFormat='{0:C}'}" />
-                    <Label 
+					<Label 
                         Grid.Row="4" 
                         Style="{StaticResource LabelSmallCenter}"
                         Text="Total Hours" />
-                    <Label
+					<Label
                         Grid.Row="4" 
                         Grid.Column="1"
                         Style="{StaticResource LabelSmallCenter}"
                         Text="{Binding TotalWorkHours, StringFormat='{0:F2}'}" />
-                    <Label 
+					<Label 
                         Grid.Row="5" 
                         Style="{StaticResource LabelSmallCenter}"
                         Text="Total OT" />
-                    <Label
+					<Label
                         Grid.Row="5" 
                         Grid.Column="1"
                         Style="{StaticResource LabelSmallCenter}"
                         Text="{Binding TotalOTHours, StringFormat='{0:F2}'}" />
-                    <Label 
+					<Label 
                         Grid.Row="6" 
                         Style="{StaticResource LabelSmallCenter}"
                         Text="Total OT2" />
-                    <Label
+					<Label
                         Grid.Row="6" 
                         Grid.Column="1"
                         Style="{StaticResource LabelSmallCenter}"
                         Text="{Binding TotalOT2Hours, StringFormat='{0:F2}'}" />
-                </Grid>
-            </Border>
-        </VerticalStackLayout>
-    </ScrollView>
+				</Grid>
+			</Border>
+		</VerticalStackLayout>
+	</ScrollView>
 </ContentPage>

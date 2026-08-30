@@ -233,7 +233,12 @@ namespace TimeClockApp.Shared.Models
         public virtual Employee Employee { get; set; }
         public virtual Project Project { get; set; }
         public virtual Phase Phase { get; set; }
-    }
+
+        public override string ToString()
+		{
+			return $"TimeCardId: {TimeCardId}\nEmployeeId: {EmployeeId}\nTimeCard_EmployeeName: {TimeCard_EmployeeName}\nProjectId: {ProjectId}\nProjectName: {ProjectName}\nPhaseId: {PhaseId}\nPhaseTitle: {PhaseTitle}\nTimeCard_Status: {TimeCard_Status}\nTimeCard_DateTime: {TimeCard_DateTime}\nTimeCard_Date: {TimeCard_Date}\nTimeCard_StartTime: {TimeCard_StartTime}\nTimeCard_EndTime: {TimeCard_EndTime}\nTimeCard_WorkHours: {TimeCard_WorkHours}\nTimeCard_bReadOnly: {TimeCard_bReadOnly}";
+		}
+	}
 
     public sealed class TimeCardMap : ClassMap<TimeCard>
     {

@@ -1,0 +1,247 @@
+<ContentPage x:Class="TimeClockApp.Pages.EditMultiTimeCards"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
+    xmlns:controls="clr-namespace:TimeClockApp.Controls"
+    xmlns:Converter="clr-namespace:TimeClockApp.Converters"
+    xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
+    xmlns:m="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared" 
+	x:DataType="vm:EditMultiTimeCardsViewModel"
+    Title="Edit MultiTimeCards">
+	<ContentPage.ToolbarItems>
+		<ToolbarItem Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
+		<ToolbarItem Command="{Binding RefreshTimeCardsCommand}" IconImageSource="refresh.png" />
+		<ToolbarItem Command="{Binding SaveCommand}" IconImageSource="save_dark.png" />
+	</ContentPage.ToolbarItems>
+	<ContentPage.Resources>
+		<ResourceDictionary>
+			<Converter:TimeOnlyToTimeSpanConverter x:Key="timeOnlyToTimeSpanConverter" />
+			<Converter:DateOnlyToDateTimeConverter x:Key="dateOnlyToDateTimeConverter" />
+			<Converter:TimeOnlyConverter x:Key="timeOnlyConverter" />
+			<Converter:DateOnlyWithYearConverter x:Key="dateOnlyConverter" />
+		</ResourceDictionary>
+
+		<Style x:Key="MultiSelectFrame" TargetType="Border">
+			<Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray500}}" />
+			<Setter Property="StrokeShape" Value="RoundRectangle 10"/>
+			<Setter Property="StrokeThickness" Value="2"/>
+			<Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray600}}" />
+			<Setter Property="Padding" Value="8"/>
+			<Setter Property="VerticalOptions" Value="Center"/>
+			<Setter Property="VisualStateManager.VisualStateGroups">
+				<VisualStateGroupList>
+					<VisualStateGroup x:Name="CommonStates">
+						<VisualState x:Name="Normal"/>
+						<VisualState x:Name="Selected">
+							<VisualState.Setters>
+								<Setter Property="Stroke" Value="{StaticResource OrangeRedAccent}" />
+								<Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource SecondaryContainer}, Dark={StaticResource SurfaceVariantDark}}" />
+							</VisualState.Setters>
+						</VisualState>
+						<VisualState x:Name="Disabled" />
+					</VisualStateGroup>
+				</VisualStateGroupList>
+			</Setter>
+		</Style>
+		<DataTemplate x:Key="startTemplate" x:DataType="m:TimeCard">
+			<Border Style="{StaticResource MultiSelectFrame}">
+				<Border.StrokeShape>
+					<RoundRectangle CornerRadius="10"/>
+				</Border.StrokeShape>
+				<Grid RowDefinitions="26,20,20,4,20,20" ColumnDefinitions="260,*">
+					<Label
+                        Style="{StaticResource LabelTitleName}"
+                        Text="{Binding TimeCard_EmployeeName}" />
+					<Label 
+						Grid.Row="1"
+                        Style="{StaticResource LabelMicro_Hstart}" 
+                        Text="{Binding ProjectName, TargetNullValue='None'}" />
+					<Label 
+						Grid.Row="2"
+                        Style="{StaticResource LabelMicro_Hstart}" 
+                        Text="{Binding PhaseTitle, TargetNullValue='None'}" />
+					<BoxView Grid.Row="3" 
+						Grid.ColumnSpan="2"
+                        HeightRequest="2" 
+                        HorizontalOptions="Fill" />
+					<Label 
+						Grid.Row="4"
+						Style="{StaticResource LabelMicro_Hstart}"
+						Text="{Binding TimeCard_Date, Converter={StaticResource dateOnlyConverter}, ConverterParameter='ddd M/d/yyyy', StringFormat='{0:ddd M/d/yyyy}'}" />
+					<Label
+                        Grid.Row="4" 
+						Grid.Column="1"
+						Style="{StaticResource LabelMicro_Hstart}"
+                        Text="{Binding TimeCard_Status, StringFormat='{0}'}" />
+					<Label
+                        Grid.Row="5" 
+						Grid.Column="1"
+						Style="{StaticResource LabelMicro_Hstart}"
+                        Text="{Binding TimeCard_Duration, StringFormat='{}{0:hh\\:mm}'}" />
+					<Button
+						Grid.RowSpan="3"
+						Grid.Column="1"
+                        Style="{StaticResource GreenButton}"
+                        Text="Start" />
+				</Grid>
+			</Border>
+		</DataTemplate>
+
+		<DataTemplate x:Key="endTemplate" x:DataType="m:TimeCard">
+			<Border Style="{StaticResource MultiSelectFrame}">
+				<Border.StrokeShape>
+					<RoundRectangle CornerRadius="10"/>
+				</Border.StrokeShape>
+				<Grid RowDefinitions="26,20,20,4,20,20" ColumnDefinitions="260,*">
+					<Label
+                        Style="{StaticResource LabelTitleName}"
+                        Text="{Binding TimeCard_EmployeeName}" />
+					<Label 
+						Grid.Row="1"
+                        Style="{StaticResource LabelMicro_Hstart}" 
+                        Text="{Binding ProjectName, TargetNullValue='None'}" />
+					<Label 
+						Grid.Row="2"
+                        Style="{StaticResource LabelMicro_Hstart}" 
+                        Text="{Binding PhaseTitle, TargetNullValue='None'}" />
+					<BoxView Grid.Row="3" 
+						Grid.ColumnSpan="2"
+                        HeightRequest="2" 
+                        HorizontalOptions="Fill" />
+					<Label 
+						Grid.Row="4"
+						Style="{StaticResource LabelMicro_Hstart}"
+						Text="{Binding TimeCard_Date, Converter={StaticResource dateOnlyConverter}, ConverterParameter='ddd M/d/yyyy', StringFormat='{0:ddd M/d/yyyy}'}" />
+					<Label
+                        Grid.Row="4" 
+						Grid.Column="1"
+						Style="{StaticResource LabelMicro_Hstart}"
+                        Text="{Binding TimeCard_Status, StringFormat='{0}'}" />
+					<Label
+                        Grid.Row="5"
+						Style="{StaticResource LabelMicro_Hstart}"
+                        Text="{Binding TimeCard_StartTime, Converter={StaticResource timeOnlyConverter}}" />
+					<Label
+                        Grid.Row="5" 
+						Grid.Column="1"
+						Style="{StaticResource LabelMicro_Hstart}"
+                        Text="{Binding TimeCard_Duration, StringFormat='{}{0:hh\\:mm}'}" />
+					<Button
+						Grid.RowSpan="3"
+						Grid.Column="1"
+						Style="{StaticResource RedButton}"
+                        Text="End" />
+				</Grid>
+			</Border>
+		</DataTemplate>
+
+		<controls:TimeCardDataTemplateSelector 
+            x:Key="timecardtemplatesel" 
+            EndTemplate="{StaticResource endTemplate}" 
+            StartTemplate="{StaticResource startTemplate}" />
+	</ContentPage.Resources>
+
+	<ScrollView x:DataType="vm:EditMultiTimeCardsViewModel">
+		<StackLayout>
+			<Label Text="An error occurred while loading time cards. Please try again." IsVisible="{Binding HasError}" />
+			<Button Command="{Binding AppearingCommand}" Text="Retry" IsVisible="{Binding HasError}" />
+			<Border
+				x:Name="helpbox"
+				Padding="8"
+				IsVisible="{Binding HelpInfoBoxVisible}"
+				VerticalOptions="Center">
+				<Border.StrokeShape>
+					<RoundRectangle CornerRadius="10"/>
+				</Border.StrokeShape>
+				<Label
+					LineBreakMode="WordWrap"
+					Style="{StaticResource LabelSmall}"
+					Text="Multi-TimeCard Editor &#10;&#10;Change multiple time cards at once. Check the checkbox for the type of changes you want to make to the time cards (date, start time, end time, associated project and/or phase). Then select the Time Cards to edit. Then click the Save button from the titlebar. &#10;&#10;Note: Only the current, active, and have not been marked as Paid Time Cards are displayed. Once a time card has been marked as paid, it is ReadOnly, and can not be changed." />
+			</Border>
+
+			<Grid RowDefinitions="44,44,44,44,44" ColumnDefinitions="40,100,*">
+				<CheckBox
+					IsChecked="{Binding CheckProjectPhase, Mode=TwoWay}" Margin="0" />
+				<Label
+					Grid.Column="1"
+					Style="{StaticResource LabelSmallCenter}"
+                    Text="Project: " 
+                    VerticalTextAlignment="Center" />
+				<Picker
+                    Grid.Column="2"
+                    x:DataType="m:Project"
+					IsEnabled="{Binding CheckProjectPhase, Source={RelativeSource AncestorType={x:Type vm:EditMultiTimeCardsViewModel}}, x:DataType=vm:EditMultiTimeCardsViewModel}"
+                    ItemDisplayBinding="{Binding Name, x:DataType=m:Project}"
+                    ItemsSource="{Binding ProjectList, Source={RelativeSource AncestorType={x:Type vm:EditMultiTimeCardsViewModel}}, x:DataType=vm:EditMultiTimeCardsViewModel}"
+                    SelectedItem="{Binding SelectedProject, Source={RelativeSource AncestorType={x:Type vm:EditMultiTimeCardsViewModel}}, x:DataType=vm:EditMultiTimeCardsViewModel, Mode=TwoWay}" 
+                    Title="Project" />
+				<Label 
+					Grid.Column="1"
+                    Grid.Row="1" 
+					Style="{StaticResource LabelSmallCenter}"
+                    Text="Phase: " 
+                    VerticalTextAlignment="Center" />
+				<Picker
+                    Grid.Row="1" 
+					Grid.Column="2"
+                    x:DataType="m:Phase"
+					IsEnabled="{Binding CheckProjectPhase, Source={RelativeSource AncestorType={x:Type vm:EditMultiTimeCardsViewModel}}, x:DataType=vm:EditMultiTimeCardsViewModel}"
+                    ItemDisplayBinding="{Binding PhaseTitle, x:DataType=m:Phase}"
+                    ItemsSource="{Binding PhaseList, Source={RelativeSource AncestorType={x:Type vm:EditMultiTimeCardsViewModel}}, x:DataType=vm:EditMultiTimeCardsViewModel}"
+                    SelectedItem="{Binding SelectedPhase, Source={RelativeSource AncestorType={x:Type vm:EditMultiTimeCardsViewModel}}, x:DataType=vm:EditMultiTimeCardsViewModel, Mode=TwoWay}" 
+                    Title="Phase" />
+				<CheckBox
+					Grid.Row="2" Margin="0"
+					IsChecked="{Binding CheckDate, Mode=TwoWay}" />
+				<Label
+					Grid.Column="1"
+					Grid.Row="2"
+					Style="{StaticResource LabelSmallCenter}"
+					Text="Date:"
+					VerticalTextAlignment="Center" />
+				<DatePicker
+					Grid.Row="2"
+					Grid.Column="2"
+					IsEnabled="{Binding CheckDate}"
+					Date="{Binding TimeCard_Date, Converter={StaticResource dateOnlyToDateTimeConverter}, Mode=TwoWay}"
+					MaximumDate="{Binding PickerMaxDate}"
+					MinimumDate="{Binding PickerMinDate}" />
+				<CheckBox
+					Grid.Row="3" Margin="0"
+					IsChecked="{Binding CheckStartTime, Mode=TwoWay}" />
+				<Label
+					Grid.Column="1"
+					Grid.Row="3"
+					Style="{StaticResource LabelSmallCenter}"
+					Text="Clock In:"
+					VerticalTextAlignment="Center" />
+				<TimePicker
+					Grid.Row="3"
+					Grid.Column="2"
+					Time="{Binding StartTime, Converter={StaticResource timeOnlyToTimeSpanConverter}, Mode=TwoWay}" />
+				<CheckBox
+					Grid.Row="4" Margin="0"
+					IsChecked="{Binding CheckEndTime, Mode=TwoWay}" />
+				<Label
+					Grid.Column="1"
+					Grid.Row="4"
+					Style="{StaticResource LabelSmallCenter}"
+					Text="Clock Out:"
+					VerticalTextAlignment="Center" />
+				<TimePicker
+					Grid.Row="4"
+					Grid.Column="2"
+					IsEnabled="{Binding CheckEndTime}"
+					Time="{Binding EndTime, Converter={StaticResource timeOnlyToTimeSpanConverter}, Mode=TwoWay}" />
+			</Grid>
+
+			<CollectionView
+                x:Name="collectionView1"
+                EmptyView="No items to display"
+				SelectionMode="Multiple"
+                ItemTemplate="{StaticResource timecardtemplatesel}"
+                ItemsSource="{Binding TimeCards}"
+				SelectedItems="{Binding SelectedTimeCards, Mode=TwoWay}"
+				SelectionChangedCommand="{Binding SelectionChangedCommand}" />
+		</StackLayout>
+	</ScrollView>
+</ContentPage>

@@ -60,6 +60,7 @@ public static class MauiProgram
 		builder.Services.AddTransient<TimeCardManagerViewModel>();
 		builder.Services.AddTransient<EditTimeCardViewModel>();
 		builder.Services.AddTransient<ChangeStartTimeViewModel>();
+		builder.Services.AddTransient<EditMultiTimeCardsViewModel>();
 		builder.Services.AddTransient<PayrollPageViewModel>();
 		builder.Services.AddSingleton<PayrollDetailViewModel>();
 		builder.Services.AddTransient<ExpenseViewModel>();

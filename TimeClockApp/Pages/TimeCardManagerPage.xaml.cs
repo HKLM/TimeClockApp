@@ -20,19 +20,32 @@ public partial class TimeCardManagerPage : ContentPage
 	private async void FlyGoEdit_Clicked(object sender, EventArgs e)
 	{
 		MenuFlyoutItem itemClicked = (MenuFlyoutItem)sender;
-		if (itemClicked != null)
+		if (itemClicked != null && int.TryParse(itemClicked.CommandParameter.ToString(), out int i))
 		{
-			if (int.TryParse(itemClicked.CommandParameter.ToString(), out int i))
+			if (i == 0)
 			{
-				if (i == 0)
-				{
-					await App.AlertSvc!.ShowAlertAsync("NOTICE", "There is no TimeCard to edit.\n\nYou must first create a Time Card before it can be edited.").ConfigureAwait(false);
-					return;
-				}
-				else
-				{
-					await Shell.Current.GoToAsync($"EditTimeCard?id={i}");
-				}
+				await App.AlertSvc!.ShowAlertAsync("NOTICE", "There is no TimeCard to edit.\n\nYou must first create a Time Card before it can be edited.").ConfigureAwait(false);
+				return;
+			}
+			else
+			{
+				await Shell.Current.GoToAsync($"EditTimeCard?id={i}");
+			}
+		}
+	}
+	private async void FlyGoMultiEdit_Clicked(object sender, EventArgs e)
+	{
+		MenuFlyoutItem itemClicked = (MenuFlyoutItem)sender;
+		if (itemClicked != null && int.TryParse(itemClicked.CommandParameter.ToString(), out int i))
+		{
+			if (i == 0)
+			{
+				await App.AlertSvc!.ShowAlertAsync("NOTICE", "There is no TimeCard to edit.\n\nYou must first create a Time Card before it can be edited.").ConfigureAwait(false);
+				return;
+			}
+			else
+			{
+				await Shell.Current.GoToAsync($"EditMultiTimeCards?id={i}");
 			}
 		}
 	}

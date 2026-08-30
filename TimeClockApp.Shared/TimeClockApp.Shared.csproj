@@ -10,7 +10,7 @@
 		<!--<Nullable>enable</Nullable>-->
 		
 		<!--<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>-->
-		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">30.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">36.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
 		<Configurations>Debug;Release;MSSQL Migration;SQLite Migration</Configurations>
@@ -18,11 +18,11 @@
 		<Company>Alexander Builder</Company>
 		<Title>TimeCards App.Shared</Title>
 		<Copyright>2026 (c) Brian Alexander</Copyright>
-		<ApplicationVersion>10</ApplicationVersion>
-		<ApplicationDisplayVersion>3.0</ApplicationDisplayVersion>
-		<FileVersion>3.0</FileVersion>
-		<AssemblyVersion>3.0</AssemblyVersion>
-		<Version>3.0</Version>
+		<ApplicationVersion>11</ApplicationVersion>
+		<ApplicationDisplayVersion>3.1</ApplicationDisplayVersion>
+		<FileVersion>3.1</FileVersion>
+		<AssemblyVersion>3.1</AssemblyVersion>
+		<Version>3.1</Version>
 		<SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
 	</PropertyGroup>
 
@@ -60,9 +60,9 @@
 
 	<ItemGroup>
 		<PackageReference Include="CsvHelper" Version="33.1.0" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="11.0.0-preview.6.26359.118" />
-		<!--<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.0" />-->
-		<PackageReference Include="Microsoft.Maui.Controls" Version="11.0.0-preview.6.26360.8" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="11.0.0-preview.7.26381.103" />
+		<!--<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="11.0.0-preview.7.26381.103" />-->
+		<PackageReference Include="Microsoft.Maui.Controls" Version="11.0.0-preview.7.26406.9" />
 	</ItemGroup>
 
 </Project>

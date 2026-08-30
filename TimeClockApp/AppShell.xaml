@@ -16,20 +16,35 @@
 		<ResourceDictionary>
 			<Style Class="FlyoutItemLabelStyle" TargetType="Label">
 				<Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+				<Setter Property="FontFamily" Value="OpenSansRegular" />
+				<Setter Property="FontSize" Value="12" />
+				<Setter Property="VerticalTextAlignment" Value="Center" />
+				<Setter Property="Padding" Value="5,0,0,0" />
 			</Style>
 			<Style Class="FlyoutItemLayoutStyle" TargetType="Layout" ApplyToDerivedTypes="True">
+				<Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource FlyBackgroundLight}, Dark={StaticResource FlyBackgroundDark}}" />
+				<Setter TargetName="FlyoutItemLabel" Property="Label.TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+				<Setter Property="Grid.RowDefinitions" Value="50" />
 				<Setter Property="VisualStateManager.VisualStateGroups">
 					<VisualStateGroupList>
 						<VisualStateGroup x:Name="CommonStates">
 							<VisualState x:Name="Normal">
 								<VisualState.Setters>
 									<Setter TargetName="FlyoutItemLabel" Property="Label.TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+									<Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource FlyBackgroundLight}, Dark={StaticResource FlyBackgroundDark}}" />
 								</VisualState.Setters>
 							</VisualState>
 							<VisualState x:Name="Selected">
 								<VisualState.Setters>
 									<Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
 									<Setter TargetName="FlyoutItemLabel" Property="Label.FontAttributes" Value="Bold" />
+									<Setter TargetName="FlyoutItemLabel" Property="Label.TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+								</VisualState.Setters>
+							</VisualState>
+							<VisualState x:Name="Disabled" />
+							<VisualState x:Name="PointerOver">
+								<VisualState.Setters>
+									<Setter Property="BackgroundColor" Value="{StaticResource Blue100Accent}" />
 								</VisualState.Setters>
 							</VisualState>
 						</VisualStateGroup>

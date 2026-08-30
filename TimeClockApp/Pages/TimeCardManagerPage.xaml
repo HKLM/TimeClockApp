@@ -23,7 +23,7 @@
 	</ContentPage.ToolbarItems>
 	<ScrollView>
 		<StackLayout>
-			<!--<ActivityIndicator IsRunning="True" IsVisible="{Binding Loading}" />-->
+			<ActivityIndicator IsRunning="True" IsVisible="{Binding RefreshAllCardsCommand.IsRunning}" />
 			<Label Text="Loading failed" IsVisible="{Binding HasError}" />
 			<Button IsVisible="{Binding HasError}" Command="{Binding AppearingCommand}" Text="Retry" />
 			<Border
@@ -97,6 +97,7 @@
 				<CollectionView
                     x:Name="TimeCardsCollection"
                     x:DataType="m:TimeCard"
+					EmptyView="No items to display"
                     ItemsSource="{Binding TimeCards, Source={RelativeSource AncestorType={x:Type vm:TimeCardManagerViewModel}}, x:DataType=vm:TimeCardManagerViewModel}"
                     SelectionMode="Single"
                     SelectedItem="{Binding SelectedTimeCard, Source={RelativeSource AncestorType={x:Type vm:TimeCardManagerViewModel}}, x:DataType=vm:TimeCardManagerViewModel, Mode=TwoWay}"
@@ -160,6 +161,11 @@
                                             Text="Edit Card"
                                             CommandParameter="{Binding TimeCardId}"
                                             Clicked="FlyGoEdit_Clicked"/>
+										<MenuFlyoutItem 
+                                            Text="Edit Multi-Cards" 
+								            IconImageSource="edit_note.png"
+                                            CommandParameter="{Binding TimeCardId}"
+                                            Clicked="FlyGoMultiEdit_Clicked"/>
 									</MenuFlyout>
 								</FlyoutBase.ContextFlyout>
 								<Grid ColumnDefinitions="*,*,*,*,*" ColumnSpacing="4" RowDefinitions="40">
