@@ -12,6 +12,9 @@ using TimeClockApp.Shared;
 
 namespace TimeClockApp.Services
 {
+	/// <summary>
+	/// Provides services for importing and exporting data from the database/CSV files.
+	/// </summary>
 	public class ExportDataService : SQLiteDataStore
 	{
 		// import data must be this version or newer
@@ -145,6 +148,11 @@ namespace TimeClockApp.Services
 
 #endregion READCSV
 
+		/// <summary>
+		/// Backs up the database asynchronously.
+		/// </summary>
+		/// <param name="savePath">The path where the backup file will be saved.</param>
+		/// <returns></returns>
 		public async Task BackupDatabase(string? savePath = null)
 		{
 #if SQLITE
@@ -194,8 +202,15 @@ namespace TimeClockApp.Services
 #endif
 		}
 
-#region IMPORT DATA
+		#region IMPORT DATA
 
+		/// <summary>
+		/// Imports data from CSV files asynchronously.
+		/// </summary>
+		/// <param name="dataModel"></param>
+		/// <param name="ExportLog"></param>
+		/// <param name="overWriteData"></param>
+		/// <returns>the appended <paramref name="ExportLog"/> of the import process</returns>
 		public async Task<string> ImportData(ImportDataModel dataModel, string ExportLog, bool overWriteData)
 		{
 			if (dataModel.IsAnyTrue())
@@ -420,6 +435,7 @@ namespace TimeClockApp.Services
 					updateCard.Name = card.Name;
 					updateCard.Status = card.Status;
 					updateCard.ProjectDate = card.ProjectDate;
+					updateCard.ProjectDateEnd = card.ProjectDateEnd.HasValue ? card.ProjectDateEnd.Value : null;
 					Context.Update<Project>(updateCard);
 					return true;
 				}
@@ -558,6 +574,12 @@ namespace TimeClockApp.Services
 			return false;
 		}
 
+		/// <summary>
+		/// Unzips the archive asynchronously.
+		/// </summary>
+		/// <param name="fileToUNZipPath">The path to the zip file to unzip.</param>
+		/// <param name="unZipTempDirectory">The directory where the unzipped files will be placed.</param>
+		/// <returns>The import data model containing information about the unzipped files.</returns>
 		public async Task<ImportDataModel> UnzipArchive(string fileToUNZipPath, string unZipTempDirectory)
 		{
 			ImportDataModel dataModel = new();
@@ -601,7 +623,7 @@ namespace TimeClockApp.Services
 		}
 
 		/// <summary>
-		/// Updates the application preferences based on the imported configuration.
+		/// Updates the Application Shared Preferences based on the imported configuration.
 		/// </summary>
 		/// <param name="card">The config being imported, containing preference values.</param>
 		private void UpdatePreferences(ref Config card)
@@ -667,6 +689,11 @@ namespace TimeClockApp.Services
 
 #region EXPORT DATA
 
+		/// <summary>
+		/// Compresses and exports a folder asynchronously.
+		/// </summary>
+		/// <param name="folderToZipPath">The path to the folder to zip.</param>
+		/// <returns>true if the folder was compressed and exported successfully; otherwise, false</returns>
 		public async Task<bool> CompressAndExportFolder(string folderToZipPath)
 		{
 			ExportDataService.ZIPFILENAME = string.Empty;

@@ -1,12 +1,13 @@
 ﻿using TimeClockApp.Shared;
 using static TimeClockApp.Shared.Enums;
-
 #nullable enable
 
 namespace TimeClockApp.ViewModels
 {
-	public partial class SettingsBasicPageViewModel(SettingsService configService) : BaseViewModel
+	public partial class SettingsBasicPageViewModel(SettingsService configService, IProjectListService projectListService) : BaseViewModel
 	{
+		private readonly SettingsService configService = configService;
+		private readonly IProjectListService projectListService = projectListService;
 		[ObservableProperty]
 		public partial int Config_DaysInPayPeriod { get; set; }
 		[ObservableProperty]
@@ -110,9 +111,9 @@ namespace TimeClockApp.ViewModels
 						PickerMinutes.Add(i);
 					}
 				}
-				List<Project> pro = await configService.GetProjectsListAsync();
+				List<Project> pro = await projectListService.GetProjectsListAsync();
 				ProjectList = pro.ToObservableCollection();
-				List<Phase> ph = await configService.GetPhaseListAsync();
+				List<Phase> ph = await projectListService.GetPhaseListAsync();
 				PhaseList = ph.ToObservableCollection();
 				PickerMinDate = configService.GetAppFirstRunDate();
 
@@ -122,7 +123,18 @@ namespace TimeClockApp.ViewModels
 					List<Config> S = await configService.GetSettingsListAsync();
 					foreach (Config item in S)
 					{
-						if (item.ConfigId == 3)
+						if (item.ConfigId == 2)
+						{
+							if (!string.IsNullOrEmpty(item.StringValue))
+							{
+								Preferences.Set("FirstRun", item.StringValue, PrefSetting.PrefKey);
+								if (DateOnly.TryParse(item.StringValue, out DateOnly runFirstDate))
+								{
+									Config_FirstRun = runFirstDate;
+								}
+							}
+						}
+						else if (item.ConfigId == 3)
 						{
 							Config_CurrentProject = item.IntValue ?? 1;
 							Preferences.Set("CurrentProject", Config_CurrentProject, PrefSetting.PrefKey);
@@ -162,7 +174,6 @@ namespace TimeClockApp.ViewModels
 							Config_DaysInPayPeriod = item.IntValue ?? 7;
 							Preferences.Set("DaysInPayPeriod", Config_DaysInPayPeriod, PrefSetting.PrefKey);
 						}
-
 						else if (item.ConfigId == 11)
 						{
 							ConfigIntPayDayOfWeek = item.IntValue ?? 5;
@@ -182,19 +193,7 @@ namespace TimeClockApp.ViewModels
 						{
 							ExtractAlarmFromString(item.StringValue!);
 							Config_NotificationHours = item.StringValue != null ? double.Parse(item.StringValue) : 4.0;
-
 							Preferences.Set("NotificationHours", Config_NotificationHours, PrefSetting.PrefKey);
-						}
-						else if (item.ConfigId == 2)
-						{
-							if (!string.IsNullOrEmpty(item.StringValue))
-							{
-								Preferences.Set("FirstRun", item.StringValue, PrefSetting.PrefKey);
-								if (DateOnly.TryParse(item.StringValue, out DateOnly runFirstDate))
-								{
-									Config_FirstRun = runFirstDate;
-								}
-							}
 						}
 					}
 				}

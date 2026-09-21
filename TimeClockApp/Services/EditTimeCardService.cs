@@ -5,8 +5,16 @@ using TimeClockApp.Shared.Helpers;
 #nullable enable
 namespace TimeClockApp.Services
 {
+	/// <summary>
+	/// Provides services for editing time cards.
+	/// </summary>
 	public class EditTimeCardService : TimeCardDataStore
 	{
+		/// <summary>
+		/// Gets a list of time cards asynchronously.
+		/// </summary>
+		/// <param name="NumResults">The number of results to return.</param>
+		/// <returns>The list of time cards</returns>
 		public Task<List<TimeCard>> GetTimeCards(int NumResults) =>
 			Context.TimeCard
 				.AsNoTracking()
@@ -14,6 +22,13 @@ namespace TimeClockApp.Services
 				.Take(NumResults)
 				.ToListAsync();
 
+		/// <summary>
+		/// Gets a list of time cards asynchronously within a date range.
+		/// </summary>
+		/// <param name="NumResults">The number of results to return.</param>
+		/// <param name="start">The start date.</param>
+		/// <param name="end">The end date.</param>
+		/// <returns>The list of time cards</returns>
 		public Task<List<TimeCard>> GetTimeCards(int NumResults, DateOnly? start, DateOnly? end) =>
 			Context.TimeCard
 				.AsNoTracking()
@@ -25,6 +40,10 @@ namespace TimeClockApp.Services
 				.ToListAsync();
 
 		// Copy from TimeCardService for use in EditMultiTimeCardsViewModel
+		/// <summary>
+		/// Gets the last time card for all employed employees asynchronously.
+		/// </summary>
+		/// <returns>The list of last time cards</returns>
 		public Task<List<TimeCard>> GetLastTimeCardForAllEmployeesAsync()
 		{
 			// Get all employed employees with their most recent unpaid timecards in a single query
@@ -46,6 +65,13 @@ namespace TimeClockApp.Services
 				.ToListAsync();
 		}
 
+		/// <summary>
+		/// Updates a time card asynchronously.
+		/// </summary>
+		/// <param name="newTimeCard">The updated time card.</param>
+		/// <param name="isAdmin">Indicates whether the user is an administrator.</param>
+		/// <param name="bChangedDate">Indicates whether the date was changed.</param>
+		/// <returns>true if the time card was updated successfully; otherwise, false</returns>
 		public async Task<bool> UpdateTimeCardAsync(TimeCard newTimeCard, bool isAdmin = false, bool bChangedDate = false)
 		{
 			if (newTimeCard == null)
@@ -54,7 +80,6 @@ namespace TimeClockApp.Services
 			if (IsTimeCardReadOnly(newTimeCard.TimeCardId, isAdmin))
 				return false;
 
-			//DateOnly newDate = new();
 			TimeCard? origTimeCard = Context.TimeCard.Find(newTimeCard.TimeCardId);
 			if (origTimeCard != null)
 			{
@@ -85,6 +110,11 @@ namespace TimeClockApp.Services
 		}
 
 		// Used in EditMultiTimeCardsViewModel to save multiple timecards at once
+		/// <summary>
+		/// Updates a list of time cards asynchronously.
+		/// </summary>
+		/// <param name="newTimeCards">The list of updated time cards.</param>
+		/// <returns>true if the time cards were updated successfully; otherwise, false</returns>
 		public async Task<bool> UpdateTimeCardListAsync(List<TimeCard> newTimeCards)
 		{
 			if (newTimeCards == null || newTimeCards.Count == 0)

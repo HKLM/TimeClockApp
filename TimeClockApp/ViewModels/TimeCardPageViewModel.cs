@@ -4,9 +4,10 @@ using Plugin.LocalNotification.Core.Models;
 
 namespace TimeClockApp.ViewModels
 {
-    public partial class TimeCardPageViewModel(TimeCardService service, INotificationService notificationService) : BaseViewModel
+    public partial class TimeCardPageViewModel(TimeCardService service, IProjectListService projectListService, INotificationService notificationService) : BaseViewModel
     {
         protected readonly TimeCardService cardService = service;
+        private readonly IProjectListService _projectListService = projectListService;
         private readonly INotificationService _notificationService = notificationService;
         private int _tapCount;
 
@@ -21,13 +22,7 @@ namespace TimeClockApp.ViewModels
         partial void OnSelectedProjectChanging(global::TimeClockApp.Shared.Models.Project? value)
         {
             if (value != null && SelectedProject != null && value.ProjectId != SelectedProject.ProjectId)
-                Task.Run(() => cardService.SaveCurrentProjectAsync(value.ProjectId).ContinueWith(task =>
-                {
-                    if (task.Exception != null)
-                    {
-                        Log.WriteLine($"Caught exception: {task.Exception.Flatten().InnerException?.Message}", "TimeCardPageViewModel.OnSelectedProjectChanging");
-                    }
-                }));
+                Task.Run(() => cardService.SaveCurrentProjectAsync(value.ProjectId));
         }
 
         [ObservableProperty]
@@ -38,13 +33,7 @@ namespace TimeClockApp.ViewModels
         partial void OnSelectedPhaseChanging(global::TimeClockApp.Shared.Models.Phase? value)
         {
             if (value != null && SelectedPhase != null && value.PhaseId != SelectedPhase.PhaseId)
-                Task.Run(() => cardService.SaveCurrentPhaseAsync(value.PhaseId).ContinueWith(task =>
-                {
-                    if (task.Exception != null)
-                    {
-                        Log.WriteLine($"Caught exception: {task.Exception.Flatten().InnerException?.Message}", "TimeCardPageViewModel.OnSelectedPhaseChanging");
-                    }
-                }));
+                Task.Run(() => cardService.SaveCurrentPhaseAsync(value.PhaseId)); 
         }
 
         [RelayCommand]
@@ -57,9 +46,9 @@ namespace TimeClockApp.ViewModels
             {
                 await Task.Run(async () =>
                 {
-                    List<Project> proList = await cardService.GetProjectsListAsync();
+                    List<Project> proList = await _projectListService.GetProjectsListAsync();
                     ProjectList = proList.ToObservableCollection();
-                    List<Phase> phaseList = await cardService.GetPhaseListAsync();
+                    List<Phase> phaseList = await _projectListService.GetPhaseListAsync();
                     PhaseList = phaseList.ToObservableCollection();
 
                     SelectedProject = cardService.GetCurrentProjectEntity();

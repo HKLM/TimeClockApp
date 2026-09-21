@@ -2,6 +2,9 @@
 
 namespace TimeClockApp.Shared.Helpers
 {
+	/// <summary>
+	/// Provides helper methods for working with time values.
+	/// </summary>
 	public static class TimeHelper
 	{
 		private static DateTime RoundDateTime(DateTime dt, TimeSpan d)
@@ -35,5 +38,13 @@ namespace TimeClockApp.Shared.Helpers
 		/// <returns>the week number</returns>
 		public static int GetWeekNumber(DateOnly thisDate) =>
 			CultureInfo.InvariantCulture.Calendar.GetWeekOfYear(new DateTime(thisDate.Year, thisDate.Month, thisDate.Day), System.Globalization.CalendarWeekRule.FirstDay, DayOfWeek.Saturday);
+
+		/// <summary>
+		/// Checks if the current time is close to the start time.
+		/// </summary>
+		/// <param name="clockNowRndTime">The rounded current time.</param>
+		/// <param name="timeStart">The start time.</param>
+		/// <returns>True if the times are close, false otherwise.</returns>
+		public static bool CheckIfTimeIsCloseToNow(TimeOnly clockNowRndTime, TimeOnly timeStart) => clockNowRndTime - timeStart < new TimeSpan(0, 15, 0);
 	}
 }

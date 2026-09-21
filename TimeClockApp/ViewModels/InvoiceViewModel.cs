@@ -5,12 +5,13 @@ using TimeClockApp.Utilities;
 
 namespace TimeClockApp.ViewModels
 {
-    public partial class InvoiceViewModel(InvoiceService service, ISharedService sharedService) : BaseViewModel
+    public partial class InvoiceViewModel(InvoiceService service, IProjectListService projectListService, ISharedService sharedService) : BaseViewModel
     {
         protected readonly InvoiceService invoiceData = service;
         protected readonly ISharedService _SharedService = sharedService;
+        private readonly IProjectListService _projectListService = projectListService;
 
-        private List<TimeSheet> TimeSheetList = new();
+		private List<TimeSheet> TimeSheetList = new();
 
         [ObservableProperty]
         public partial bool UseDateFilter { get; set; } = true;
@@ -109,8 +110,10 @@ namespace TimeClockApp.ViewModels
         partial void OnUseProjectFilterChanged(bool value)
         {
             if (value == true)
-                ProjectList = invoiceData.GetProjectsList();
-        }
+				MainThread.BeginInvokeOnMainThread(async () => { await RefreshProjectList(); });
+		}
+		//ProjectList = invoiceData.GetProjectsList();
+        //}
         [ObservableProperty]
         public partial ObservableCollection<Project> ProjectList { get; set; } = new();
         [ObservableProperty]
@@ -121,7 +124,7 @@ namespace TimeClockApp.ViewModels
         partial void OnUsePhaseFilterChanged(bool value)
         {
             if (value == true)
-                PhaseList = invoiceData.GetPhaseList();
+				MainThread.BeginInvokeOnMainThread(async () => { await RefreshPhaseList(); });
         }
         [ObservableProperty]
         public partial ObservableCollection<Phase> PhaseList { get; set; } = new();
@@ -142,7 +145,7 @@ namespace TimeClockApp.ViewModels
                 WCRate = invoiceData.GetWCRate();
                 ProfitRate = invoiceData.GetProfitRate();
                 TotalOtherOverhead = invoiceData.GetOverheadRate();
-                List<Project> p = await invoiceData.GetProjectsListAsync();
+                List<Project> p = await _projectListService.GetProjectsListAsync();
                 ProjectList = p.ToObservableCollection();
                 SelectedProject = invoiceData.GetCurrentProjectEntity();
             }
@@ -157,7 +160,17 @@ namespace TimeClockApp.ViewModels
 			}
 		}
 
-        [RelayCommand]
+        private async Task RefreshProjectList()
+		{
+			List<Project> p = await _projectListService.GetProjectsListAsync();
+			ProjectList = p.ToObservableCollection();
+		}
+		private async Task RefreshPhaseList()
+		{
+			List<Phase> p = await _projectListService.GetPhaseListAsync();
+			PhaseList = p.ToObservableCollection();
+		}
+		[RelayCommand]
         private async Task MakeInvoice()
         {
             if (Loading) return;

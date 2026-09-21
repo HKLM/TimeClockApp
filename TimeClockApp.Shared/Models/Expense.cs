@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using CsvHelper.Configuration;
 
 namespace TimeClockApp.Shared.Models
@@ -21,7 +20,6 @@ namespace TimeClockApp.Shared.Models
             this.ExpenseTypeCategoryName = string.IsNullOrEmpty(ExpenseTypeCategoryName) ? string.Empty : ExpenseTypeCategoryName;
         }
 
-        [Key]
         public int ExpenseId { get; set; }
 
         /// <summary>

@@ -38,8 +38,9 @@ namespace TimeClockApp.Services
                 return (await Context.SaveChangesAsync() > 0) ? 1 : 0;
             }
         }
+		public ExpenseType GetExpenseType(int expenseTypeId) => Context.ExpenseType.Find(expenseTypeId);
 
-        public async Task<bool> UpdateExpenseTypeAsync(int expenseTypeId, string categoryName)
+		public async Task<bool> UpdateExpenseTypeAsync(int expenseTypeId, string categoryName)
         {
             if (string.IsNullOrEmpty(categoryName) || expenseTypeId < 6)
                 return false;

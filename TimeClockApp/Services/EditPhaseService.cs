@@ -2,8 +2,8 @@
 
 namespace TimeClockApp.Services
 {
-    public class EditPhaseService : TimeCardDataStore
-    {
+    public class EditPhaseService : EditParentService
+	{
         public ObservableCollection<Phase> GetEditPhaseList() => Context.Phase
                 .OrderBy(e => e.PhaseTitle)
                 .ToObservableCollection();

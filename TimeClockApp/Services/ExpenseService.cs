@@ -2,7 +2,7 @@
 
 namespace TimeClockApp.Services
 {
-	public class ExpenseService : TimeCardDataStore
+	public class ExpenseService : EditParentService
 	{
 		public Expense GetExpense(int expenseId) => Context.Expense.Find(expenseId);
 
@@ -10,6 +10,8 @@ namespace TimeClockApp.Services
 			[.. Context.ExpenseType
 				.Where(item => item.ExpenseTypeId > 1)
 				.OrderBy(item => item.CategoryName)];
+
+		public ExpenseType GetExpenseType(int expenseTypeId) => Context.ExpenseType.Find(expenseTypeId);
 
 		public async Task<List<ExpenseType>> GetExpenseTypeListAsync() =>
 			await Context.ExpenseType

@@ -189,14 +189,13 @@ namespace TimeClockApp.Shared.Models
         {
             get
             {
-                if (TimeCard_Status == ShiftStatus.NA || TimeCard_Status == ShiftStatus.Deleted)
-                    return TimeSpan.Zero;
-
-                return TimeCard_EndTime == TimeOnly.MinValue
-                    ? TimeHelper.RoundTimeOnly(TimeOnly.FromDateTime(DateTime.Now)) - TimeCard_StartTime
-                    : TimeCard_EndTime - TimeCard_StartTime;
-            }
-        }
+				return TimeCard_Status == ShiftStatus.NA || TimeCard_Status == ShiftStatus.Deleted
+					? TimeSpan.Zero
+					: TimeCard_EndTime == TimeOnly.MinValue
+					? TimeHelper.RoundTimeOnly(TimeOnly.FromDateTime(DateTime.Now)) - TimeCard_StartTime
+					: TimeCard_EndTime - TimeCard_StartTime;
+			}
+		}
 
         /// <summary>
         /// SQL computed column of the amount of time worked for this timecard

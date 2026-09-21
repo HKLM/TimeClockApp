@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using CsvHelper.Configuration;
 
 #nullable enable
@@ -8,7 +7,6 @@ namespace TimeClockApp.Shared.Models
 {
     public class ExpenseType
     {
-        [Key]
         public int ExpenseTypeId { get; set; }
 
         public string CategoryName { get; set; } = string.Empty;

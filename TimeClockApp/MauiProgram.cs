@@ -42,6 +42,7 @@ public static class MauiProgram
 
 	public static MauiAppBuilder RegisterAppServices(this MauiAppBuilder builder)
 	{
+		builder.Services.AddSingleton<IProjectListService, ProjectListService>();
 		builder.Services.AddSingleton<TimeCardService>();
 		builder.Services.AddSingleton<EditTimeCardService>();
 		builder.Services.AddSingleton<PayrollService>();
@@ -51,12 +52,14 @@ public static class MauiProgram
 		builder.Services.AddSingleton<InvoiceService>();
 		builder.Services.AddSingleton<SettingsService>();
 		builder.Services.AddSingleton<AppPageService>();
+		builder.Services.AddTransient<ExportDataService>();
+		
 		return builder;
 	}
 
 	public static MauiAppBuilder RegisterViewModels(this MauiAppBuilder builder)
 	{
-		builder.Services.AddTransient<TimeCardPageViewModel>();
+		builder.Services.AddSingleton<TimeCardPageViewModel>();
 		builder.Services.AddTransient<TimeCardManagerViewModel>();
 		builder.Services.AddTransient<EditTimeCardViewModel>();
 		builder.Services.AddTransient<ChangeStartTimeViewModel>();
@@ -64,6 +67,7 @@ public static class MauiProgram
 		builder.Services.AddTransient<PayrollPageViewModel>();
 		builder.Services.AddSingleton<PayrollDetailViewModel>();
 		builder.Services.AddTransient<ExpenseViewModel>();
+		builder.Services.AddTransient<EditExpensePageViewModel>();
 		builder.Services.AddTransient<EditExpenseTypeViewModel>();
 		builder.Services.AddTransient<TeamEmployeesViewModel>();
 		builder.Services.AddTransient<UserManagerViewModel>();

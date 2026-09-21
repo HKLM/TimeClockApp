@@ -3,9 +3,10 @@
 
 namespace TimeClockApp.ViewModels
 {
-	public partial class EditMultiTimeCardsViewModel(EditTimeCardService service) : BaseViewModel, IQueryAttributable
+	public partial class EditMultiTimeCardsViewModel(EditTimeCardService service, IProjectListService projectListService) : BaseViewModel, IQueryAttributable
 	{
 		protected readonly EditTimeCardService cardService = service;
+		private readonly IProjectListService _projectListService = projectListService;
 
 		[ObservableProperty]
 		public partial ObservableCollection<TimeCard> TimeCards { get; set; } = new();
@@ -67,23 +68,23 @@ namespace TimeClockApp.ViewModels
 		[RelayCommand]
 		public async Task OnAppearing()
 		{
-			Loading = true;
 			HasError = false;
 
 			try
 			{
 				PickerMinDate = cardService.GetAppFirstRunDate();
 
-				List<Project> pro = await cardService.GetProjectsListAsync();
+				List<Project> pro = await _projectListService.GetProjectsListAsync();
 				ProjectList = pro.ToObservableCollection();
-				List<Phase> ph = await cardService.GetPhaseListAsync();
+				List<Phase> ph = await _projectListService.GetPhaseListAsync();
 				PhaseList = ph.ToObservableCollection();
 
 				List<TimeCard> t = await cardService.GetLastTimeCardForAllEmployeesAsync();
 				TimeCards = t.ToObservableCollection();
 
 				// Needed to clear the selection when navigating back to this page, otherwise the previous selection will remain selected and cause issues with the UI.
-				SelectedTimeCards.Clear();
+				if (SelectedTimeCards.Count > 0)
+					SelectedTimeCards.Clear();
 
 				if (PreSelectedTimeCardID > 0)
 				{
@@ -111,11 +112,7 @@ namespace TimeClockApp.ViewModels
 			catch (Exception e)
 			{
 				HasError = true;
-				Log.WriteLine($"{e.Message}\n  -- {e.Source}\n  -- {e.InnerException}", "EditTimeCardViewModel.OnAppearing");
-			}
-			finally
-			{
-				Loading = false;
+				Log.WriteLine($"{e.Message}\n  -- {e.Source}\n  -- {e.InnerException}", "EditMultiTimeCardViewModel.OnAppearing");
 			}
 		}
 
@@ -156,85 +153,123 @@ namespace TimeClockApp.ViewModels
 				await AppShell.DisplayToastAsync("No time cards selected.", true).ConfigureAwait(false);
 				return;
 			}
-			Loading = true;
 			HasError = false;
 			try
 			{
 				if (SelectedTimeCards.Count > 0)
 				{
-					if (CheckEndTime && CheckStartTime && await ValidateTimeFixer(TimeCard_StartTime, TimeCard_EndTime))
+					if (CheckEndTime && CheckStartTime)
 					{
-						await App.AlertSvc!.ShowAlertAsync("ERROR", "End time is before start time. Please correct the times.").ConfigureAwait(false);
-						return;
-					}
-					List<TimeCard> cards = SelectedTimeCards.OfType<TimeCard>().ToList();
-					if (CheckStartTime)
-					{
-						if (TimeCard_StartTime > TimeOnly.FromDateTime(DateTime.Now))
+						if (!ValidateTimeFixer(TimeCard_StartTime, TimeCard_EndTime))
 						{
-							await App.AlertSvc!.ShowAlertAsync("ERROR", "Start time cannot be in the future. Please correct the times.").ConfigureAwait(false);
+							await App.AlertSvc!.ShowAlertAsync("ERROR", "End time is before start time. Please correct the times.").ConfigureAwait(false);
 							return;
 						}
-						foreach (TimeCard tt in cards)
-						{
-							if (!CheckEndTime && tt.TimeCard_EndTime < TimeCard_StartTime && !tt.TimeCard_bReadOnly)
-							{
-								await App.AlertSvc!.ShowAlertAsync("ERROR", $"TimeCardId: {tt.TimeCardId} - End time will be before start time. Please correct the times.").ConfigureAwait(false);
-								return;
-							}
-							else if (CheckEndTime && TimeCard_EndTime < TimeCard_StartTime && !tt.TimeCard_bReadOnly)
-							{
-								await App.AlertSvc!.ShowAlertAsync("ERROR", $"TimeCardId: {tt.TimeCardId} - End time will be before start time. Please correct the times.").ConfigureAwait(false);
-								return;
-							}
-						}
-					}
-					if (CheckEndTime)
-					{
-						if (TimeCard_EndTime > TimeOnly.FromDateTime(DateTime.Now))
-						{
-							TimeCard_EndTime = TimeHelper.RoundTimeOnly(new TimeOnly(TimeOnly.FromDateTime(DateTime.Now).Hour, TimeOnly.FromDateTime(DateTime.Now).Minute));
-							await AppShell.DisplayToastAsync("End time cannot be in the future. Auto-corrected the end time.", true).ConfigureAwait(false);
-						}
-					}
-					foreach (TimeCard tc in cards)
-					{
-						if ((tc.TimeCard_Status == ShiftStatus.ClockedIn || tc.TimeCard_Status == ShiftStatus.ClockedOut) && !tc.TimeCard_bReadOnly)
-						{
-							if (CheckStartTime)
-							{
-								tc.TimeCard_StartTime = TimeHelper.RoundTimeOnly(new TimeOnly(TimeCard_StartTime.Hour, TimeCard_StartTime.Minute));
-							}
-							if (CheckDate)
-							{
-								tc.TimeCard_Date = TimeCard_Date;
-							}
-							if (CheckProjectPhase)
-							{
-								tc.Project = SelectedProject;
-								tc.ProjectId = SelectedProject?.ProjectId ?? 1;
-								tc.ProjectName = SelectedProject?.Name ?? ".None";
-								tc.Phase = SelectedPhase;
-								tc.PhaseId = SelectedPhase?.PhaseId ?? 1;
-								tc.PhaseTitle = SelectedPhase?.PhaseTitle ?? ".Misc";
-							}
-						}
-
-						if (CheckEndTime && tc.TimeCard_Status == ShiftStatus.ClockedOut && !tc.TimeCard_bReadOnly)
-						{
-							tc.TimeCard_EndTime = TimeHelper.RoundTimeOnly(new TimeOnly(TimeCard_EndTime.Hour, TimeCard_EndTime.Minute));
-						}
 					}
 
-					if (await cardService.UpdateTimeCardListAsync(cards))
+					List<TimeCard> cards = SelectedTimeCards.OfType<TimeCard>().ToList();
+					List<TimeCard> cardsToRemove = [];
+					// Remove any time cards that are read-only or deleted, or have invalid times based on the selected start and end times.
+					foreach (TimeCard tt in cards)
 					{
-						await RefreshTimeCardsAsync();
-						await AppShell.DisplayToastAsync("Time cards updated successfully.").ConfigureAwait(false);
+						if (tt.TimeCard_bReadOnly || tt.TimeCard_Status == ShiftStatus.Deleted)
+						{
+							cardsToRemove.Add(tt);
+						}
+						if (tt.TimeCard_Status == ShiftStatus.ClockedOut && !CheckEndTime && CheckStartTime && tt.TimeCard_EndTime < TimeCard_StartTime)
+						{
+							cardsToRemove.Add(tt);
+						}
+						else if (tt.TimeCard_Status == ShiftStatus.ClockedOut && CheckEndTime && !CheckStartTime && TimeCard_EndTime < tt.TimeCard_StartTime)
+						{
+							cardsToRemove.Add(tt);
+						}
+						else if (tt.TimeCard_Status == ShiftStatus.ClockedIn && CheckStartTime && tt.TimeCard_EndTime < TimeCard_StartTime)
+						{
+							cardsToRemove.Add(tt);
+						}
+					}
+					// do the removal from SelectedTimeCards
+					if (cardsToRemove.Count > 0)
+					{
+						for (int j = 0; j < cardsToRemove.Count; j++)
+						{
+							cards.Remove(cardsToRemove[j]);
+							//update the UI
+							SelectedTimeCards.Remove(cardsToRemove[j]);
+						}
+						MainThread.BeginInvokeOnMainThread(async () =>
+						{
+							await App.AlertSvc!.ShowAlertAsync("NOTICE", "One or more Time Cards have invalid times and was removed from selection. Check if the End time is before start time and correct the times.").ConfigureAwait(false);
+						});
+					}
+
+					if (cards.Count == 0)
+					{
+						await App.AlertSvc!.ShowAlertAsync("NOTICE", "No valid time cards to update. Check if the End time is before start time and correct the times.").ConfigureAwait(false);
+						return;
 					}
 					else
 					{
-						HasError = true;
-						Log.WriteLine($"Failed to update time cards.", "EditMultiTimeCardsViewModel.OnSaveCommand");
+						// update the valid time cards
+						foreach (TimeCard tc in cards)
+						{
+							if (!tc.TimeCard_bReadOnly && tc.TimeCard_Status != ShiftStatus.Deleted)
+							{
+								// used to flag if the end time was updated, so we don't update it again if the start time was also updated.
+								bool bEndTimeDone = false;
+								if (tc.TimeCard_Status == ShiftStatus.ClockedIn || tc.TimeCard_Status == ShiftStatus.ClockedOut)
+								{
+									if (CheckStartTime)
+									{
+										if (CheckEndTime && tc.TimeCard_Status == ShiftStatus.ClockedOut)
+										{
+											if (TimeCard_EndTime > TimeCard_StartTime)
+											{
+												tc.TimeCard_StartTime = TimeCard_StartTime;
+												tc.TimeCard_EndTime = TimeCard_EndTime;
+												bEndTimeDone = true;
+											}
+										}
+										else if ((tc.TimeCard_EndTime == new TimeOnly(0) && tc.TimeCard_Status == ShiftStatus.ClockedIn) || tc.TimeCard_EndTime > TimeCard_StartTime)
+										{
+											tc.TimeCard_StartTime = TimeCard_StartTime;
+										}
+									}
+									if (CheckDate)
+									{
+										tc.TimeCard_Date = TimeCard_Date;
+									}
+									if (CheckProjectPhase)
+									{
+										tc.Project = SelectedProject;
+										tc.ProjectId = SelectedProject?.ProjectId ?? 1;
+										tc.ProjectName = SelectedProject?.Name ?? ".None";
+										tc.Phase = SelectedPhase;
+										tc.PhaseId = SelectedPhase?.PhaseId ?? 1;
+										tc.PhaseTitle = SelectedPhase?.PhaseTitle ?? ".Misc";
+									}
+
+									if (!bEndTimeDone && CheckEndTime && tc.TimeCard_Status == ShiftStatus.ClockedOut)
+									{
+										if (tc.TimeCard_StartTime < TimeCard_EndTime)
+										{
+											tc.TimeCard_EndTime = TimeCard_EndTime;
+										}
+									}
+								}
+							}
+						}
+						if (await cardService.UpdateTimeCardListAsync(cards))
+						{
+							await RefreshTimeCardsAsync();
+							await AppShell.DisplayToastAsync("Time cards updated successfully.").ConfigureAwait(false);
+						}
+						else
+						{
+							HasError = true;
+							Log.WriteLine($"Failed to update time cards.", "EditMultiTimeCardsViewModel.OnSaveCommand");
+						}
 					}
 				}
 			}
@@ -244,27 +279,11 @@ namespace TimeClockApp.ViewModels
 				Log.WriteLine($"{e.Message}\n  -- {e.Source}\n  -- {e.InnerException}", "EditMultiTimeCardsViewModel.OnSaveCommand");
 				await AppShell.DisplayToastAsync("Failed to update time cards.", true);
 			}
-			finally
-			{
-				Loading = false;
-			}
 		}
 
-		/// <summary>
-		/// Validates the time range and if the end time is before the start time, it will auto-fix it.
-		/// </summary>
-		/// <param name="start"></param>
-		/// <param name="end"></param>
-		/// <returns></returns>
-		private async Task<bool> ValidateTimeFixer(TimeOnly start, TimeOnly end)
+		private bool ValidateTimeFixer(TimeOnly start, TimeOnly end)
 		{
-			// If the end time is after the start time and the end time is after 12:00 PM, auto-fix it by adding 12 hours to the start time.
-			if (end < start && end >= new TimeOnly(12, 00, 00))
-			{
-				TimeCard_StartTime = start.AddHours(12);
-				await AppShell.DisplayToastAsync("Auto corrected StartTime.", true).ConfigureAwait(false);
-			}
-			return (TimeCard_EndTime < TimeCard_StartTime);
+			return (end >= start && end <= TimeOnly.FromDateTime(DateTime.Now) && start <= TimeOnly.FromDateTime(DateTime.Now));
 		}
 
 		[RelayCommand]

@@ -6,8 +6,15 @@ using TimeClockApp.Shared.Helpers;
 
 namespace TimeClockApp.Services
 {
+	/// <summary>
+	/// Provides services for managing time cards.
+	/// </summary>
 	public class TimeCardService : TimeCardDataStore
 	{
+		/// <summary>
+		/// Gets the last time card for all employed employees asynchronously.
+		/// </summary>
+		/// <returns>List of time cards</returns>
 		public Task<List<TimeCard>> GetLastTimeCardForAllEmployeesAsync()
 		{
 			// Get all employed employees with their most recent unpaid timecards in a single query
@@ -29,6 +36,15 @@ namespace TimeClockApp.Services
 				.ToListAsync();
 		}
 
+		/// <summary>
+		/// Clocks in an employee asynchronously.
+		/// </summary>
+		/// <param name="card"></param>
+		/// <param name="projectID"></param>
+		/// <param name="phaseID"></param>
+		/// <param name="projectName"></param>
+		/// <param name="phaseTitle"></param>
+		/// <returns>true if the employee was successfully clocked in; otherwise, false</returns>
 		public async Task<bool> EmployeeClockInAsync(TimeCard card, int projectID, int phaseID, string projectName, string phaseTitle)
 		{
 			if (card.Employee == null || card.EmployeeId == 0 || card.Employee.Employee_Employed != EmploymentStatus.Employed)
@@ -47,6 +63,11 @@ namespace TimeClockApp.Services
 			return false;
 		}
 
+		/// <summary>
+		/// Clocks out an employee asynchronously.
+		/// </summary>
+		/// <param name="timeCardId"></param>
+		/// <returns>true if the employee was successfully clocked out; otherwise, false</returns>
 		public async Task<bool> EmployeeClockOutAsync(int timeCardId)
 		{
 			if (timeCardId > 0)
@@ -71,6 +92,11 @@ namespace TimeClockApp.Services
 				&& tc.TimeCard_Status == ShiftStatus.ClockedIn
 				&& !tc.TimeCard_bReadOnly);
 
+		/// <summary>
+		/// Marks a time card as paid asynchronously.
+		/// </summary>
+		/// <param name="timeCard"></param>
+		/// <returns></returns>
 		public async Task<bool> MarkTimeCardAsPaidAsync(TimeCard timeCard)
 		{
 			if (timeCard != null && timeCard.TimeCardId != 0

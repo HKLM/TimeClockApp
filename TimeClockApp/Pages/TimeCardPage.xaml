@@ -61,7 +61,7 @@
                                 Clicked="SwipeRightMulti_Clicked"/>
 						</MenuFlyout>
 					</FlyoutBase.ContextFlyout>
-					<Grid RowDefinitions="26,20,20,4,20,20" ColumnDefinitions="260,*">
+					<Grid RowDefinitions="26,20,20,4,20,20,20" ColumnDefinitions="260,*">
 						<Label
                             Style="{StaticResource LabelTitleName}"
                             Text="{Binding TimeCard_EmployeeName}" />
@@ -88,9 +88,18 @@
 							Text="{Binding TimeCard_Status, StringFormat='{0}'}" />
 						<Label
 							Grid.Row="5" 
+							Style="{StaticResource LabelMicro_Hstart}"
+							Text="{Binding TimeCard_StartTime, Converter={StaticResource timeOnlyConverter}, TargetNullValue='-'}" />
+						<Label
+							Grid.Row="5" 
 							Grid.Column="1"
 							Style="{StaticResource LabelMicro_Hstart}"
-							Text="{Binding TimeCard_Duration, StringFormat='{}{0:hh\\:mm}'}" />
+							Text="{Binding TimeCard_EndTime, Converter={StaticResource timeOnlyConverter}, TargetNullValue='-'}" />
+						<Label
+							Grid.Row="6" 
+							Grid.Column="1"
+							Style="{StaticResource LabelMicro_Hstart}"
+							Text="{Binding TimeCard_Duration, StringFormat='{}{0:hh\\:mm}', TargetNullValue='-'}" />
 						<Button
 							Grid.RowSpan="3"
 							Grid.Column="1"
@@ -141,7 +150,7 @@
                                 Clicked="SwipeRightMulti_Clicked"/>
 						</MenuFlyout>
 					</FlyoutBase.ContextFlyout>
-					<Grid RowDefinitions="26,20,20,4,20,20" ColumnDefinitions="260,*">
+					<Grid RowDefinitions="26,20,20,4,20,20,20" ColumnDefinitions="260,*">
 						<Label
                             Style="{StaticResource LabelTitleName}"
                             Text="{Binding TimeCard_EmployeeName}" />
@@ -169,12 +178,12 @@
 						<Label
 							Grid.Row="5"
 							Style="{StaticResource LabelMicro_Hstart}"
-							Text="{Binding TimeCard_StartTime, Converter={StaticResource timeOnlyConverter}}" />
+							Text="{Binding TimeCard_StartTime, Converter={StaticResource timeOnlyConverter}, TargetNullValue='-'}" />
 						<Label
-							Grid.Row="5" 
+							Grid.Row="6" 
 							Grid.Column="1"
 							Style="{StaticResource LabelMicro_Hstart}"
-							Text="{Binding TimeCard_Duration, StringFormat='{}{0:hh\\:mm}'}" />
+							Text="{Binding TimeCard_Duration, StringFormat='{}{0:hh\\:mm}', TargetNullValue='-'}" />
 						<Button
 							Grid.RowSpan="3"
 							Grid.Column="1"
@@ -227,7 +236,7 @@
 				</Grid>
 			</Border>
 
-			<Grid RowDefinitions="40,40" ColumnDefinitions="100,*">
+			<Grid RowDefinitions="auto,auto" ColumnDefinitions="100,*">
 				<Label
                     HorizontalOptions="Start" 
                     Text="Project: " 

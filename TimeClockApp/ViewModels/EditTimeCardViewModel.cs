@@ -3,9 +3,10 @@
 
 namespace TimeClockApp.ViewModels
 {
-	public partial class EditTimeCardViewModel(EditTimeCardService service) : BaseViewModel, IQueryAttributable
+	public partial class EditTimeCardViewModel(EditTimeCardService service, IProjectListService projectListService) : BaseViewModel, IQueryAttributable
 	{
 		protected readonly EditTimeCardService cardService = service;
+		private readonly IProjectListService _projectListService = projectListService;
 
 		[ObservableProperty]
 		public partial int TimeCardID { get; set; } = 0;
@@ -110,9 +111,9 @@ namespace TimeClockApp.ViewModels
 				PickerMinDate = cardService.GetAppFirstRunDate();
 				IsAdmin = ErrorCode > 0 || GetIsAdmin();
 
-				List<Project> pro = await cardService.GetProjectsListAsync();
+				List<Project> pro = await _projectListService.GetProjectsListAsync();
 				ProjectList = pro.ToObservableCollection();
-				List<Phase> ph = await cardService.GetPhaseListAsync();
+				List<Phase> ph = await _projectListService.GetPhaseListAsync();
 				PhaseList = ph.ToObservableCollection();
 
 				if (TimeCardID != 0)

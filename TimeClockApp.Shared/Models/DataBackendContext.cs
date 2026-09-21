@@ -75,7 +75,12 @@ namespace TimeClockApp.Shared.Models
                 Thread.Sleep(3000);
 #endif
 			}
-            catch (System.InvalidOperationException ex)
+			catch (Microsoft.Data.Sqlite.SqliteException exsql)
+			{
+				System.Diagnostics.Debug.WriteLine($"Database initialization error: {exsql.Message}");
+				// Log error but don't fail - the app should still start
+			}
+			catch (System.InvalidOperationException ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Database initialization error: {ex.Message}");
                 // Log error but don't fail - the app should still start
@@ -150,16 +155,30 @@ namespace TimeClockApp.Shared.Models
 					e.Property(t => t.ConfigId).UseAutoincrement();
 					e.Property(t => t.Name).HasMaxLength(50).IsRequired(true);
                 });
-			modelBuilder.Entity<Employee>()
-                .Property(t => t.Employee_Name)
-                .HasMaxLength(50);
-            modelBuilder.Entity<Expense>()
-                .Property(t => t.ExpenseDate)
-                .HasColumnType("date");
-            modelBuilder.Entity<ExpenseType>()
-                .Property(t => t.CategoryName)
-                .HasMaxLength(50)
-                .IsRequired(true);
+			modelBuilder.Entity<Employee>(
+                e =>
+                {
+                    e.HasKey(t => t.EmployeeId);
+                    e.Property(t => t.Employee_Name).HasMaxLength(50).IsRequired(true);
+                    e.Property(t => t.Employee_PayRate).IsRequired(true);
+                    e.Property(t => t.JobTitle).HasMaxLength(50);
+                    e.Property(t => t.Employee_Employed).IsRequired(true).HasDefaultValue(EmploymentStatus.Employed);
+                    e.HasIndex(b => new { b.Employee_Name }).IsUnique(true);
+				});
+            modelBuilder.Entity<Expense>(
+                e =>
+                {
+					e.HasKey(t => t.ExpenseId);
+					e.Property(t => t.ExpenseDate).HasColumnType("date");
+                    e.Property(e => e.IsRecent).HasDefaultValue(true);
+				});
+            modelBuilder.Entity<ExpenseType>(
+                e =>
+                {
+					e.HasKey(t => t.ExpenseTypeId);
+					e.Property(t => t.CategoryName).HasMaxLength(50).IsRequired(true);
+                    e.HasIndex(t => new { t.CategoryName }).IsUnique(true);
+				});
             modelBuilder.Entity<TimeCard>(
                 e =>
                 {
@@ -176,9 +195,22 @@ namespace TimeClockApp.Shared.Models
 					e.Property(t => t.TimeCard_EmployeePayRate).IsRequired(true); 
                     e.Property(t => t.TimeCard_bReadOnly).IsRequired(true);
 				});
-            modelBuilder.Entity<Project>()
-                .Property(t => t.ProjectDate)
-                .HasColumnType("date");
+            modelBuilder.Entity<Project>(
+                e =>
+                {
+                    e.HasKey(t => t.ProjectId);
+					e.Property(t => t.ProjectDate).HasColumnType("date");
+					e.Property(t => t.ProjectDateEnd).HasColumnType("date");
+					e.Property(t => t.Name).HasMaxLength(50).IsRequired(true);
+					e.Property(t => t.Status).IsRequired(true).HasDefaultValue(ProjectStatus.Ready);
+				});
+			modelBuilder.Entity<Phase>(
+				e =>
+				{
+					e.HasKey(t => t.PhaseId);
+					e.Property(t => t.PhaseTitle).HasMaxLength(50).IsRequired(true);
+                    e.HasIndex(t => new { t.PhaseTitle }).IsUnique(true);
+				});
 
 #region ForeignKeys
 
@@ -201,9 +233,6 @@ namespace TimeClockApp.Shared.Models
 
 #region DefaultValues
 
-			modelBuilder.Entity<Employee>()
-                .Property(b => b.Employee_Employed)
-                .HasDefaultValue(EmploymentStatus.Employed);
 			modelBuilder.Entity<TimeCard>(
 			e =>
 			{
@@ -218,30 +247,7 @@ namespace TimeClockApp.Shared.Models
 #endif
 			});
 
-			modelBuilder.Entity<Project>()
-                .Property(b => b.Status)
-                .HasDefaultValue(ProjectStatus.Ready);
-            modelBuilder.Entity<Expense>()
-                .Property(e => e.IsRecent)
-                .HasDefaultValue(true);
-
 #endregion DefaultValues
-
-#region Indexs
-
-            modelBuilder.Entity<Employee>()
-                .HasIndex(b => new { b.Employee_Name})
-                .IsUnique(true);
-
-            modelBuilder.Entity<ExpenseType>()
-                .HasIndex(t => new { t.CategoryName })
-                .IsUnique(true);
-
-            modelBuilder.Entity<Phase>()
-                .HasIndex(t => new { t.PhaseTitle })
-                .IsUnique(true);
-
-#endregion Indexs
 
             modelBuilder.Entity<Config>().HasData(new Config
             {
@@ -328,7 +334,7 @@ namespace TimeClockApp.Shared.Models
             {
                 ConfigId = 13,
                 Name = "AppTheme",
-                IntValue = 0,
+                IntValue = 2,
                 Hint = "Override App theme (0=Default-Unspecified, 1=Light, 2=Dark)"
 			},
 			new Config

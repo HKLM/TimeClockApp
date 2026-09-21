@@ -1,7 +1,25 @@
-﻿namespace TimeClockApp.Services
+﻿using System.Data;
+using Microsoft.EntityFrameworkCore;
+
+namespace TimeClockApp.Services
 {
 	public class UserManagerService : TimeCardDataStore
 	{
+		public async Task<List<Employee>> GetAllEmployeesAsync() =>
+			await Context.Employee
+				.Where(e => e.Employee_Employed != EmploymentStatus.Deleted)
+				.OrderBy(e => e.Employee_Name)
+				.ToListAsync();
+
+		public Task<List<Employee>> GetEmployeesGroupInStatusAsync() =>
+				Context.Employee
+					.Where(e => e.Employee_Employed < EmploymentStatus.NotEmployed)
+					.OrderBy(e => e.Employee_Employed)
+					.ThenBy(e => e.Employee_Name)
+					.ToListAsync();
+
+		public Employee GetEmployee(int employeeID) => Context.Employee.Find(employeeID);
+
 		/// <summary></summary>
 		/// <param name="employeeName"></param>
 		/// <param name="payRate"></param>

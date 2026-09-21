@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using CsvHelper.Configuration;
 
 namespace TimeClockApp.Shared.Models
@@ -15,10 +14,8 @@ namespace TimeClockApp.Shared.Models
             this.PhaseTitle = PhaseTitle;
         }
 
-        [Key]
         public int PhaseId { get; set; }
 
-        [Required]
         public string PhaseTitle { get; set; } = string.Empty;
 
         public virtual ICollection<TimeCard> TimeCards { get; set; } = new HashSet<TimeCard>();

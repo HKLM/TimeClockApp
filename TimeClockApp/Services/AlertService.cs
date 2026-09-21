@@ -6,7 +6,7 @@
 
 		/// <summary>
 		/// Example showing that the "fire and forget" methods can be called from anywhere
-		///
+		///----- async calls (use with "await" - MUST BE ON DISPATCHER THREAD) -----
 		/// <code>
 		/// Task.Run(async () =>
 		///{
@@ -27,6 +27,29 @@
 		/// <returns></returns>
 		public Task ShowAlertAsync(string title, string message, string cancel = "OK") => App.Current.Windows[0].Page.DisplayAlertAsync(title, message, cancel);
 
+		/// <summary>
+		/// Shows a confirmation alert asynchronously.
+		/// ----- async calls (use with "await" - MUST BE ON DISPATCHER THREAD) -----
+		/// Example showing that the "fire and forget" methods can be called from anywhere
+		/// <code>
+		/// Task.Run(async () =>
+		///{
+		///    await Task.Delay(2000);
+		///    App.AlertSvc!.ShowConfirmation("Title", "Confirmation message.", (result =>
+		///    {
+		///        App.AlertSvc!.ShowAlert("Result", $"{result}");
+		///    }));
+		///});
+		/// </code>
+		/// </summary>
+		/// <remarks>
+		/// If instead you use the "...Async" methods, but aren't on the window's Dispatcher thread (Main thread), at runtime you'll get a wrong thread exception
+		/// </remarks>
+		/// <param name="title">The title of the confirmation alert.</param>
+		/// <param name="message">The message of the confirmation alert.</param>
+		/// <param name="accept">The text for the accept button.</param>
+		/// <param name="cancel">The text for the cancel button.</param>
+		/// <returns>The result of the confirmation alert.</returns>
 		public Task<bool> ShowConfirmationAsync(string title, string message, string accept = "Yes", string cancel = "No") => App.Current.Windows[0].Page.DisplayAlertAsync(title, message, accept, cancel);
 
 #region  "'Fire and forget' calls"

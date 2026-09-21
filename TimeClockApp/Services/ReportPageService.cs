@@ -6,6 +6,12 @@ namespace TimeClockApp.Services
 {
 	public class ReportPageService : PayrollService
 	{
+		public ObservableCollection<Project> GetProjectsList() =>
+				Context.Project
+					.Where(item => item.Status < ProjectStatus.Completed)
+					.OrderBy(e => e.Name)
+					.ToObservableCollection();
+
 		//[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions))]
 #if WINDOWS
 		[System.Diagnostics.CodeAnalysis.RequiresDynamicCode("Warning from using 'System.Linq.Queryable.AsQueryable<TElement>(IEnumerable<TElement>)' which has 'RequiresDynamicCodeAttribute'")]
@@ -75,7 +81,7 @@ namespace TimeClockApp.Services
 			return t;
 		}
 
-		public  override Task<List<Employee>> GetEmployeeListAsync() => Context.Employee
+		public override Task<List<Employee>> GetEmployeeListAsync() => Context.Employee
 			.AsNoTrackingWithIdentityResolution()
 			.Where(e => e.Employee_Employed != EmploymentStatus.Deleted)
 			.OrderBy(e => e.Employee_Name)

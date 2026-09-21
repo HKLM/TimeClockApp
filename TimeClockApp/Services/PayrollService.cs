@@ -1,6 +1,6 @@
 ﻿using System.Data;
 using TimeClockApp.Shared;
-
+using Microsoft.EntityFrameworkCore;
 
 #nullable enable
 
@@ -9,11 +9,56 @@ namespace TimeClockApp.Services
 	public class PayrollService : TimeCardService
 	{
 		/// <summary>
+		/// Gets the time cards for a specific pay period.
+		/// </summary>
+		/// <param name="employeeId"></param>
+		/// <param name="start"></param>
+		/// <param name="end"></param>
+		/// <param name="onlyUnpaid">false=all cards, true=only unpaid cards</param>
+		/// <returns></returns>
+		public async Task<List<TimeCard>> GetTimeCardsForPayPeriodAsync(int employeeId, DateOnly start, DateOnly end, bool onlyUnpaid = false) => onlyUnpaid
+		? await GetListUnpaidTimeCardsForPayPeriodAsync(employeeId).ConfigureAwait(false)
+		: await GetListTimeCardsForPayPeriodAsync(employeeId, start, end).ConfigureAwait(false);
+
+		private Task<List<TimeCard>> GetListUnpaidTimeCardsForPayPeriodAsync(int employeeId) =>
+				Context.TimeCard
+					.Where(item => item.EmployeeId == employeeId
+						&& (item.TimeCard_Status == ShiftStatus.ClockedOut
+						|| item.TimeCard_Status == ShiftStatus.ClockedIn))
+					.OrderBy(item => item.TimeCard_Date)
+					.ToListAsync();
+		private Task<List<TimeCard>> GetListTimeCardsForPayPeriodAsync(int employeeId, DateOnly start, DateOnly end) =>
+				Context.TimeCard
+					.Where(item => item.EmployeeId == employeeId
+						&& item.TimeCard_Status != ShiftStatus.Deleted
+						&& item.TimeCard_Date >= start
+						&& item.TimeCard_Date <= end)
+					.OrderBy(item => item.TimeCard_Date)
+					.ToListAsync();
+
+		/// <summary>
+		/// Gets the list of employed employees.
+		/// </summary>
+		/// <returns></returns>
+		public virtual Task<List<Employee>> GetEmployeeListAsync() =>
+				Context.Employee
+					.Where(e => e.Employee_Employed == EmploymentStatus.Employed)
+					.OrderBy(e => e.Employee_Name)
+					.ToListAsync();
+
+		public Employee GetEmployee(int employeeID) => Context.Employee.Find(employeeID)!;
+
+		/// <summary>
 		/// Gets the WorkersCompensation rate value.
 		/// </summary>
 		/// <returns></returns>
 		public double GetWCRate() => GetRate(5);
 
+		/// <summary>
+		/// Gets the rate for a specific configuration ID.
+		/// </summary>
+		/// <param name="i">5=Workers Compensation, 7=Profit, 8=Overhead</param>
+		/// <returns></returns>
 		public double GetRate(int i)
 		{
 			if (i == 5 && Preferences.ContainsKey("WorkCompRate", PrefSetting.PrefKey))
@@ -53,6 +98,7 @@ namespace TimeClockApp.Services
 
 		private void CategorizeAndSummarizeTimeCards(IGrouping<DateOnly, TimeCard> dayGroup, TimeSheet sheet, out double payRate)
 		{
+			//TODO use pay rate for that rate on the timecard, not the first one in the group.  This is a temporary fix until we can implement a better solution for pay rates.
 			payRate = dayGroup.First().TimeCard_EmployeePayRate;
 
 			foreach (TimeCard item in dayGroup)
@@ -88,6 +134,16 @@ namespace TimeClockApp.Services
 			}
 		}
 
+		/// <summary>
+		/// Gets the payroll time sheet for a specific employee.
+		/// </summary>
+		/// <param name="employeeId"></param>
+		/// <param name="start"></param>
+		/// <param name="end"></param>
+		/// <param name="employeeName"></param>
+		/// <param name="sheet"></param>
+		/// <param name="onlyUnpaid"></param>
+		/// <returns></returns>
 		public async Task<TimeSheet> GetPayrollTimeSheetForEmployeeAsync(int employeeId, DateOnly start, DateOnly end, string employeeName, TimeSheet? sheet = null, bool onlyUnpaid = false)
 		{
 			sheet ??= new TimeSheet(employeeId, start, end, employeeName);

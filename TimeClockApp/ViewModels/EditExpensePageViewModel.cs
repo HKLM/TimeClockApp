@@ -1,19 +1,17 @@
 ﻿using TimeClockApp.Shared;
+using TimeClockApp.Shared.Interfaces;
 
 namespace TimeClockApp.ViewModels
 {
-    public partial class EditExpensePageViewModel : BaseViewModel, IQueryAttributable
+    public partial class EditExpensePageViewModel(ExpenseService _dataService, IProjectListService projectListService) : BaseViewModel, IQueryAttributable
     {
-        protected readonly ExpenseService dataService;
-
-        public void ApplyQueryAttributes(IDictionary<string, object> query)
+        protected readonly ExpenseService dataService = _dataService;
+		private readonly IProjectListService _projectListService = projectListService;
+		public void ApplyQueryAttributes(IDictionary<string, object> query)
         {
-            if (query.ContainsKey("id"))
-            {
-                if (Int32.TryParse(query["id"].ToString(), out int i))
-                { ExpenseId = i; }
-            }
-        }
+			if (query.ContainsKey("id") && Int32.TryParse(query["id"].ToString(), out int i))
+			{ ExpenseId = i; }
+		}
 
         [ObservableProperty]
         public partial int ExpenseId { get; set; } = 0;
@@ -54,11 +52,6 @@ namespace TimeClockApp.ViewModels
         [ObservableProperty]
         public partial bool IsRefreshingList { get; set; }
 
-        public EditExpensePageViewModel()
-        {
-            dataService = new();
-        }
-
         public void OnAppearing()
         {
             PickerMinDate = dataService.GetAppFirstRunDate();
@@ -94,19 +87,22 @@ namespace TimeClockApp.ViewModels
 
         private void RefreshProjectPhases()
         {
-            //Only get data from DB once, unless it has been notified that it has changed
-            ProjectList ??= [];
-            ProjectList = dataService.GetAllProjectsList(IsAdmin);
-
-            PhaseList ??= [];
-            PhaseList = dataService.GetPhaseList();
+			MainThread.BeginInvokeOnMainThread(async () => { await RefreshProjectPhaseListAsync(); });
 
             ExpenseTypeList ??= [];
             List<ExpenseType> x = dataService.GetExpenseTypeList();
             ExpenseTypeList = x.ToObservableCollection();
         }
 
-        [RelayCommand]
+		private async Task RefreshProjectPhaseListAsync()
+		{
+			//List<Project> p = await _projectListService.GetProjectsListAsync();
+			//ProjectList = p.ToObservableCollection();
+			ProjectList = dataService.GetAllProjectsList(IsAdmin);
+			List<Phase> ph = await _projectListService.GetPhaseListAsync();
+			PhaseList = ph.ToObservableCollection();
+		}
+		[RelayCommand]
         private async Task EditExpenseAsync()
         {
             if (ExpenseItem == null || ExpenseItem.ExpenseId == 0)

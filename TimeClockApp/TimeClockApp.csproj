@@ -47,6 +47,7 @@
 		<!-- Replace xxxxxxxxxxxxxxx with your own PackageCertificateThumbprint value -->
 		<!--<PackageCertificateThumbprint>xxxxxxxxxxxxxxx</PackageCertificateThumbprint>
 		<AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>-->
+		<TargetPlatformAndroid>True</TargetPlatformAndroid>
 		<!--<WarningsNotAsErrors>$(WarningsNotAsErrors);IL2037</WarningsNotAsErrors>-->
 	</PropertyGroup>
   
@@ -85,8 +86,8 @@
 	</PropertyGroup>
   
 	<ItemGroup>
-	  <MauiImage Include="Resources\Images\*.svg" />
-	  <MauiImage Include="Resources\Images\*.png" />
+	  <MauiImage Include="Resources\Images\*.svg" ResizeQuality="Best" />
+	  <MauiImage Include="Resources\Images\*.png" ResizeQuality="Best" />
 	  <MauiImage Include="Resources\Images\ui\check_box_white.svg">
 		<TintColor>#EFEFEF</TintColor>
 	  </MauiImage>
@@ -96,11 +97,11 @@
 	
 	<ItemGroup Condition="$(TargetFramework.Contains('-android'))">
 	  <!--<MauiIcon Include="Resources\AppIcon\appiconfg.svg" ForegroundScale="0.65" Color="White" />-->
-	  <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" BaseSize="24,24" ForegroundScale="0.6" Color="White" TintColor="#0F4690" />
+	  <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" ResizeQuality="Best" BaseSize="24,24" ForegroundScale="0.6" Color="White" TintColor="#0F4690" />
 	</ItemGroup>
   
 	<ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
-	  <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" BaseSize="256,256">
+	  <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" ResizeQuality="Best" BaseSize="256,256">
 		<TintColor>Black</TintColor>
 	  </MauiIcon>		
 	  <MauiSplashScreen Include="Platforms\Windows\Images\base\splashscreen.png" Color="#512BD4" BaseSize="288,288" />
@@ -126,8 +127,8 @@
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Maui" Version="15.0.1" />
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
-		<PackageReference Include="Microsoft.Maui.Controls" Version="11.0.0-preview.7.26406.9" />
-		<PackageReference Include="Plugin.LocalNotification" Version="14.1.1" />
+		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+		<PackageReference Include="Plugin.LocalNotification" Version="14.1.2" />
 	</ItemGroup>
 	
 	<ItemGroup>
@@ -179,6 +180,9 @@
 	  <MauiXaml Update="Pages\PayrollPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	  <MauiXaml Update="Pages\ProjectManagerPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Pages\ReportPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
@@ -205,6 +209,7 @@
 	<ItemGroup>
 	  <Folder Include="Platforms\Android\Resources\color\" />
 	  <Folder Include="Platforms\Android\Resources\raw\" />
+	  <Folder Include="Platforms\Android\Resources\values\" />
 	</ItemGroup>
 
 </Project>

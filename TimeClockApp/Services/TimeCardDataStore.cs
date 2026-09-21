@@ -5,6 +5,9 @@ using TimeClockApp.Shared.Helpers;
 
 namespace TimeClockApp.Services
 {
+    /// <summary>
+    /// Provides data access functionality for time cards.
+    /// </summary>
     public class TimeCardDataStore : SQLiteDataStore
     {
         /// <summary>
@@ -47,36 +50,15 @@ namespace TimeClockApp.Services
         }
 
 #region PROJECTS_PHASES
-        public Project GetProject(int projectID) => Context.Project.Find(projectID);
-
-        public Phase GetPhase(int phaseID) => Context.Phase.Find(phaseID);
-
-        public ObservableCollection<Project> GetProjectsList() =>
-            Context.Project
-                .Where(item => item.Status < ProjectStatus.Completed)
-                .OrderBy(e => e.Name)
-                .ToObservableCollection();
-
-        public ObservableCollection<Project> GetAllProjectsList(bool bShowAll) =>
-            (bShowAll) ? Get_AllProjectsList() : Get_NotAllProjectsList();
-
-        private ObservableCollection<Project> Get_AllProjectsList() =>
-            Context.Project
-                .Where(item => item.Status != ProjectStatus.Deleted)
-                .OrderBy(e => e.Name)
-                .ToObservableCollection();
-        private ObservableCollection<Project> Get_NotAllProjectsList() =>
-            Context.Project
-                .Where(item => item.Status < ProjectStatus.Completed)
-                .OrderBy(e => e.Name)
-                .ToObservableCollection();
-
         public ObservableCollection<Phase> GetPhaseList() => Context.Phase.OrderBy(e => e.PhaseTitle).ToObservableCollection();
 
+        /// <summary>
+        /// Gets the current project entity.
+        /// </summary>
+        /// <returns></returns>
         public Project GetCurrentProjectEntity()
         {
-            int? c;
-            c = Preferences.Get("CurrentProject", -1, PrefSetting.PrefKey);
+            int? c = Preferences.Get("CurrentProject", -1, PrefSetting.PrefKey);
             if (c == -1)
             {
                 c = GetConfigInt(3, 1);
@@ -86,10 +68,13 @@ namespace TimeClockApp.Services
             return Context.Project.Find(c.Value);
         }
 
+        /// <summary>
+        /// Gets the current phase entity.
+        /// </summary>
+        /// <returns></returns>
         public Phase GetCurrentPhaseEntity()
         {
-            int? c;
-            c = Preferences.Get("CurrentPhase", -1, PrefSetting.PrefKey);
+            int? c = Preferences.Get("CurrentPhase", -1, PrefSetting.PrefKey);
             if (c == -1)
             {
                 c = GetConfigInt(4, 1);
@@ -99,7 +84,12 @@ namespace TimeClockApp.Services
             return Context.Phase.Find(c.Value);
         }
 
-        public async Task SaveCurrentProjectAsync(int projectId)
+		/// <summary>
+		/// Saves the current project projectId.
+		/// </summary>
+		/// <param name="projectId"></param>
+		/// <returns></returns>
+		public async Task SaveCurrentProjectAsync(int projectId)
         {
             Preferences.Set("CurrentProject", projectId, PrefSetting.PrefKey);
             int i = 3;
@@ -112,7 +102,12 @@ namespace TimeClockApp.Services
             }
         }
 
-        public async Task SaveCurrentPhaseAsync(int phaseId)
+		/// <summary>
+		/// Saves the current phase by phaseId.
+		/// </summary>
+		/// <param name="phaseId"></param>
+		/// <returns></returns>
+		public async Task SaveCurrentPhaseAsync(int phaseId)
         {
             Preferences.Set("CurrentPhase", phaseId, PrefSetting.PrefKey);
             int i = 4;
@@ -127,34 +122,19 @@ namespace TimeClockApp.Services
 
 #endregion
 
-#region EMPLOYEES
-        public async Task<List<Employee>> GetAllEmployeesAsync()
-		{
-            return await Context.Employee
-                .Where(e => e.Employee_Employed != EmploymentStatus.Deleted)
-                .OrderBy(e => e.Employee_Name)
-                .ToListAsync();
-        }
-
-        public virtual Task<List<Employee>> GetEmployeeListAsync() =>
-            Context.Employee
-                .Where(e => e.Employee_Employed == EmploymentStatus.Employed)
-                .OrderBy(e => e.Employee_Name)
-                .ToListAsync();
-
-        public Task<List<Employee>> GetEmployeesGroupInStatusAsync() =>
-            Context.Employee
-                .Where(e => e.Employee_Employed < EmploymentStatus.NotEmployed)
-                .OrderBy(e => e.Employee_Employed)
-                .ThenBy(e => e.Employee_Name)
-                .ToListAsync();
-
-        public Employee GetEmployee(int employeeID) => Context.Employee.Find(employeeID);
-
-#endregion
-
 #region TIMECARDS
+        /// <summary>
+        /// Gets the time card by its ID.
+        /// </summary>
+        /// <param name="timeCardID"></param>
+        /// <returns></returns>
         public TimeCard GetTimeCard(int timeCardID) => Context.TimeCard.Find(timeCardID);
+
+        /// <summary>
+        /// Gets the time card by its ID asynchronously.
+        /// </summary>
+        /// <param name="timeCardID"></param>
+        /// <returns></returns>
 		public async Task<TimeCard> GetTimeCardAsync(int timeCardID) => await Context.TimeCard.FindAsync(timeCardID);
 
 		/// <summary>
@@ -191,7 +171,7 @@ namespace TimeClockApp.Services
             }
             else if (timeCard.TimeCard_StartTime > TimeOnly.FromDateTime(DateTime.Now))
             {
-                if (CheckIfTimeIsCloseToNow(clockNowRndTime, timeCard.TimeCard_StartTime))
+                if (TimeHelper.CheckIfTimeIsCloseToNow(clockNowRndTime, timeCard.TimeCard_StartTime))
                     return true;
 
                 Log.WriteLine("ERROR! Card Time start time is greater than the current time.");
@@ -200,7 +180,7 @@ namespace TimeClockApp.Services
             }
             else if (dateCheck == 0)
             {
-                return ValidatingClockOutTimes(timeCard.TimeCard_StartTime, TimeOnly.FromDateTime(DateTime.Now)) || CheckIfTimeIsCloseToNow(clockNowRndTime, timeCard.TimeCard_StartTime);
+                return ValidatingClockOutTimes(timeCard.TimeCard_StartTime, TimeOnly.FromDateTime(DateTime.Now)) || TimeHelper.CheckIfTimeIsCloseToNow(clockNowRndTime, timeCard.TimeCard_StartTime);
             }
             //timecard is in the future
             else if (dateCheck > 0)
@@ -219,7 +199,7 @@ namespace TimeClockApp.Services
                 }
                 else if (dateCheck == 0)
                 {
-                    bool b = CheckIfTimeIsCloseToNow(clockNowRndTime, timeCard.TimeCard_StartTime);
+                    bool b = TimeHelper.CheckIfTimeIsCloseToNow(clockNowRndTime, timeCard.TimeCard_StartTime);
                     bool vb = ValidatingClockOutTimes(timeCard.TimeCard_StartTime, TimeOnly.FromDateTime(DateTime.Now));
                     return b && vb;
                 }
@@ -231,34 +211,13 @@ namespace TimeClockApp.Services
 
         private bool ValidatingClockOutTimes(TimeOnly startTime, TimeOnly endTime) => endTime.CompareTo(startTime) >= 0;
 
-        private bool CheckIfTimeIsCloseToNow(TimeOnly clockNowRndTime, TimeOnly timeStart) => clockNowRndTime - timeStart < new TimeSpan(0, 15, 0);
+        //private bool CheckIfTimeIsCloseToNow(TimeOnly clockNowRndTime, TimeOnly timeStart) => clockNowRndTime - timeStart < new TimeSpan(0, 15, 0);
 
-        public async Task<List<TimeCard>> GetTimeCardsForPayPeriodAsync(int employeeId, DateOnly start, DateOnly end, bool onlyUnpaid = false) => onlyUnpaid
-                ? await GetListUnpaidTimeCardsForPayPeriodAsync(employeeId).ConfigureAwait(false)
-                : await GetListTimeCardsForPayPeriodAsync(employeeId, start, end).ConfigureAwait(false);
-
-        private Task<List<TimeCard>> GetListUnpaidTimeCardsForPayPeriodAsync(int employeeId) =>
-                Context.TimeCard
-                    .Where(item => item.EmployeeId == employeeId
-                        && (item.TimeCard_Status == ShiftStatus.ClockedOut
-                        || item.TimeCard_Status == ShiftStatus.ClockedIn))
-                    .OrderBy(item => item.TimeCard_Date)
-                    .ToListAsync();
-        private Task<List<TimeCard>> GetListTimeCardsForPayPeriodAsync(int employeeId, DateOnly start, DateOnly end) =>
-                Context.TimeCard
-                    .Where(item => item.EmployeeId == employeeId
-                        && item.TimeCard_Status != ShiftStatus.Deleted
-                        && item.TimeCard_Date >= start
-                        && item.TimeCard_Date <= end)
-                    .OrderBy(item => item.TimeCard_Date)
-                    .ToListAsync();
 #endregion
 
 #region EXPENSES
 
-        public ExpenseType GetExpenseType(int expenseTypeId) => Context.ExpenseType.Find(expenseTypeId);
-
-        public string GetExpenseType_CategoryName(int expenseTypeId) => Context.ExpenseType.First(z => z.ExpenseTypeId == expenseTypeId).CategoryName;
+        private string GetExpenseType_CategoryName(int expenseTypeId) => Context.ExpenseType.First(z => z.ExpenseTypeId == expenseTypeId).CategoryName;
 
         // used to add new entry when marking a timecard as paid
         public async Task<bool> AddNewExpenseAsync(int projectId, int phaseId, double amount, string memo, string projectName, string phaseTitle, int expenseTypeId = 3, string expenseTypeCategoryName = "")

@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using CsvHelper.Configuration;
 
@@ -43,16 +42,13 @@ namespace TimeClockApp.Shared.Models
             Status = ProjectStatus.Active;
         }
 
-        [Key]
         public int ProjectId { get; set; }
 
-        [Required]
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
         /// Used to filter out older (archived, completed, deleted, etc) projects
         /// </summary>
-        [Required]
         public ProjectStatus Status { get; set; }
 
         /// <summary>
@@ -61,13 +57,13 @@ namespace TimeClockApp.Shared.Models
         /// <remarks>Used mainly for filtering out items that come after this projects date</remarks>
         public DateOnly ProjectDate { get; set; }
 
-        /*
+
         /// <summary>
         /// Date of project completion.
         /// </summary>
         //[System.ComponentModel.DataAnnotations.Schema.Column(TypeName = "DateOnly")]
-        //public DateOnly? ProjectDateEnd { get; set; } = null;
-        */
+        public DateOnly? ProjectDateEnd { get; set; } = null;
+
 
         public virtual ICollection<TimeCard> TimeCards { get; set; }
         public virtual ICollection<Expense> Expenses { get; set; }
@@ -83,7 +79,7 @@ namespace TimeClockApp.Shared.Models
             Map(m => m.Name);
             Map(m => m.Status);
             Map(m => m.ProjectDate);
-            //Map(m => m.ProjectDateEnd).Optional();
+            Map(m => m.ProjectDateEnd).Optional();
         }
     }
 }

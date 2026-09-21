@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using CsvHelper.Configuration;
 #nullable enable
@@ -54,25 +53,20 @@ namespace TimeClockApp.Shared.Models
             TimeCards = [];
         }
 
-        [Key]
         public int EmployeeId { get; set; }
 
-        [Required]
         public string Employee_Name { get; set; } = string.Empty;
 
         /// <summary>
         /// Employees Rate of Pay.
         /// </summary>
-        [Required]
         public double Employee_PayRate { get; set; }
 
         /// <summary>
         /// Valve determines if this Employee is displayed on the Home TimeCards page.
         /// </summary>
-        [Required]
         public EmploymentStatus Employee_Employed { get; set; }
 
-        [StringLength(50)]
         public string JobTitle { get; set; } = string.Empty;
 
         public virtual ICollection<TimeCard> TimeCards { get; set; }

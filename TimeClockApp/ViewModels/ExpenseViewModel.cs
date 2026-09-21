@@ -5,6 +5,7 @@ namespace TimeClockApp.ViewModels
 	public partial class ExpenseViewModel : BaseViewModel
 	{
 		protected readonly ExpenseService dataService;
+		private readonly IProjectListService _projectListService;
 
 		[ObservableProperty]
 		public partial Expense ExpenseItem { get; set; } = new();
@@ -23,11 +24,7 @@ namespace TimeClockApp.ViewModels
 			{
 				MainThread.BeginInvokeOnMainThread(async () =>
 				{
-					await Refresh().ContinueWith(task =>
-					{
-						if (task.Exception != null)
-							Log.WriteLine($"Caught exception: {task.Exception.Flatten().InnerException?.Message}", "ExpenseViewModel.OnSelectedNumberOfResultsChanged");
-					});
+					await Refresh();
 				});
 			}
 		}
@@ -70,14 +67,7 @@ namespace TimeClockApp.ViewModels
 			if (!Loading && value != LastSelectedNumberOfResults)
 			{
 				LastSelectedNumberOfResults = value;
-				MainThread.BeginInvokeOnMainThread(async () =>
-				{
-					await Refresh().ContinueWith(task =>
-					{
-						if (task.Exception != null)
-							Log.WriteLine($"Caught exception: {task.Exception.Flatten().InnerException?.Message}", "ExpenseViewModel.OnSelectedNumberOfResultsChanged");
-					});
-				});
+				MainThread.BeginInvokeOnMainThread(async () => { await Refresh(); });
 			}
 		}
 		private int LastSelectedNumberOfResults { get; set; } = 5;
@@ -91,9 +81,10 @@ namespace TimeClockApp.ViewModels
 		[ObservableProperty]
 		public partial bool OptionsBoxVisible { get; set; } = false;
 
-		public ExpenseViewModel(ExpenseService service)
+		public ExpenseViewModel(ExpenseService service, IProjectListService projectListService)
 		{
 			dataService = service;
+			_projectListService = projectListService;
 			ShowArchived = false;
 			PickerMinDate = dataService.GetAppFirstRunDate();
 			pickerMaxDate = DateTime.Now;
@@ -108,9 +99,9 @@ namespace TimeClockApp.ViewModels
 			try
 			{
 				ExpenseDate = DateOnly.FromDateTime(DateTime.Now);
-				List<Project> proList = await dataService.GetProjectsListAsync();
+				List<Project> proList = await _projectListService.GetProjectsListAsync();
 				ProjectList = proList.ToObservableCollection();
-				List<Phase> phaseList = await dataService.GetPhaseListAsync();
+				List<Phase> phaseList = await _projectListService.GetPhaseListAsync();
 				PhaseList = phaseList.ToObservableCollection();
 				if (SelectedProject == null || SelectedProject.ProjectId < 1)
 					SelectedProject = dataService.GetCurrentProjectEntity();

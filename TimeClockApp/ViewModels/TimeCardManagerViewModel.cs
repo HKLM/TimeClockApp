@@ -17,13 +17,7 @@ namespace TimeClockApp.ViewModels
 		partial void OnSelectedNumberOfResultsChanged(int oldValue, int newValue)
 		{
 			if (oldValue != newValue)
-				Task.Run(async () => await RefreshAllCards().ContinueWith(task =>
-				{
-					if (task.Exception != null)
-					{
-						Log.WriteLine($"Caught exception: {task.Exception.Flatten().InnerException?.Message}", "TimeCardManagerViewModel.OnSelectedNumberOfResultsChanged");
-					}
-				}));
+				Task.Run(async () => await RefreshAllCards());
 		}
 
         [ObservableProperty]

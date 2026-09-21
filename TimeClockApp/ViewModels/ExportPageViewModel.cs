@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using CsvHelper;
 using TimeClockApp.Shared;
-
 #nullable enable
 
 namespace TimeClockApp.ViewModels
@@ -20,7 +19,6 @@ namespace TimeClockApp.ViewModels
 		/// <summary>
 		/// During import of Data should the TimeCards and Expenses data be overwritten or only added to (with possible duplicates)
 		/// </summary>
-		//[ObservableProperty]
 		private bool OverwriteData { get; set; } = true;
 
 		[ObservableProperty]
@@ -253,7 +251,6 @@ namespace TimeClockApp.ViewModels
 				Directory.CreateDirectory(CSVFilePath);
 				outputLog += "Start Database export\n";
 				Task<string> taskA = MakeCSVFilesAsync();
-
 				//  Zip everything and present a share dialog to the user
 				outputLog += "Zipping ... \n";
 				await taskA.ContinueWith(async antecedent => await dataService.CompressAndExportFolder((await antecedent))).Unwrap();
@@ -285,11 +282,9 @@ namespace TimeClockApp.ViewModels
 			for (int i = 0; i < Enum.GetNames(typeof(SQLTables)).Length; i++)
 			{
 				SQLTables sQL = (SQLTables)i;
-				//ExportLog += $"Exporting {sQL} table\n";
 				tableTaskList.Add(CreateFileAsync(sQL, CSVFilePath, sQL.ToString() + ".csv"));
 			}
 			await Task.WhenAll(tableTaskList);
-			//ExportLog += "Table export complete\n";
 
 			return CSVFilePath;
 		}
@@ -400,7 +395,6 @@ namespace TimeClockApp.ViewModels
 			try
 			{
 				string outputLog = "START BACKUP DATABASE: \n";
-
 				string dbFileName = $"timeclock_{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.db3";
 				string file = Path.Combine(Microsoft.Maui.Storage.FileSystem.CacheDirectory, dbFileName);
 				bool bFileDeleteError = false;

@@ -1,16 +1,24 @@
-﻿using System.Data;
-using Microsoft.EntityFrameworkCore;
-using TimeClockApp.Shared;
+﻿using TimeClockApp.Shared;
 #nullable enable
 
 namespace TimeClockApp.Services
 {
+    /// <summary>
+    /// Provides base data access functionality for the SQLite database.
+    /// </summary>
     public class SQLiteDataStore
     {
         private protected static readonly DataBackendContext Context = new();
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SQLiteDataStore"/> class.
+        /// </summary>
         public SQLiteDataStore() { }
 
+        /// <summary>
+        /// Gets the date when the app was first run.
+        /// </summary>
+        /// <returns></returns>
         public DateTime GetAppFirstRunDate()
         {
             bool bFound = false;
@@ -32,14 +40,6 @@ namespace TimeClockApp.Services
             d = d.AddDays(-6);
             return d.ToDateTime(new TimeOnly(0, 0));
         }
-
-        public async Task<List<Phase>> GetPhaseListAsync() => await Context.Phase.OrderBy(e => e.PhaseTitle).ToListAsync();
-
-        public async Task<List<Project>> GetProjectsListAsync() =>
-            await Context.Project
-                .Where(item => item.Status < ProjectStatus.Completed)
-                .OrderBy(e => e.Name)
-                .ToListAsync();
 
 #region POPUP
 

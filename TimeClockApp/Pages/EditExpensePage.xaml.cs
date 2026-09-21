@@ -3,10 +3,12 @@ namespace TimeClockApp.Pages;
 
 public partial class EditExpensePage : ContentPage
 {
-    public EditExpensePage()
+	protected readonly EditExpensePageViewModel viewModel;
+	public EditExpensePage(EditExpensePageViewModel ViewModel)
     {
         InitializeComponent();
-    }
+		BindingContext = viewModel = ViewModel;
+	}
 
     protected override void OnAppearing()
     {

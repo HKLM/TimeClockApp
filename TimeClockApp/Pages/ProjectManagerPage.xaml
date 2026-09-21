@@ -1,0 +1,37 @@
+<ContentPage x:Class="TimeClockApp.Pages.ProjectManagerPage"
+			xmlns:Converter="clr-namespace:TimeClockApp.Converters"
+		    xmlns:models="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
+		    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+		    xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
+            xmlns:m="clr-namespace:TimeClockApp.Shared.Models;assembly=TimeClockApp.Shared"
+		    x:DataType="vm:EditProjectViewModel"
+
+             Title="Project Manager">
+	<ContentPage.ToolbarItems>
+		<ToolbarItem  Command="{Binding ToggleHelpInfoBoxCommand}" IconImageSource="help_icon.png" />
+	</ContentPage.ToolbarItems>
+	<ContentPage.Resources>
+		<ResourceDictionary>
+			<Converter:ProjStatusEnumToIntConverter x:Key="projStatusEnumToIntConverter" />
+			<Converter:DateOnlyToDateTimeConverter x:Key="dateOnlyToDateTimeConverter" />
+		</ResourceDictionary>
+	</ContentPage.Resources>
+	<ScrollView>
+	<VerticalStackLayout>
+			<Border
+					x:Name="helpbox"
+					Padding="8"
+					IsVisible="{Binding HelpInfoBoxVisible}"
+					VerticalOptions="Center">
+				<Border.StrokeShape>
+					<RoundRectangle CornerRadius="10"/>
+				</Border.StrokeShape>
+				<Label
+						LineBreakMode="WordWrap"
+						Style="{StaticResource LabelSmall}"
+						Text="Project Editor Page. &#10;&#10;Here you can add, archive, or rename projects. &#10;&#10;By archiving the project, it ends that project so that it is no longer a option to pick for TimeCards or expenses. You can have another project of the same name, but only one can be active at one time. " />
+			</Border>
+		
+		</VerticalStackLayout>
+	</ScrollView>
+</ContentPage>

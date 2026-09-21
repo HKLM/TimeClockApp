@@ -3,9 +3,10 @@
 
 namespace TimeClockApp.ViewModels
 {
-    public partial class ChangeStartTimeViewModel(EditTimeCardService service) : BaseViewModel, IQueryAttributable
+    public partial class ChangeStartTimeViewModel(EditTimeCardService service, IProjectListService projectListService) : BaseViewModel, IQueryAttributable
     {
         protected readonly EditTimeCardService cardService = service;
+        private readonly IProjectListService _projectListService = projectListService;
 
         public void ApplyQueryAttributes(IDictionary<string, object> query)
         {
@@ -53,9 +54,9 @@ namespace TimeClockApp.ViewModels
 
             try
             {
-                List<Project> pro = await cardService.GetProjectsListAsync();
+                List<Project> pro = await _projectListService.GetProjectsListAsync();
                 ProjectList = pro.ToObservableCollection();
-                List<Phase> ph = await cardService.GetPhaseListAsync();
+                List<Phase> ph = await _projectListService.GetPhaseListAsync();
                 PhaseList = ph.ToObservableCollection();
 
                 if (TimeCardID != 0)
@@ -70,7 +71,6 @@ namespace TimeClockApp.ViewModels
                         SelectedPhase = TimeCardEditing.Phase;
                     }
                 }
-
             }
             catch (Exception e)
             {

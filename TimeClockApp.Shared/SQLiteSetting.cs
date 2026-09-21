@@ -35,12 +35,11 @@ namespace TimeClockApp.Shared
             {
 #if MIGRATION
                 SQLiteDBPath = System.IO.Path.Combine("../", sQLiteDbFileName);
-                Console.Write($"Path={System.IO.Path.GetFullPath(SQLiteDBPath)} ");
 #else
                 SQLiteDBPath = System.IO.Path.Combine(Microsoft.Maui.Storage.FileSystem.Current.AppDataDirectory, sQLiteDbFileName);
 #endif
-			}
-			return SQLiteDBPath;
+            }
+            return SQLiteDBPath;
         }
     }
 }
