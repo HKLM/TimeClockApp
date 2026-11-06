@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
-using CsvHelper.Configuration;
+using CsvHelper;
 #nullable enable
 
 namespace TimeClockApp.Shared.Models
@@ -37,7 +36,8 @@ namespace TimeClockApp.Shared.Models
         Deleted = 4
     }
 
-    public class Employee
+	[CsvRecord]
+	public partial class Employee
     {
         public Employee()
         {
@@ -69,20 +69,8 @@ namespace TimeClockApp.Shared.Models
 
         public string JobTitle { get; set; } = string.Empty;
 
-        public virtual ICollection<TimeCard> TimeCards { get; set; }
+		[CsvIgnore]
+		public virtual ICollection<TimeCard> TimeCards { get; set; }
     }
 
-    public sealed class EmployeeMap : ClassMap<Employee>
-    {
-        [RequiresUnreferencedCode("Calls DynamicBehavior for Import or Export to CSV.")]
-        public EmployeeMap()
-        {
-            //AutoMap(CultureInfo.InvariantCulture);
-            Map(m => m.EmployeeId);
-            Map(m => m.Employee_Name);
-            Map(m => m.Employee_PayRate);
-            Map(m => m.Employee_Employed);
-            Map(m => m.JobTitle);
-        }
-    }
 }

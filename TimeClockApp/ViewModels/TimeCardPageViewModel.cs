@@ -4,11 +4,11 @@ using Plugin.LocalNotification.Core.Models;
 
 namespace TimeClockApp.ViewModels
 {
-    public partial class TimeCardPageViewModel(TimeCardService service, IProjectListService projectListService, INotificationService notificationService) : BaseViewModel
+    public partial class TimeCardPageViewModel(TimeCardService service, IProjectListService projectListService, INotificationService? notificationService = null) : BaseViewModel
     {
         protected readonly TimeCardService cardService = service;
         private readonly IProjectListService _projectListService = projectListService;
-        private readonly INotificationService _notificationService = notificationService;
+        private readonly INotificationService? _notificationService = notificationService;
         private int _tapCount;
 
         [ObservableProperty]
@@ -142,8 +142,9 @@ namespace TimeClockApp.ViewModels
 
         private async Task MakeNotification(TimeCard timeCard)
         {
-            // Notifications are not supported on WinUI
-            if (DeviceInfo.Platform == DevicePlatform.WinUI) return;
+			// Notifications are not supported on WinUI
+			if (OperatingSystem.IsWindows())
+				return;
 
             if (!UseNotifications || _notificationService == null) return;
 

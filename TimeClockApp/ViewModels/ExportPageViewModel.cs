@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using CsvHelper;
+﻿using CsvHelper;
 using TimeClockApp.Shared;
 #nullable enable
 
@@ -163,7 +162,7 @@ namespace TimeClockApp.ViewModels
 					fileCopyName = Path.Combine(fileService.GetDownloadPath(), "TimeCardApp.zip");
 
 				//  Create a location for our data
-				string UnZipPath = fileService.GetLocalFilePath("TimeClockAppUNZIP");
+				string UnZipPath = fileService.GetLocalFilePath("TimeCardAppUNZIP");
 
 				if (Directory.Exists(UnZipPath))
 				{
@@ -233,7 +232,7 @@ namespace TimeClockApp.ViewModels
 				SetProgress(0.1);
 
 				//  Create a location for our data
-				CSVFilePath = Path.Combine(Microsoft.Maui.Storage.FileSystem.CacheDirectory, "TimeClockApp", DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss"));
+				CSVFilePath = Path.Combine(Microsoft.Maui.Storage.FileSystem.CacheDirectory, "TimeCardApp", DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss"));
 				try
 				{
 					if (Directory.Exists(CSVFilePath))
@@ -289,7 +288,6 @@ namespace TimeClockApp.ViewModels
 			return CSVFilePath;
 		}
 
-		[RequiresUnreferencedCode("Calls DynamicBehavior for Import or Export to CSV.")]
 		private async Task CreateFileAsync(SQLTables table, string filePath, string fileName)
 		{
 			string file = Path.Combine(filePath, fileName);
@@ -297,10 +295,8 @@ namespace TimeClockApp.ViewModels
 			{
 				case SQLTables.TimeCard:
 					List<TimeCard> w = await dataService.BackupGetTimeCard();
-					using (StreamWriter writer = new(file))
-					using (CsvWriter csv = new(writer, CultureInfo.InvariantCulture))
+					using (CsvWriter csv = CsvWriter.ToFile(file))
 					{
-						csv.Context.RegisterClassMap<TimeCardMap>();
 						await csv.WriteRecordsAsync(w);
 						IncrementProgress(0.12);
 						await csv.FlushAsync().ConfigureAwait(false);
@@ -308,10 +304,8 @@ namespace TimeClockApp.ViewModels
 					return;
 				case SQLTables.Employee:
 					List<Employee> emp = await dataService.BackupGetEmployee();
-					using (StreamWriter writer = new(file))
-					using (CsvWriter csv = new(writer, CultureInfo.InvariantCulture))
+					using (CsvWriter csv = CsvWriter.ToFile(file))
 					{
-						csv.Context.RegisterClassMap<EmployeeMap>();
 						await csv.WriteRecordsAsync(emp);
 						IncrementProgress(0.12);
 						await csv.FlushAsync().ConfigureAwait(false);
@@ -319,10 +313,8 @@ namespace TimeClockApp.ViewModels
 					return;
 				case SQLTables.Project:
 					List<Project> pr = await dataService.BackupGetProject();
-					using (StreamWriter writer = new(file))
-					using (CsvWriter csv = new(writer, CultureInfo.InvariantCulture))
+					using (CsvWriter csv = CsvWriter.ToFile(file))
 					{
-						csv.Context.RegisterClassMap<ProjectMap>();
 						await csv.WriteRecordsAsync(pr);
 						IncrementProgress(0.12);
 						await csv.FlushAsync().ConfigureAwait(false);
@@ -330,10 +322,8 @@ namespace TimeClockApp.ViewModels
 					return;
 				case SQLTables.Phase:
 					List<Phase> ph = await dataService.BackupGetPhase();
-					using (StreamWriter writer = new(file))
-					using (CsvWriter csv = new(writer, CultureInfo.InvariantCulture))
+					using (CsvWriter csv = CsvWriter.ToFile(file))
 					{
-						csv.Context.RegisterClassMap<PhaseMap>();
 						await csv.WriteRecordsAsync(ph);
 						IncrementProgress(0.12);
 						await csv.FlushAsync().ConfigureAwait(false);
@@ -341,10 +331,8 @@ namespace TimeClockApp.ViewModels
 					return;
 				case SQLTables.Config:
 					List<Config> c = await dataService.BackupGetConfig();
-					using (StreamWriter writer = new(file))
-					using (CsvWriter csv = new(writer, CultureInfo.InvariantCulture))
+					using (CsvWriter csv = CsvWriter.ToFile(file))
 					{
-						csv.Context.RegisterClassMap<ConfigMap>();
 						await csv.WriteRecordsAsync(c);
 						IncrementProgress(0.12);
 						await csv.FlushAsync().ConfigureAwait(false);
@@ -352,10 +340,8 @@ namespace TimeClockApp.ViewModels
 					return;
 				case SQLTables.Expense:
 					List<Expense> e = await dataService.BackupGetExpense();
-					using (StreamWriter writer = new(file))
-					using (CsvWriter csv = new(writer, CultureInfo.InvariantCulture))
+					using (CsvWriter csv = CsvWriter.ToFile(file))
 					{
-						csv.Context.RegisterClassMap<ExpenseMap>();
 						await csv.WriteRecordsAsync(e);
 						IncrementProgress(0.12);
 						await csv.FlushAsync().ConfigureAwait(false);
@@ -363,10 +349,8 @@ namespace TimeClockApp.ViewModels
 					return;
 				case SQLTables.ExpenseType:
 					List<ExpenseType> et = await dataService.BackupGetExpenseType();
-					using (StreamWriter writer = new(file))
-					using (CsvWriter csv = new(writer, CultureInfo.InvariantCulture))
+					using (CsvWriter csv = CsvWriter.ToFile(file))
 					{
-						csv.Context.RegisterClassMap<ExpenseTypeMap>();
 						await csv.WriteRecordsAsync(et);
 						IncrementProgress(0.12);
 						await csv.FlushAsync().ConfigureAwait(false);

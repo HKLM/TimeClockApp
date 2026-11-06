@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace TimeClockApp.Shared.Migrations;
 
 /// <inheritdoc />
-public partial class _20260802032443_Initial : Migration
+public partial class _20261103034508_Initial : Migration
 {
     /// <inheritdoc />
     protected override void Up(MigrationBuilder migrationBuilder)
@@ -64,7 +64,7 @@ public partial class _20260802032443_Initial : Migration
             {
                 PhaseId = table.Column<int>(type: "INTEGER", nullable: false)
                     .Annotation("Sqlite:Autoincrement", true),
-                PhaseTitle = table.Column<string>(type: "TEXT", nullable: false)
+                PhaseTitle = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false)
             },
             constraints: table =>
             {
@@ -77,9 +77,10 @@ public partial class _20260802032443_Initial : Migration
             {
                 ProjectId = table.Column<int>(type: "INTEGER", nullable: false)
                     .Annotation("Sqlite:Autoincrement", true),
-                Name = table.Column<string>(type: "TEXT", nullable: false),
+                Name = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
                 Status = table.Column<int>(type: "INTEGER", nullable: false, defaultValue: 0),
-                ProjectDate = table.Column<DateOnly>(type: "date", nullable: false)
+                ProjectDate = table.Column<DateOnly>(type: "date", nullable: false),
+                ProjectDateEnd = table.Column<DateOnly>(type: "date", nullable: true)
             },
             constraints: table =>
             {
@@ -176,7 +177,7 @@ public partial class _20260802032443_Initial : Migration
             values: new object[,]
             {
                 { 1, "The business entity name", null, "Company", "Alexander Builder" },
-                { 2, "Date this app was 1st ran. For internal use only", null, "FirstRun", "8/1/2026" },
+                { 2, "Date this app was 1st ran. For internal use only", null, "FirstRun", "11/2/2026" },
                 { 3, "Current Project to default to", 1, "CurrentProject", null },
                 { 4, "Current Phase to default to", 1, "CurrentPhase", null },
                 { 5, "Worker Comp Rate per $100 remuneration", null, "WorkCompRate", "0.171118" },
@@ -195,22 +196,11 @@ public partial class _20260802032443_Initial : Migration
         migrationBuilder.InsertData(
             table: "Employee",
             columns: new[] { "EmployeeId", "Employee_Name", "Employee_PayRate", "JobTitle" },
-            values: new object[] { 1, "Brian Alexander", 35.0, "Owner" });
-
-        migrationBuilder.InsertData(
-            table: "Employee",
-            columns: new[] { "EmployeeId", "Employee_Employed", "Employee_Name", "Employee_PayRate", "JobTitle" },
-            values: new object[] { 2, 3, "John Pewthers", 30.0, "Journeyman" });
-
-        migrationBuilder.InsertData(
-            table: "Employee",
-            columns: new[] { "EmployeeId", "Employee_Name", "Employee_PayRate", "JobTitle" },
-            values: new object[] { 3, "Adam Aicher", 30.0, "Laborer" });
-
-        migrationBuilder.InsertData(
-            table: "Employee",
-            columns: new[] { "EmployeeId", "Employee_Employed", "Employee_Name", "Employee_PayRate", "JobTitle" },
-            values: new object[] { 4, 1, "Louis Gonzales", 30.0, "Laborer" });
+            values: new object[,]
+            {
+                { 1, "John Doe", 25.0, "Job Title" },
+                { 2, "Jane Doe", 25.0, "Job Title" }
+            });
 
         migrationBuilder.InsertData(
             table: "ExpenseType",
@@ -291,19 +281,11 @@ public partial class _20260802032443_Initial : Migration
 
         migrationBuilder.InsertData(
             table: "Project",
-            columns: new[] { "ProjectId", "Name", "ProjectDate", "Status" },
+            columns: new[] { "ProjectId", "Name", "ProjectDate", "ProjectDateEnd", "Status" },
             values: new object[,]
             {
-                { 1, ".None", new DateOnly(2026, 8, 1), 1 },
-                { 2, "Vallejo", new DateOnly(2026, 8, 1), 1 },
-                { 3, "Napa", new DateOnly(2026, 8, 1), 1 },
-                { 4, "Oakland", new DateOnly(2026, 8, 1), 1 },
-                { 5, "Woodland", new DateOnly(2026, 8, 1), 1 },
-                { 6, "American Canyon", new DateOnly(2026, 8, 1), 1 },
-                { 7, "Benicia", new DateOnly(2026, 8, 1), 1 },
-                { 8, "Fairfield", new DateOnly(2026, 8, 1), 1 },
-                { 9, "Sonoma", new DateOnly(2026, 8, 1), 1 },
-                { 10, "Vacaville", new DateOnly(2026, 8, 1), 1 }
+                { 1, ".None", new DateOnly(2026, 11, 2), null, 1 },
+                { 2, "Sample", new DateOnly(2026, 11, 2), null, 1 }
             });
 
         migrationBuilder.CreateIndex(

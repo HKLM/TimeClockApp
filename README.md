@@ -38,7 +38,7 @@ Simple app for employer to track employees time cards for payroll use. Supports 
 
 ### Notes
 
-Built using .NET 11.0.100-preview.7.26381.103 and Visual Studio 2026
+Built using .NET 11.0.0-rc.3 and Visual Studio 2026
 
 Requires the .NET workloads 
 ```
@@ -50,10 +50,10 @@ and uses the following nuget packages:
 ```
 "CommunityToolkit.Maui" Version="15.0.1"
 "CommunityToolkit.Mvvm" Version="8.4.2"
-"Microsoft.Maui.Controls" Version="11.0.0-preview.7.26406.9"
-"CsvHelper" Version="33.1.0"
-"Microsoft.EntityFrameworkCore.Sqlite" Version="11.0.0-preview.7.26381.103"
-"Plugin.LocalNotification" Version="14.1.1"
+"Microsoft.Maui.Controls" Version="$(MauiVersion)"
+"CsvHelper" Version="34.0.0"
+"Microsoft.EntityFrameworkCore.Sqlite" Version="11.0.0-rc.3.26522.148"
+"Plugin.LocalNotification" Version="14.1.2"
 ```
 ---
 
@@ -92,6 +92,11 @@ See [EFMigrator\README.md](/EFMigrator/README.md)
 ---
 
 ### Release Notes
+3.2
+* Added support for .NET 11.0.0-rc.3 and latest nuget packages.
+* Fixed issue with the app crashing on startup on Windows.
+* Fixed issue with the app crashing on first time startup on Android.
+* Updated Import/Export use of CsvHelper for compatibility with v34.0.0 
 
 3.1
 * Added support for .NET 11.0.0-preview.7.26406.9 and latest nuget packages.

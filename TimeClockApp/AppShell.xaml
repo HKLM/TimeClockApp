@@ -4,13 +4,13 @@
 		xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 		xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 		xmlns:local="clr-namespace:TimeClockApp.Pages"
-        xmlns:s="clr-namespace:TimeClockApp"
-        xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
+		xmlns:s="clr-namespace:TimeClockApp"
+		xmlns:vm="clr-namespace:TimeClockApp.ViewModels"
 		x:Name="HomeAppShell"
-        x:DataType="vm:AppViewModel"
+		x:DataType="vm:AppViewModel"
 		FlyoutBehavior="Flyout" 
 		FlyoutHeaderBehavior="CollapseOnScroll"
-        FlyoutBackgroundColor="{AppThemeBinding Light={StaticResource FlyBackgroundLight}, Dark={StaticResource FlyBackgroundDark}}">
+		FlyoutBackgroundColor="{AppThemeBinding Light={StaticResource FlyBackgroundLight}, Dark={StaticResource FlyBackgroundDark}}">
 
 	<Shell.Resources>
 		<ResourceDictionary>
@@ -22,7 +22,7 @@
 				<Setter Property="Padding" Value="5,0,0,0" />
 			</Style>
 			<Style Class="FlyoutItemLayoutStyle" TargetType="Layout" ApplyToDerivedTypes="True">
-				<Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource FlyBackgroundLight}, Dark={StaticResource FlyBackgroundDark}}" />
+				<Setter Property="Background" Value="{AppThemeBinding Light={StaticResource FlyBackgroundLight}, Dark={StaticResource FlyBackgroundDark}}" />
 				<Setter TargetName="FlyoutItemLabel" Property="Label.TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
 				<Setter Property="Grid.RowDefinitions" Value="50" />
 				<Setter Property="VisualStateManager.VisualStateGroups">
@@ -31,12 +31,12 @@
 							<VisualState x:Name="Normal">
 								<VisualState.Setters>
 									<Setter TargetName="FlyoutItemLabel" Property="Label.TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
-									<Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource FlyBackgroundLight}, Dark={StaticResource FlyBackgroundDark}}" />
+									<Setter Property="Background" Value="{AppThemeBinding Light={StaticResource FlyBackgroundLight}, Dark={StaticResource FlyBackgroundDark}}" />
 								</VisualState.Setters>
 							</VisualState>
 							<VisualState x:Name="Selected">
 								<VisualState.Setters>
-									<Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
+									<Setter Property="Background" Value="{StaticResource Primary}" />
 									<Setter TargetName="FlyoutItemLabel" Property="Label.FontAttributes" Value="Bold" />
 									<Setter TargetName="FlyoutItemLabel" Property="Label.TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
 								</VisualState.Setters>
@@ -44,7 +44,7 @@
 							<VisualState x:Name="Disabled" />
 							<VisualState x:Name="PointerOver">
 								<VisualState.Setters>
-									<Setter Property="BackgroundColor" Value="{StaticResource Blue100Accent}" />
+									<Setter Property="Background" Value="{StaticResource Blue100Accent}" />
 								</VisualState.Setters>
 							</VisualState>
 						</VisualStateGroup>
@@ -55,7 +55,7 @@
 	</Shell.Resources>
 	<Shell.FlyoutHeaderTemplate>
 		<DataTemplate x:DataType="s:AppShell">
-			<Grid BackgroundColor="{StaticResource Tertiary}" VerticalOptions="Center" ColumnDefinitions="50,*" RowDefinitions="50">
+			<Grid Background="{StaticResource Tertiary}" VerticalOptions="Center" ColumnDefinitions="50,*" RowDefinitions="50">
 				<Image Source="app_shell_icon.png" HeightRequest="32" WidthRequest="32" Margin="10,0,0,0" />
 				<Label Text="TimeCard App" TextColor="White" FontAttributes="Bold" FontSize="24" Grid.Column="1" HorizontalTextAlignment="Start" VerticalTextAlignment="Center" Margin="10,0,0,0" />
 			</Grid>

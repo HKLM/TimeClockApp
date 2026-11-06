@@ -23,9 +23,9 @@ namespace EFMigrator
             {
                 var optionsBuilder = new DbContextOptionsBuilder<DataBackendContext>();
 #if MSSQL
-                optionsBuilder.UseSqlServer($"Data Source={TimeClockApp.Shared.MSSQLSetting.GetMSSQLconnectionString()}");
+                optionsBuilder.UseSqlServer($"Data Source={TimeClockApp.Shared.MSSQLSetting.GetMSSQLconnectionString}");
 #else
-                optionsBuilder.UseSqlite($"Filename={TimeClockApp.Shared.SQLiteSetting.GetSQLiteDBPath()}");
+                optionsBuilder.UseSqlite($"Filename={TimeClockApp.Shared.SQLiteSetting.GetSQLiteDBPath}");
 #endif
 
                 return new DataBackendContext(optionsBuilder.Options);

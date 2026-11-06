@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Diagnostics.CodeAnalysis;
-using CsvHelper.Configuration;
+using CsvHelper;
 using TimeClockApp.Shared.Helpers;
 
 namespace TimeClockApp.Shared.Models
@@ -56,14 +55,15 @@ namespace TimeClockApp.Shared.Models
         Deleted = 4
     }
 
-    /// <summary>
-    /// Record of single continuous amount of time, the Employee worked in a single day.
-    /// </summary>
-    /// <remarks>
-    /// TODO -If breaks are not paid time, end current TimeCard at the beginning of break.
-    /// Start a new TimeCard upon end of the break time or add a breaktime column
-    /// </remarks>
-    public class TimeCard
+	/// <summary>
+	/// Record of single continuous amount of time, the Employee worked in a single day.
+	/// </summary>
+	/// <remarks>
+	/// TODO -If breaks are not paid time, end current TimeCard at the beginning of break.
+	/// Start a new TimeCard upon end of the break time or add a breaktime column
+	/// </remarks>
+	[CsvRecord]
+	public partial class TimeCard
     {
         public TimeCard() { }
 
@@ -185,6 +185,7 @@ namespace TimeClockApp.Shared.Models
         public TimeOnly TimeCard_EndTime { get; set; }
 
         [NotMapped]
+        [CsvIgnore]
         public TimeSpan TimeCard_Duration
         {
             get
@@ -206,7 +207,8 @@ namespace TimeClockApp.Shared.Models
         /// Used on TimeCardPage to display the total hours clocked (from all TimeCards in the current pay period)
         /// </summary>
         [NotMapped]
-        public double TotalWorkHours { get; set; }
+		[CsvIgnore]
+		public double TotalWorkHours { get; set; }
 
         /// <summary>
         /// The Employee's payrate, at the time of this TimeCard
@@ -218,48 +220,29 @@ namespace TimeClockApp.Shared.Models
         /// </summary>
         public bool TimeCard_bReadOnly { get; set; }
 
-        /// <summary>
-        /// Saved Project Name at the time this card was made.
-        /// </summary>
-        public string ProjectName { get; set; } = string.Empty;
+		/// <summary>
+		/// Saved Project Name at the time this card was made.
+		/// </summary>
+		[CsvColumn(Optional = true)]
+		public string ProjectName { get; set; } = string.Empty;
 
         /// <summary>
         /// Saved Project Title at the time this card was made.
         /// </summary>
+        [CsvColumn(Optional = true)]
         public string PhaseTitle { get; set; } = string.Empty;
 
-        //Navigation Entities
-        public virtual Employee Employee { get; set; }
-        public virtual Project Project { get; set; }
-        public virtual Phase Phase { get; set; }
+		//Navigation Entities
+		[CsvIgnore]
+		public virtual Employee Employee { get; set; }
+		[CsvIgnore]
+		public virtual Project Project { get; set; }
+		[CsvIgnore]
+		public virtual Phase Phase { get; set; }
 
         public override string ToString()
 		{
 			return $"TimeCardId: {TimeCardId}\nEmployeeId: {EmployeeId}\nTimeCard_EmployeeName: {TimeCard_EmployeeName}\nProjectId: {ProjectId}\nProjectName: {ProjectName}\nPhaseId: {PhaseId}\nPhaseTitle: {PhaseTitle}\nTimeCard_Status: {TimeCard_Status}\nTimeCard_DateTime: {TimeCard_DateTime}\nTimeCard_Date: {TimeCard_Date}\nTimeCard_StartTime: {TimeCard_StartTime}\nTimeCard_EndTime: {TimeCard_EndTime}\nTimeCard_WorkHours: {TimeCard_WorkHours}\nTimeCard_bReadOnly: {TimeCard_bReadOnly}";
 		}
 	}
-
-    public sealed class TimeCardMap : ClassMap<TimeCard>
-    {
-        [RequiresUnreferencedCode("Calls DynamicBehavior for Import or Export to CSV.")]
-        public TimeCardMap()
-        {
-            //AutoMap(CultureInfo.InvariantCulture);
-            Map(m => m.TimeCardId);
-            Map(m => m.EmployeeId);
-            Map(m => m.ProjectId);
-            Map(m => m.PhaseId);
-            Map(m => m.TimeCard_EmployeeName);
-            Map(m => m.TimeCard_Status);
-            Map(m => m.TimeCard_DateTime);
-            Map(m => m.TimeCard_Date);
-            Map(m => m.TimeCard_StartTime);
-            Map(m => m.TimeCard_EndTime);
-            Map(m => m.TimeCard_WorkHours);
-            Map(m => m.TimeCard_EmployeePayRate);
-            Map(m => m.TimeCard_bReadOnly);
-            Map(m => m.ProjectName).Optional();
-            Map(m => m.PhaseTitle).Optional();
-        }
-    }
 }

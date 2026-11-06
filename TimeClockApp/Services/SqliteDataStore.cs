@@ -8,18 +8,35 @@ namespace TimeClockApp.Services
     /// </summary>
     public class SQLiteDataStore
     {
-        private protected static readonly DataBackendContext Context = new();
+        protected static readonly DataBackendContext Context;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SQLiteDataStore"/> class.
-        /// </summary>
-        public SQLiteDataStore() { }
+        static SQLiteDataStore() 
+        {
+#if DEBUG
+            try
+            {
+                Context = new();
+			}
+            catch (Exception ex)
+            {
+				Console.WriteLine($"error: {ex}");
+				throw;
+            }
+#else
+            Context = new();
+#endif
+        }
 
-        /// <summary>
-        /// Gets the date when the app was first run.
-        /// </summary>
-        /// <returns></returns>
-        public DateTime GetAppFirstRunDate()
+		/// <summary>
+		/// Initializes a new instance of the <see cref="SQLiteDataStore"/> class.
+		/// </summary>
+		public SQLiteDataStore() { }
+
+		/// <summary>
+		/// Gets the date when the app was first run.
+		/// </summary>
+		/// <returns></returns>
+		public DateTime GetAppFirstRunDate()
         {
             bool bFound = false;
             DateOnly d = DateOnly.MinValue;

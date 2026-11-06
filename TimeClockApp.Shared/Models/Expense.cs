@@ -1,9 +1,9 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using CsvHelper.Configuration;
+﻿using CsvHelper;
 
 namespace TimeClockApp.Shared.Models
 {
-    public class Expense
+	[CsvRecord]
+	public partial class Expense
     {
         public Expense() { }
         public Expense(int ProjectId, int PhaseId, double Amount, DateOnly ExpenseDate, string ExpenseProject = "", string ExpensePhase = "", string Memo = "", int ExpenseTypeId = 2, string ExpenseTypeCategoryName = "")
@@ -52,6 +52,7 @@ namespace TimeClockApp.Shared.Models
         /// </summary>
         /// <remarks>Currently the only way to see this, is by editing the expense. This is not displayed
         /// any where else. TODO</remarks>
+        [CsvColumn(Optional = true)]
         public string Memo { get; set; } = string.Empty;
 
         //[Required]
@@ -62,38 +63,23 @@ namespace TimeClockApp.Shared.Models
         /// </summary>
         public bool IsRecent { get; set; }
 
-        /// <summary>
-        /// Saved Project Name at the time this expense was made.
-        /// </summary>
-        public string ExpenseProject { get; set; } = string.Empty;
+		/// <summary>
+		/// Saved Project Name at the time this expense was made.
+		/// </summary>
+		[CsvColumn(Optional = true)]
+		public string ExpenseProject { get; set; } = string.Empty;
 
         /// <summary>
         /// Saved Project Title at the time this expense was made.
         /// </summary>
+        [CsvColumn(Optional = true)]    
         public string ExpensePhase { get; set; } = string.Empty;
 
+        [CsvIgnore]
         public virtual Project Project { get; set; }
+        [CsvIgnore]
         public virtual Phase Phase { get; set; }
+        [CsvIgnore]
         public virtual ExpenseType ExpenseType { get; set; }
-    }
-
-    public sealed class ExpenseMap : ClassMap<Expense>
-    {
-        [RequiresUnreferencedCode("Calls DynamicBehavior for Import or Export to CSV.")]
-        public ExpenseMap()
-        {
-            //AutoMap(CultureInfo.InvariantCulture);
-            Map(m => m.ExpenseId);
-            Map(m => m.ProjectId);
-            Map(m => m.PhaseId);
-            Map(m => m.ExpenseTypeId);
-            Map(m => m.ExpenseTypeCategoryName).Name("ExpenseTypeCategoryName", "ExpenseType_CategoryName");
-            Map(m => m.ExpenseDate);
-            Map(m => m.Memo).Optional();
-            Map(m => m.Amount);
-            Map(m => m.IsRecent);
-            Map(m => m.ExpenseProject).Optional();
-            Map(m => m.ExpensePhase).Optional();
-        }
     }
 }

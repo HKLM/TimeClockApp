@@ -12,9 +12,9 @@ namespace TimeClockApp
 		protected readonly AppViewModel viewModel;
 		private static readonly Assembly ExecutingAssembly = Assembly.GetExecutingAssembly();
 		private static string? cachedAppVersion;
-		private readonly INotificationService _notificationService;
+		private readonly INotificationService? _notificationService;
 
-		public AppShell(AppViewModel viewModel, INotificationService notificationService)
+		public AppShell(AppViewModel viewModel, INotificationService? notificationService = null)
 		{
 			InitializeComponent();
 			RegisterRoutes();
@@ -22,8 +22,11 @@ namespace TimeClockApp
 			BindingContext = this.viewModel;
 			_notificationService = notificationService;
 #if !WINDOWS
-			_notificationService.NotificationReceived += ShowCustomAlertFromNotification;
-			_notificationService.NotificationActionTapped += Current_NotificationActionTapped;
+			if (_notificationService is not null)
+			{
+				_notificationService.NotificationReceived += ShowCustomAlertFromNotification;
+				_notificationService.NotificationActionTapped += Current_NotificationActionTapped;
+			}
 #endif
 		}
 

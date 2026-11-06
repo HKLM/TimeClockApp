@@ -12,13 +12,17 @@ public static class MauiProgram
 		MauiAppBuilder builder = MauiApp.CreateBuilder();
 		builder
 			.UseMauiApp<App>()
-			.UseMauiCommunityToolkit()
-			.UseLocalNotification()
-			.ConfigureFonts(fonts =>
-			{
-				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-				fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
-			});
+			.UseMauiCommunityToolkit();
+
+#if ANDROID
+		builder.UseLocalNotification();
+#endif
+
+		builder.ConfigureFonts(fonts =>
+		{
+			fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+			fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+		});
 
 		// Database context - created on-demand to defer initialization
 		builder.Services.AddSingleton<DataBackendContext>();

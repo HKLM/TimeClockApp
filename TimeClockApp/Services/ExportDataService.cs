@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.IO.Compression;
+﻿using System.IO.Compression;
 using CsvHelper;
 #if SQLITE
 using Microsoft.Data.Sqlite;
@@ -56,92 +55,72 @@ namespace TimeClockApp.Services
 			return records;
 		}
 
-		[RequiresUnreferencedCode("Calls DynamicBehavior for Import or Export to CSV.")]
 		private async Task<List<TimeCard>> ReadCSVTimeCardsAsync(string csvFile)
 		{
 			List<TimeCard> records = new();
-			using (var reader = new StreamReader(csvFile))
-			using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+			using (CsvReader csv = CsvReader.FromFile(csvFile))
 			{
-				csv.Context.RegisterClassMap<TimeCardMap>();
-				records = await csv.GetRecordsAsync<TimeCard>().ToListAsync();
+				records = await csv.GetRecordsAsync<TimeCard>().ToListAsync().ConfigureAwait(false);
 			}
 			return records;
 		}
 
-		[RequiresUnreferencedCode("Calls DynamicBehavior for Import or Export to CSV.")]
 		private async Task<List<Employee>> ReadCSVEmployeeAsync(string csvFile)
 		{
 			List<Employee> records = new();
-			using (var reader = new StreamReader(csvFile))
-			using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+			using (CsvReader csv = CsvReader.FromFile(csvFile))
 			{
-				csv.Context.RegisterClassMap<EmployeeMap>();
-				records = await csv.GetRecordsAsync<Employee>().ToListAsync();
+				records = await csv.GetRecordsAsync<Employee>().ToListAsync().ConfigureAwait(false);
 			}
 			return records;
 		}
-		[RequiresUnreferencedCode("Calls DynamicBehavior for Import or Export to CSV.")]
+
 		private async Task<List<Project>> ReadCSVProjectAsync(string csvFile)
 		{
 			List<Project> records = new();
-			using (var reader = new StreamReader(csvFile))
-			using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+			using (CsvReader csv = CsvReader.FromFile(csvFile))
 			{
-				csv.Context.RegisterClassMap<ProjectMap>();
-				records = await csv.GetRecordsAsync<Project>().ToListAsync();
+				records = await csv.GetRecordsAsync<Project>().ToListAsync().ConfigureAwait(false);
 			}
 			return records;
 		}
 
-		[RequiresUnreferencedCode("Calls DynamicBehavior for Import or Export to CSV.")]
 		private async Task<List<Phase>> ReadCSVPhaseAsync(string csvFile)
 		{
 			List<Phase> records = new();
-			using (var reader = new StreamReader(csvFile))
-			using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+			using (CsvReader csv = CsvReader.FromFile(csvFile))
 			{
-				csv.Context.RegisterClassMap<PhaseMap>();
-				records = await csv.GetRecordsAsync<Phase>().ToListAsync();
+				records = await csv.GetRecordsAsync<Phase>().ToListAsync().ConfigureAwait(false);
 			}
 			return records;
 		}
 
-		[RequiresUnreferencedCode("Calls DynamicBehavior for Import or Export to CSV.")]
 		private async Task<List<Config>> ReadCSVConfigAsync(string csvFile)
 		{
 			List<Config> records = new();
-			using (var reader = new StreamReader(csvFile))
-			using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+			using (CsvReader csv = CsvReader.FromFile(csvFile))
 			{
-				csv.Context.RegisterClassMap<ConfigMap>();
-				records = await csv.GetRecordsAsync<Config>().ToListAsync();
+				records = await csv.GetRecordsAsync<Config>().ToListAsync().ConfigureAwait(false);
 			}
 			return records;
 		}
 
-		[RequiresUnreferencedCode("Calls DynamicBehavior for Import or Export to CSV.")]
 		private async Task<List<Expense>> ReadCSVExpenseAsync(string csvFile)
 		{
 			List<Expense> records = new();
-			using (var reader = new StreamReader(csvFile))
-			using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+			using (CsvReader csv = CsvReader.FromFile(csvFile))
 			{
-				csv.Context.RegisterClassMap<ExpenseMap>();
-				records = await csv.GetRecordsAsync<Expense>().ToListAsync();
+				records = await csv.GetRecordsAsync<Expense>().ToListAsync().ConfigureAwait(false);
 			}
 			return records;
 		}
 
-		[RequiresUnreferencedCode("Calls DynamicBehavior for Import or Export to CSV.")]
 		private async Task<List<ExpenseType>> ReadCSVExpenseTypeAsync(string csvFile)
 		{
 			List<ExpenseType> records = new();
-			using (var reader = new StreamReader(csvFile))
-			using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+			using (CsvReader csv = CsvReader.FromFile(csvFile))
 			{
-				csv.Context.RegisterClassMap<ExpenseTypeMap>();
-				records = await csv.GetRecordsAsync<ExpenseType>().ToListAsync();
+				records = await csv.GetRecordsAsync<ExpenseType>().ToListAsync().ConfigureAwait(false);
 			}
 			return records;
 		}
@@ -170,7 +149,7 @@ namespace TimeClockApp.Services
 					Log.WriteLine("File Deleted.\n", "Backup");
 				}
 				Log.WriteLine("Opening SQLiteConnection and begin backing up...\n", "Backup");
-				using (SqliteConnection source = new($"Data Source = {SQLiteSetting.GetSQLiteDBPath()};"))
+				using (SqliteConnection source = new($"Data Source = {SQLiteSetting.GetSQLiteDBPath};"))
 				using (SqliteConnection target = new($"Data Source = {savePath};"))
 				{
 					await source.OpenAsync();
@@ -202,7 +181,7 @@ namespace TimeClockApp.Services
 #endif
 		}
 
-		#region IMPORT DATA
+#region IMPORT DATA
 
 		/// <summary>
 		/// Imports data from CSV files asynchronously.
@@ -684,7 +663,6 @@ namespace TimeClockApp.Services
 			}
 		}
 
-
 #endregion
 
 #region EXPORT DATA
@@ -717,7 +695,7 @@ namespace TimeClockApp.Services
 			}
 
 			// Get a timestamped filename
-			string exportZipFilename = $"TimeClockAppData_{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.zip";
+			string exportZipFilename = $"TimeCardAppData_{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.zip";
 			Directory.CreateDirectory(exportZipTempDirectory);
 
 			string exportZipFilePath = Path.Combine(exportZipTempDirectory, exportZipFilename);
@@ -747,7 +725,18 @@ namespace TimeClockApp.Services
 				Title = "TimeCard App Export Data",
 				File = new ShareFile(filePublic),
 			});
-
+			//clean up the temp zip files
+			try
+			{
+				if (Directory.Exists(exportZipTempDirectory))
+				{
+					Directory.Delete(exportZipTempDirectory, true);
+				}
+			}
+			catch (Exception)
+			{
+				Log.WriteLine($"Error occurred while cleaning up temp files.");
+			}
 			return true;
 		}
 

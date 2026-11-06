@@ -12,14 +12,14 @@ using TimeClockApp.Shared.Models;
 namespace TimeClockApp.Shared.Migrations;
 
 [DbContext(typeof(DataBackendContext))]
-[Migration("20260802032443_Initial")]
-partial class _20260802032443_Initial
+[Migration("20261103034508_Initial")]
+partial class _20261103034508_Initial
 {
     /// <inheritdoc />
     protected override void BuildTargetModel(ModelBuilder modelBuilder)
     {
 #pragma warning disable 612, 618
-        modelBuilder.HasAnnotation("ProductVersion", "11.0.0-preview.6.26359.118");
+        modelBuilder.HasAnnotation("ProductVersion", "11.0.0-rc.3.26522.148");
 
         modelBuilder.Entity("TimeClockApp.Shared.Models.Config", b =>
             {
@@ -60,7 +60,7 @@ partial class _20260802032443_Initial
                         ConfigId = 2,
                         Hint = "Date this app was 1st ran. For internal use only",
                         Name = "FirstRun",
-                        StringValue = "8/1/2026"
+                        StringValue = "11/2/2026"
                     },
                     new
                     {
@@ -188,33 +188,17 @@ partial class _20260802032443_Initial
                     {
                         EmployeeId = 1,
                         Employee_Employed = 0,
-                        Employee_Name = "Brian Alexander",
-                        Employee_PayRate = 35.0,
-                        JobTitle = "Owner"
+                        Employee_Name = "John Doe",
+                        Employee_PayRate = 25.0,
+                        JobTitle = "Job Title"
                     },
                     new
                     {
                         EmployeeId = 2,
-                        Employee_Employed = 3,
-                        Employee_Name = "John Pewthers",
-                        Employee_PayRate = 30.0,
-                        JobTitle = "Journeyman"
-                    },
-                    new
-                    {
-                        EmployeeId = 3,
                         Employee_Employed = 0,
-                        Employee_Name = "Adam Aicher",
-                        Employee_PayRate = 30.0,
-                        JobTitle = "Laborer"
-                    },
-                    new
-                    {
-                        EmployeeId = 4,
-                        Employee_Employed = 1,
-                        Employee_Name = "Louis Gonzales",
-                        Employee_PayRate = 30.0,
-                        JobTitle = "Laborer"
+                        Employee_Name = "Jane Doe",
+                        Employee_PayRate = 25.0,
+                        JobTitle = "Job Title"
                     });
             });
 
@@ -361,6 +345,7 @@ partial class _20260802032443_Initial
 
                 b.Property<string>("PhaseTitle")
                     .IsRequired()
+                    .HasMaxLength(50)
                     .HasColumnType("TEXT");
 
                 b.HasKey("PhaseId");
@@ -631,9 +616,13 @@ partial class _20260802032443_Initial
 
                 b.Property<string>("Name")
                     .IsRequired()
+                    .HasMaxLength(50)
                     .HasColumnType("TEXT");
 
                 b.Property<DateOnly>("ProjectDate")
+                    .HasColumnType("date");
+
+                b.Property<DateOnly?>("ProjectDateEnd")
                     .HasColumnType("date");
 
                 b.Property<int>("Status")
@@ -650,70 +639,14 @@ partial class _20260802032443_Initial
                     {
                         ProjectId = 1,
                         Name = ".None",
-                        ProjectDate = new DateOnly(2026, 8, 1),
+                        ProjectDate = new DateOnly(2026, 11, 2),
                         Status = 1
                     },
                     new
                     {
                         ProjectId = 2,
-                        Name = "Vallejo",
-                        ProjectDate = new DateOnly(2026, 8, 1),
-                        Status = 1
-                    },
-                    new
-                    {
-                        ProjectId = 3,
-                        Name = "Napa",
-                        ProjectDate = new DateOnly(2026, 8, 1),
-                        Status = 1
-                    },
-                    new
-                    {
-                        ProjectId = 4,
-                        Name = "Oakland",
-                        ProjectDate = new DateOnly(2026, 8, 1),
-                        Status = 1
-                    },
-                    new
-                    {
-                        ProjectId = 5,
-                        Name = "Woodland",
-                        ProjectDate = new DateOnly(2026, 8, 1),
-                        Status = 1
-                    },
-                    new
-                    {
-                        ProjectId = 6,
-                        Name = "American Canyon",
-                        ProjectDate = new DateOnly(2026, 8, 1),
-                        Status = 1
-                    },
-                    new
-                    {
-                        ProjectId = 7,
-                        Name = "Benicia",
-                        ProjectDate = new DateOnly(2026, 8, 1),
-                        Status = 1
-                    },
-                    new
-                    {
-                        ProjectId = 8,
-                        Name = "Fairfield",
-                        ProjectDate = new DateOnly(2026, 8, 1),
-                        Status = 1
-                    },
-                    new
-                    {
-                        ProjectId = 9,
-                        Name = "Sonoma",
-                        ProjectDate = new DateOnly(2026, 8, 1),
-                        Status = 1
-                    },
-                    new
-                    {
-                        ProjectId = 10,
-                        Name = "Vacaville",
-                        ProjectDate = new DateOnly(2026, 8, 1),
+                        Name = "Sample",
+                        ProjectDate = new DateOnly(2026, 11, 2),
                         Status = 1
                     });
             });

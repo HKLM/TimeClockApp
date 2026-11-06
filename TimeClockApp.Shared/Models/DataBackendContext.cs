@@ -8,7 +8,6 @@ using Microsoft.EntityFrameworkCore.SqlServer;
 using Microsoft.Data.Sqlite;
 #endif
 using System;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -19,39 +18,9 @@ namespace TimeClockApp.Shared.Models
 {
     public partial class DataBackendContext : DbContext
     {
-        internal static bool Initialized { get; private set; }
-        internal static bool FirstRun { get; private set; } = true;
-		internal static void SetFirstRun(bool IsFirstRun) => FirstRun = IsFirstRun;
+        public DataBackendContext() { }
 
-        public DataBackendContext()
-        {
-            InitializeSync();
-        }
-
-        public DataBackendContext(DbContextOptions<DataBackendContext> options) : base(options) 
-        {
-            InitializeSync();
-        }
-
-        private void InitializeSync()
-        {
-            if (Initialized)
-                return;
-
-            try
-            {
-#if !MSSQL
-                SQLitePCL.Batteries_V2.Init();
-#endif
-                // Database migrations will be performed asynchronously after app loads
-                // This method only initializes platform-specific requirements
-            }
-            finally
-            {
-                Initialized = true;
-                SetFirstRun(false);
-            }
-        }
+        public DataBackendContext(DbContextOptions<DataBackendContext> options) : base(options) { }
 
         /// <summary>
         /// Performs asynchronous database migration and initialization.
@@ -59,36 +28,36 @@ namespace TimeClockApp.Shared.Models
         /// </summary>
         public async Task InitializeDatabaseAsync(CancellationToken cancellationToken = default)
         {
-            try
+			try
             {
 #if NEW_DATABASE
+                // Clear preferences and delete the database to start fresh
+                Preferences.Default.Clear(PrefSetting.PrefKey);
+
                 await this.Database.EnsureDeletedAsync(cancellationToken);
                 // This is required for MSSQL
                 Thread.Sleep(3000);
                 await this.Database.EnsureCreatedAsync(cancellationToken);
                 Thread.Sleep(3000);
 #endif
-				// Perform migrations asynchronously without artificial delays
+
 				await Database.MigrateAsync(cancellationToken);
 #if MSSQL
                 // This is required for MSSQL to ensure the database is ready before the app continues
                 Thread.Sleep(3000);
 #endif
 			}
-			catch (Microsoft.Data.Sqlite.SqliteException exsql)
+			catch (Microsoft.Data.Sqlite.SqliteException exsql) // Log error but don't fail - the app should still start
 			{
-				System.Diagnostics.Debug.WriteLine($"Database initialization error: {exsql.Message}");
-				// Log error but don't fail - the app should still start
+				Console.WriteLine($"Database initialization error: {exsql.Message}");
 			}
 			catch (System.InvalidOperationException ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Database initialization error: {ex.Message}");
-                // Log error but don't fail - the app should still start
+				Console.WriteLine($"Database initialization error: {ex.Message}");
             }   
             catch (OperationCanceledException exOCE)
             {
-                System.Diagnostics.Debug.WriteLine($"Database initialization error: {exOCE.Message}");
-                // Log error but don't fail - the app should still start
+				Console.WriteLine($"Database initialization error: {exOCE.Message}");
             }
         }
 
@@ -116,7 +85,7 @@ namespace TimeClockApp.Shared.Models
 #if MSSQL
                     .UseSqlServer($"Data Source={TimeClockApp.Shared.MSSQLSetting.GetMSSQLconnectionString()}");
 #else
-                    .UseSqlite($"Filename={SQLiteSetting.GetSQLiteDBPath()}");
+                    .UseSqlite($"Filename={SQLiteSetting.GetSQLiteDBPath}");
 #endif
         }
 
@@ -200,9 +169,9 @@ namespace TimeClockApp.Shared.Models
                 {
                     e.HasKey(t => t.ProjectId);
 					e.Property(t => t.ProjectDate).HasColumnType("date");
-					e.Property(t => t.ProjectDateEnd).HasColumnType("date");
 					e.Property(t => t.Name).HasMaxLength(50).IsRequired(true);
 					e.Property(t => t.Status).IsRequired(true).HasDefaultValue(ProjectStatus.Ready);
+					e.Property(t => t.ProjectDateEnd).HasColumnType("date");
 				});
 			modelBuilder.Entity<Phase>(
 				e =>
@@ -394,8 +363,9 @@ namespace TimeClockApp.Shared.Models
                     ProjectId = i + 1,
                     Name = projectNames[i],
                     Status = ProjectStatus.Active,
-                    ProjectDate = date
-                });
+                    ProjectDate = date,
+					ProjectDateEnd = null
+				});
             }
 
             string[] phaseTitles = new string[] {".Misc","Cement","Cement-Forms","Framing","Prep-Painting","Painting","Bathroom","Crown Molding","Deck","Demo",

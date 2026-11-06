@@ -16,12 +16,12 @@ partial class DataBackendContextModelSnapshot : ModelSnapshot
     // If you encounter a merge conflict in the line below, it means you need to
     // discard one of the migration branches and recreate its migrations on top of
     // the other branch. See https://aka.ms/efcore-docs-migrations-conflicts for more info.
-    public override string LastMigrationId => "20260912004603_Update1";
+    public override string LastMigrationId => "20261103034508_Initial";
 
     protected override void BuildModel(ModelBuilder modelBuilder)
     {
 #pragma warning disable 612, 618
-        modelBuilder.HasAnnotation("ProductVersion", "11.0.0-rc.1.26425.128");
+        modelBuilder.HasAnnotation("ProductVersion", "11.0.0-rc.3.26522.148");
 
         modelBuilder.Entity("TimeClockApp.Shared.Models.Config", b =>
             {
@@ -62,7 +62,7 @@ partial class DataBackendContextModelSnapshot : ModelSnapshot
                         ConfigId = 2,
                         Hint = "Date this app was 1st ran. For internal use only",
                         Name = "FirstRun",
-                        StringValue = "9/11/2026"
+                        StringValue = "11/2/2026"
                     },
                     new
                     {
@@ -190,33 +190,17 @@ partial class DataBackendContextModelSnapshot : ModelSnapshot
                     {
                         EmployeeId = 1,
                         Employee_Employed = 0,
-                        Employee_Name = "Brian Alexander",
-                        Employee_PayRate = 35.0,
-                        JobTitle = "Owner"
+                        Employee_Name = "John Doe",
+                        Employee_PayRate = 25.0,
+                        JobTitle = "Job Title"
                     },
                     new
                     {
                         EmployeeId = 2,
-                        Employee_Employed = 3,
-                        Employee_Name = "John Pewthers",
-                        Employee_PayRate = 30.0,
-                        JobTitle = "Journeyman"
-                    },
-                    new
-                    {
-                        EmployeeId = 3,
                         Employee_Employed = 0,
-                        Employee_Name = "Adam Aicher",
-                        Employee_PayRate = 30.0,
-                        JobTitle = "Laborer"
-                    },
-                    new
-                    {
-                        EmployeeId = 4,
-                        Employee_Employed = 1,
-                        Employee_Name = "Louis Gonzales",
-                        Employee_PayRate = 30.0,
-                        JobTitle = "Laborer"
+                        Employee_Name = "Jane Doe",
+                        Employee_PayRate = 25.0,
+                        JobTitle = "Job Title"
                     });
             });
 
@@ -657,70 +641,14 @@ partial class DataBackendContextModelSnapshot : ModelSnapshot
                     {
                         ProjectId = 1,
                         Name = ".None",
-                        ProjectDate = new DateOnly(2026, 9, 11),
+                        ProjectDate = new DateOnly(2026, 11, 2),
                         Status = 1
                     },
                     new
                     {
                         ProjectId = 2,
-                        Name = "Vallejo",
-                        ProjectDate = new DateOnly(2026, 9, 11),
-                        Status = 1
-                    },
-                    new
-                    {
-                        ProjectId = 3,
-                        Name = "Napa",
-                        ProjectDate = new DateOnly(2026, 9, 11),
-                        Status = 1
-                    },
-                    new
-                    {
-                        ProjectId = 4,
-                        Name = "Oakland",
-                        ProjectDate = new DateOnly(2026, 9, 11),
-                        Status = 1
-                    },
-                    new
-                    {
-                        ProjectId = 5,
-                        Name = "Woodland",
-                        ProjectDate = new DateOnly(2026, 9, 11),
-                        Status = 1
-                    },
-                    new
-                    {
-                        ProjectId = 6,
-                        Name = "American Canyon",
-                        ProjectDate = new DateOnly(2026, 9, 11),
-                        Status = 1
-                    },
-                    new
-                    {
-                        ProjectId = 7,
-                        Name = "Benicia",
-                        ProjectDate = new DateOnly(2026, 9, 11),
-                        Status = 1
-                    },
-                    new
-                    {
-                        ProjectId = 8,
-                        Name = "Fairfield",
-                        ProjectDate = new DateOnly(2026, 9, 11),
-                        Status = 1
-                    },
-                    new
-                    {
-                        ProjectId = 9,
-                        Name = "Sonoma",
-                        ProjectDate = new DateOnly(2026, 9, 11),
-                        Status = 1
-                    },
-                    new
-                    {
-                        ProjectId = 10,
-                        Name = "Vacaville",
-                        ProjectDate = new DateOnly(2026, 9, 11),
+                        Name = "Sample",
+                        ProjectDate = new DateOnly(2026, 11, 2),
                         Status = 1
                     });
             });

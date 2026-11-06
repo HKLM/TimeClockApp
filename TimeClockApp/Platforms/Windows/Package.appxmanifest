@@ -6,12 +6,12 @@
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
   IgnorableNamespaces="uap rescap">
 
-	<Identity Name="TimeClockApp-installer" Publisher="CN=Alexander Builder" Version="0.1.0.0" />
+	<Identity Name="TimeCardApp-installer" Publisher="CN=Alexander Builder" Version="3.2.0.0" />
 
 	<mp:PhoneIdentity PhoneProductId="AC9ABA4D-4AD0-442C-BFFE-15A14773FBEC" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
 	<Properties>
-		<DisplayName>TimeClockApp</DisplayName>
+		<DisplayName>Time Card App</DisplayName>
 		<PublisherDisplayName>Alexander Builder</PublisherDisplayName>
 		<Logo>Platforms\Windows\Images\winui\pack-logo.png</Logo>
 	</Properties>
@@ -28,7 +28,7 @@
 	<Applications>
 		<Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="$targetentrypoint$">
 			<uap:VisualElements
-			  DisplayName="TimeClockApp"
+			  DisplayName="Time Card App"
 			  Description="$placeholder$"
 			  Square150x150Logo="$placeholder$.png"
 			  Square44x44Logo="Platforms\Windows\Images\winui\winicon.png"

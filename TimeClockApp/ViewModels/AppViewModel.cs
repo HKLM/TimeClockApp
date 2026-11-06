@@ -26,7 +26,7 @@ namespace TimeClockApp.ViewModels
 #endif
 		}
 
-		public virtual void OnAppearing()
+		public void OnAppearing()
 		{
 			Application.Current!.UserAppTheme = GetThemeType();
 			IsAdmin = pageService.GetIsAdminSetting();

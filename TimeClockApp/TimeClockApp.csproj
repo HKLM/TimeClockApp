@@ -18,15 +18,14 @@
 		<ApplicationId>com.alexanderbuilder.timeclockapp</ApplicationId>
 		 <!--Versions--> 
 		<ApplicationIdGuid>AA699F0D-F30D-4094-AAEC-745B07309A2B</ApplicationIdGuid>
-		<ApplicationVersion>11</ApplicationVersion>
-		<ApplicationDisplayVersion>3.1</ApplicationDisplayVersion>
-		<FileVersion>3.1</FileVersion>
-		<AssemblyVersion>3.1</AssemblyVersion>
-		<Version>3.1</Version>
+		<ApplicationVersion>12</ApplicationVersion>
+		<ApplicationDisplayVersion>3.2</ApplicationDisplayVersion>
+		<FileVersion>3.2</FileVersion>
+		<AssemblyVersion>3.2</AssemblyVersion>
+		<Version>3.2</Version>
 		<!-- Enable Material 3 design on Android -->
 		<UseMaterial3>true</UseMaterial3>
-		<!--<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>-->
-		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">32.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">36.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
 		<Configurations>Debug;Release;MSSQL Migration;SQLite Migration</Configurations>
@@ -47,37 +46,26 @@
 		<!-- Replace xxxxxxxxxxxxxxx with your own PackageCertificateThumbprint value -->
 		<!--<PackageCertificateThumbprint>xxxxxxxxxxxxxxx</PackageCertificateThumbprint>
 		<AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>-->
-		<TargetPlatformAndroid>True</TargetPlatformAndroid>
-		<!--<WarningsNotAsErrors>$(WarningsNotAsErrors);IL2037</WarningsNotAsErrors>-->
-	</PropertyGroup>
-  
-	<!-- Use CoreCLR on Android -->
-	<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
-		<UseMonoRuntime>false</UseMonoRuntime>
+		<!--<TargetPlatformAndroid>True</TargetPlatformAndroid>-->
+		<!--<UseMonoRuntime>false</UseMonoRuntime>-->
 	</PropertyGroup>
 	
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net11.0-android|AnyCPU'">
-	  <PublishReadyToRun>true</PublishReadyToRun>
-	  <AndroidLinkTool>r8</AndroidLinkTool>
-	  <!-- Enable advanced optimizations for faster startup -->
-	  <AndroidUseAapt2>true</AndroidUseAapt2>
-	  <!-- Enable profiled AOT for better performance on Android -->
+	  <!--<PublishReadyToRun>true</PublishReadyToRun>-->
+	  <!--<MauiEnableFullReadyToRun>true</MauiEnableFullReadyToRun>-->
+	  <!--<AndroidUseAapt2>true</AndroidUseAapt2>-->
 	  <AndroidEnableProfiledAot>true</AndroidEnableProfiledAot>
-	  <!--<AndroidPackageFormat>apk</AndroidPackageFormat>-->
+	  <AndroidPackageFormat>apk</AndroidPackageFormat>
 	  <AndroidProfileStartup>true</AndroidProfileStartup>
-	  <UseInterpreter>false</UseInterpreter>
-	  <!-- Optimize method inlining and other JIT improvements -->
-	  <AndroidOptimizeForBrowsingPerformance>true</AndroidOptimizeForBrowsingPerformance>
-	  <!--<InterceptorsNamespaces>$(InterceptorsNamespaces);Microsoft.EntityFrameworkCore.GeneratedInterceptors</InterceptorsNamespaces>-->
+	  <!--<PublishTrimmed>false</PublishTrimmed>-->
 	</PropertyGroup>
-	
-	<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows' and '$(Configuration)' == 'Release'">
+
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net11.0-windows10.0.19041.0|AnyCPU'">
 		<!--<AppxPackageSigningEnabled>true</AppxPackageSigningEnabled>
 		<PackageCertificateThumbprint>xxxxxxxxxxxxxxx</PackageCertificateThumbprint>-->
 	  <PublishReadyToRun>true</PublishReadyToRun>
 	  <PublishTrimmed>false</PublishTrimmed>
-	  <SelfContained>true</SelfContained>
-	  <PublishAot>false</PublishAot>
+	  <!--<PublishAot>false</PublishAot>-->
 	</PropertyGroup>
   
 	<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows' and '$(RuntimeIdentifierOverride)' != ''">

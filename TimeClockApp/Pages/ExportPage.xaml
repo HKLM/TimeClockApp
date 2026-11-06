@@ -36,7 +36,7 @@
 				   FontSize="12" />
 		</StackLayout>
 		<Grid x:Name="LoadingOverlay1"
-              BackgroundColor="#80000000" 
+              Background="#80000000" 
               IsVisible="{Binding Loading}">
 
 			<VerticalStackLayout HorizontalOptions="Center" 
